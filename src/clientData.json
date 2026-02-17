@@ -1,0 +1,4615 @@
+[
+  {
+    "id": "HS-001",
+    "name": "100 Montaditos Carlos V Ibiza",
+    "island": "Ibiza",
+    "municipality": "Eivissa",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-002",
+    "name": "100 Montaditos FAN Mallorca",
+    "island": "Mallorca",
+    "municipality": "Palma",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-003",
+    "name": "100 Montaditos Marratxi",
+    "island": "Mallorca",
+    "municipality": "Marratxinet",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-004",
+    "name": "100 Montaditos Plaza Lorca",
+    "island": "Mallorca",
+    "municipality": "Palma",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-005",
+    "name": "45 Times Barcelona Hotel",
+    "island": "",
+    "municipality": "Barcelona",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-006",
+    "name": "Abora Buenaventura",
+    "island": "Gran Canaria",
+    "municipality": "San Bartolomé de Tirajana",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-007",
+    "name": "Abora Catarina",
+    "island": "Gran Canaria",
+    "municipality": "Maspalomas",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-008",
+    "name": "Abora Continental",
+    "island": "Gran Canaria",
+    "municipality": "Maspalomas",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-009",
+    "name": "Abora Interclub",
+    "island": "Gran Canaria",
+    "municipality": "San Bartolomé de Tirajana",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-010",
+    "name": "AC Baqueira Ski Resort",
+    "island": "",
+    "municipality": "Baqueira",
+    "region": "Cataluña"
+  },
+  {
+    "id": "HS-011",
+    "name": "AC Hotel A Coruña",
+    "island": "",
+    "municipality": "A Coruña",
+    "region": "Galicia"
+  },
+  {
+    "id": "HS-012",
+    "name": "AC Hotel Aitana",
+    "island": "",
+    "municipality": "Madrid",
+    "region": "Madrid"
+  },
+  {
+    "id": "HS-013",
+    "name": "AC Hotel Alcala de Henares",
+    "island": "",
+    "municipality": "Alcalá de Henares",
+    "region": "Madrid"
+  },
+  {
+    "id": "HS-014",
+    "name": "AC Hotel Algeciras",
+    "island": "",
+    "municipality": "Algeciras",
+    "region": "Andalucía"
+  },
+  {
+    "id": "HS-015",
+    "name": "AC Hotel Badajoz",
+    "island": "",
+    "municipality": "Badajoz",
+    "region": "Extremadura"
+  },
+  {
+    "id": "HS-016",
+    "name": "AC Hotel Burgos",
+    "island": "",
+    "municipality": "Burgos",
+    "region": "Castilla y León "
+  },
+  {
+    "id": "HS-017",
+    "name": "AC Hotel by Marriott Alicante",
+    "island": "",
+    "municipality": "Alacant",
+    "region": "Comunidad Valenciana"
+  },
+  {
+    "id": "HS-018",
+    "name": "AC Hotel by Marriott Ciudad de Sevilla",
+    "island": "",
+    "municipality": "Sevilla",
+    "region": "Andalucía"
+  },
+  {
+    "id": "HS-019",
+    "name": "AC Hotel by Marriott Irla",
+    "island": "",
+    "municipality": "Barcelona",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-020",
+    "name": "AC Hotel by Marriott Palacio de Santa Ana",
+    "island": "",
+    "municipality": "Valladolid",
+    "region": "Castilla y León"
+  },
+  {
+    "id": "HS-021",
+    "name": "AC Hotel Cartagena ",
+    "island": "",
+    "municipality": "Cartagena",
+    "region": "Murcia "
+  },
+  {
+    "id": "HS-022",
+    "name": "AC Hotel Ciudad de Toledo",
+    "island": "",
+    "municipality": "Toledo",
+    "region": "Madrid"
+  },
+  {
+    "id": "HS-023",
+    "name": "AC Hotel Ciudad de Tudela",
+    "island": "",
+    "municipality": "Tudela",
+    "region": "Navarra"
+  },
+  {
+    "id": "HS-024",
+    "name": "AC Hotel Ciutat de Palma",
+    "island": "Mallorca",
+    "municipality": "Palma",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-025",
+    "name": "AC Hotel Córdoba",
+    "island": "",
+    "municipality": "Córdoba",
+    "region": "Andalucía"
+  },
+  {
+    "id": "HS-026",
+    "name": "AC Hotel Coslada Aeropuerto",
+    "island": "",
+    "municipality": "Madrid",
+    "region": "Madrid"
+  },
+  {
+    "id": "HS-027",
+    "name": "AC Hotel Cuzco",
+    "island": "",
+    "municipality": "Madrid",
+    "region": "Madrid"
+  },
+  {
+    "id": "HS-028",
+    "name": "AC Hotel Diagonal L'Illa",
+    "island": "",
+    "municipality": "Barcelona",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-029",
+    "name": "AC Hotel Elda",
+    "island": "",
+    "municipality": "Elda",
+    "region": "Comunidad Valenciana"
+  },
+  {
+    "id": "HS-030",
+    "name": "AC Hotel Gavá Mar",
+    "island": "",
+    "municipality": "Gavà",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-031",
+    "name": "AC Hotel Gijon",
+    "island": "",
+    "municipality": "Gijón",
+    "region": "Asturias"
+  },
+  {
+    "id": "HS-032",
+    "name": "AC Hotel Gran Canaria",
+    "island": "Gran Canaria",
+    "municipality": "Las Palmas de Gran Canaria",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-033",
+    "name": "AC Hotel Guadalajara",
+    "island": "",
+    "municipality": "Guadalajara",
+    "region": "Madrid"
+  },
+  {
+    "id": "HS-034",
+    "name": "AC Hotel Huelva",
+    "island": "",
+    "municipality": "Huelva",
+    "region": "Andalucía"
+  },
+  {
+    "id": "HS-035",
+    "name": "AC Hotel Iberia Las Palmas",
+    "island": "Gran Canaria",
+    "municipality": "Las Palmas de Gran Canaria",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-036",
+    "name": "AC Hotel La Finca",
+    "island": "",
+    "municipality": "Pozuelo de Alarcón",
+    "region": "Madrid"
+  },
+  {
+    "id": "HS-037",
+    "name": "AC Hotel La Línea",
+    "island": "",
+    "municipality": "La Línea de la Concepción",
+    "region": "Andalucía"
+  },
+  {
+    "id": "HS-038",
+    "name": "AC Hotel La Rioja",
+    "island": "",
+    "municipality": "Logroño",
+    "region": "La Rioja "
+  },
+  {
+    "id": "HS-039",
+    "name": "AC Hotel León San Antonio",
+    "island": "",
+    "municipality": "León",
+    "region": "Castilla y León "
+  },
+  {
+    "id": "HS-040",
+    "name": "AC Hotel Los Vascos",
+    "island": "",
+    "municipality": "Madrid",
+    "region": "Madrid"
+  },
+  {
+    "id": "HS-041",
+    "name": "AC Hotel Madrid Feria",
+    "island": "",
+    "municipality": "Madrid",
+    "region": "Madrid"
+  },
+  {
+    "id": "HS-042",
+    "name": "AC Hotel Málaga Palacio",
+    "island": "",
+    "municipality": "Málaga",
+    "region": "Andalucía"
+  },
+  {
+    "id": "HS-043",
+    "name": "AC Hotel Murcia",
+    "island": "",
+    "municipality": "Murcia",
+    "region": "Murcia "
+  },
+  {
+    "id": "HS-044",
+    "name": "AC Hotel Oviedo Forum",
+    "island": "",
+    "municipality": "Oviedo",
+    "region": "Asturias"
+  },
+  {
+    "id": "HS-045",
+    "name": "AC Hotel Palacio Universal",
+    "island": "",
+    "municipality": "Vigo",
+    "region": "Galicia"
+  },
+  {
+    "id": "HS-046",
+    "name": "AC Hotel Palencia",
+    "island": "",
+    "municipality": "Palencia",
+    "region": "Castilla y León "
+  },
+  {
+    "id": "HS-047",
+    "name": "AC Hotel Ponferrada",
+    "island": "",
+    "municipality": "Ponferrada",
+    "region": "Castilla y León "
+  },
+  {
+    "id": "HS-048",
+    "name": "AC Hotel Recoletos",
+    "island": "",
+    "municipality": "Madrid",
+    "region": "Madrid"
+  },
+  {
+    "id": "HS-049",
+    "name": "AC Hotel San Sebastian de Los Reyes",
+    "island": "",
+    "municipality": "San Sebastián de los Reyes",
+    "region": "Madrid"
+  },
+  {
+    "id": "HS-050",
+    "name": "AC Hotel Sant Cugat",
+    "island": "",
+    "municipality": "",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-051",
+    "name": "AC Hotel Sants",
+    "island": "",
+    "municipality": "Barcelona",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-052",
+    "name": "AC Hotel Sevilla Forum",
+    "island": "",
+    "municipality": "Sevilla",
+    "region": "Andalucía"
+  },
+  {
+    "id": "HS-053",
+    "name": "AC Hotel Tarragona",
+    "island": "",
+    "municipality": "Tarragona",
+    "region": "Cataluña"
+  },
+  {
+    "id": "HS-054",
+    "name": "AC Hotel Tenerife",
+    "island": "Tenerife",
+    "municipality": "Santa Cruz de Tenerife",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-055",
+    "name": "AC Hotel Valencia",
+    "island": "",
+    "municipality": "València",
+    "region": "Valencia"
+  },
+  {
+    "id": "HS-056",
+    "name": "AC Hotel Zamora",
+    "island": "",
+    "municipality": "Zamora",
+    "region": "Castilla y León "
+  },
+  {
+    "id": "HS-057",
+    "name": "Acta Madfor Madrid",
+    "island": "",
+    "municipality": "Madrid",
+    "region": "Madrid"
+  },
+  {
+    "id": "HS-058",
+    "name": "Aethos Mallorca",
+    "island": "Mallorca",
+    "municipality": "Peguera",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-059",
+    "name": "Africa Mar Apth",
+    "island": "",
+    "municipality": "Can Picafort",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-060",
+    "name": "Agroturismo Sa Talaia",
+    "island": "Ibiza",
+    "municipality": "Ses Paisses, Ibiza",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-061",
+    "name": "Aguas de Ibiza Hotel",
+    "island": "Ibiza",
+    "municipality": "Santa Eulària des Riu, Illes Balears",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-062",
+    "name": "Aire Catering",
+    "island": "Mallorca",
+    "municipality": "Palma",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-063",
+    "name": "Ajuntament de Sant Llorenç",
+    "island": "Mallorca",
+    "municipality": "Sant Llorenç des Cardassar",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-064",
+    "name": "Akquaaa Boutique Hotel",
+    "island": "",
+    "municipality": "Calafell",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-065",
+    "name": "Allegro Granada",
+    "island": "",
+    "municipality": "Granada",
+    "region": "Andalucía"
+  },
+  {
+    "id": "HS-066",
+    "name": "Allsun Albatros",
+    "island": "Lanzarote",
+    "municipality": "Costa Teguise",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-067",
+    "name": "Allsun Bahía del Este",
+    "island": "Mallorca",
+    "municipality": "Cala Millor",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-068",
+    "name": "Allsun Barlovento",
+    "island": "Fuerteventura",
+    "municipality": "Costa Calma",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-069",
+    "name": "Allsun Bella Paguera",
+    "island": "Mallorca",
+    "municipality": "Peguera",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-070",
+    "name": "Allsun Borneo",
+    "island": "Mallorca",
+    "municipality": "Cala Millor",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-071",
+    "name": "Allsun Coral",
+    "island": "Mallorca",
+    "municipality": "Port d'Alcúdia",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-072",
+    "name": "Allsun Cormorán",
+    "island": "Mallorca",
+    "municipality": "Peguera",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-073",
+    "name": "Allsun Cristóbal Colón",
+    "island": "Mallorca",
+    "municipality": "Palma",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-074",
+    "name": "Allsun Eden Alcudia",
+    "island": "Mallorca",
+    "municipality": "Alcúdia",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-075",
+    "name": "Allsun Eden Playa",
+    "island": "",
+    "municipality": "",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-076",
+    "name": "Allsun Espléndido",
+    "island": "Gran Canaria",
+    "municipality": "Maspalomas",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-077",
+    "name": "Allsun Esquinzo Beach",
+    "island": "Fuerteventura",
+    "municipality": "Esquinzo",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-078",
+    "name": "Allsun Estrella de Mar",
+    "island": "Mallorca",
+    "municipality": "Port d'Alcúdia",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-079",
+    "name": "Allsun Illot Park",
+    "island": "",
+    "municipality": "Cala Lliteres",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-080",
+    "name": "Allsun Kontiki",
+    "island": "Mallorca",
+    "municipality": "Palma",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-081",
+    "name": "Allsun Los Hibiscos",
+    "island": "Tenerife",
+    "municipality": "Costa Adeje",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-082",
+    "name": "Allsun Lucana",
+    "island": "Gran Canaria",
+    "municipality": "Maspalomas",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-083",
+    "name": "Allsun Lux de Mar",
+    "island": "Mallorca",
+    "municipality": "Cala Ratjada",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-084",
+    "name": "Allsun Marena Beach",
+    "island": "Mallorca",
+    "municipality": "Arenal",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-085",
+    "name": "Allsun Orient Beach",
+    "island": "Mallorca",
+    "municipality": "Sant Llorenç des Cardassar",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-086",
+    "name": "Allsun Orquídea",
+    "island": "Mallorca",
+    "municipality": "Port d'Alcúdia",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-087",
+    "name": "Allsun Paguera Park",
+    "island": "Mallorca",
+    "municipality": "Peguera",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-088",
+    "name": "Allsun Pil.larí",
+    "island": "Mallorca",
+    "municipality": "Palma",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-089",
+    "name": "Allsun Riviera Playa",
+    "island": "Mallorca",
+    "municipality": "Palma",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-090",
+    "name": "Allsun Sumba",
+    "island": "Mallorca",
+    "municipality": "Cala Millor",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-091",
+    "name": "Allsun Vera Beach",
+    "island": "Mallorca",
+    "municipality": "Peguera",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-092",
+    "name": "Almond Valley",
+    "island": "Mallorca",
+    "municipality": "Pollença",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-093",
+    "name": "Altea Beach ",
+    "island": "",
+    "municipality": "Altea",
+    "region": "Valencia"
+  },
+  {
+    "id": "HS-094",
+    "name": "Altea Port",
+    "island": "",
+    "municipality": "Altea",
+    "region": "Valencia"
+  },
+  {
+    "id": "HS-095",
+    "name": "Amagatay Menorca",
+    "island": "Menorca",
+    "municipality": "Alaior, Balearic Is Menorca",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-096",
+    "name": "Amê Gastrobeach Club",
+    "island": "Mallorca",
+    "municipality": "Cala Millor",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-097",
+    "name": "Ametlla de Mallorca",
+    "island": "",
+    "municipality": "",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-098",
+    "name": "Andana Restaurante",
+    "island": "",
+    "municipality": "",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-099",
+    "name": "Anfi Beach Club",
+    "island": "Gran Canaria",
+    "municipality": "Las Palmas",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-100",
+    "name": "Anfi Emerald Hotel",
+    "island": "Gran Canaria",
+    "municipality": "Mogán",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-101",
+    "name": "Anfi Tauro Golf",
+    "island": "",
+    "municipality": "",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-102",
+    "name": "Ansia",
+    "island": "Mallorca",
+    "municipality": "Palma, Illes Balears",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-103",
+    "name": "Apartamentos Es Trenc",
+    "island": "Mallorca",
+    "municipality": "Colònia de Sant Jordi, Illes Balears",
+    "region": "Baleares- Mallorca"
+  },
+  {
+    "id": "HS-104",
+    "name": "Apartamentos Posidonia",
+    "island": "Mallorca",
+    "municipality": "Colònia de Sant Jordi",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-105",
+    "name": "Apartamentos Ros",
+    "island": "",
+    "municipality": "",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-106",
+    "name": "Apartamentos Tivoli",
+    "island": "",
+    "municipality": "",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-107",
+    "name": "Apartamentos Zahara Sol",
+    "island": "",
+    "municipality": "Tarifa",
+    "region": "Andalucía"
+  },
+  {
+    "id": "HS-108",
+    "name": "Astoria Playa",
+    "island": "Mallorca",
+    "municipality": "Port d'Alcúdia",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-109",
+    "name": "Bahía Calpe",
+    "island": "",
+    "municipality": "Alicante",
+    "region": "Valencia"
+  },
+  {
+    "id": "HS-110",
+    "name": "Balneario 1 Port d'Alcudia Sa Sipia",
+    "island": "Mallorca",
+    "municipality": "Alcúdia",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-111",
+    "name": "Balneario 6",
+    "island": "Mallorca",
+    "municipality": "Alcúdia",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-112",
+    "name": "Bar Blau Portocolom",
+    "island": "Mallorca",
+    "municipality": "Felanitx",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-113",
+    "name": "Bar Niza",
+    "island": "Mallorca",
+    "municipality": "Peguera",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-114",
+    "name": "Barcelona Sants",
+    "island": "",
+    "municipality": "Barcelona",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-115",
+    "name": "Barefoot Hotel Mallorca",
+    "island": "Mallorca",
+    "municipality": "Portocolom",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-116",
+    "name": "Barra de Pintxos Calle Fábrica 1 ",
+    "island": "Mallorca",
+    "municipality": "Palma",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-117",
+    "name": "Bauló Mar Suites",
+    "island": "",
+    "municipality": "Can Picafort",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-118",
+    "name": "Beewii Beach Paguera",
+    "island": "",
+    "municipality": "",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-119",
+    "name": "Beewii Portals S'Esponja",
+    "island": "",
+    "municipality": "",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-120",
+    "name": "Bella Pasta",
+    "island": "",
+    "municipality": "",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-121",
+    "name": "Bellamar Aptos",
+    "island": "Mallorca",
+    "municipality": "Pollença",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-122",
+    "name": "Benalma Hotel Costa del Sol",
+    "island": "",
+    "municipality": "Benalmádena, Málaga",
+    "region": "Andalucía"
+  },
+  {
+    "id": "HS-123",
+    "name": "Benalmadena Príncipe",
+    "island": "",
+    "municipality": "Benalmadena",
+    "region": "Andalucía"
+  },
+  {
+    "id": "HS-124",
+    "name": "Benidorm East",
+    "island": "",
+    "municipality": "Benidorm, Alicante",
+    "region": "Valencia"
+  },
+  {
+    "id": "HS-125",
+    "name": "Benidorm Horizon Apartamentos",
+    "island": "",
+    "municipality": "BENIDORM",
+    "region": "Valencia"
+  },
+  {
+    "id": "HS-126",
+    "name": "Benidorm Levante",
+    "island": "",
+    "municipality": "Benidorm",
+    "region": "Valencia"
+  },
+  {
+    "id": "HS-127",
+    "name": "Benidorm Poniente",
+    "island": "",
+    "municipality": "Benidorm",
+    "region": "Valencia"
+  },
+  {
+    "id": "HS-128",
+    "name": "Best Delta",
+    "island": "",
+    "municipality": "",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-129",
+    "name": "Bi Bap",
+    "island": "Mallorca",
+    "municipality": "Palma",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-130",
+    "name": "Bi Bap Manifactura",
+    "island": "",
+    "municipality": "",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-131",
+    "name": "Binibeca Menorca",
+    "island": "Menorca",
+    "municipality": "Sant Lluís",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-132",
+    "name": "Blanes Playa",
+    "island": "",
+    "municipality": "Blanes, Gerona",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-133",
+    "name": "Blau Colonia Sant Jordi",
+    "island": "Mallorca",
+    "municipality": "Colònia de Sant Jordi",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-134",
+    "name": "Blau Punta Reina",
+    "island": "",
+    "municipality": "Cala Anguila-Cala Mendia",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-135",
+    "name": "Bless Hotel Ibiza",
+    "island": "Ibiza",
+    "municipality": "Ibiza",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-136",
+    "name": "Bless Hotel Madrid",
+    "island": "",
+    "municipality": "Madrid",
+    "region": "Madrid"
+  },
+  {
+    "id": "HS-137",
+    "name": "Bo Hotel",
+    "island": "Mallorca",
+    "municipality": "Palma",
+    "region": "Lisboa"
+  },
+  {
+    "id": "HS-138",
+    "name": "Bocoi Portocolom",
+    "island": "Mallorca",
+    "municipality": "Portocolom, Balearic Island",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-139",
+    "name": "Bodega",
+    "island": "Lanzarote",
+    "municipality": "Lanzarote",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-140",
+    "name": "Bonavida Palms",
+    "island": "",
+    "municipality": "Port d'alcudia",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-141",
+    "name": "Bonavida Pins",
+    "island": "",
+    "municipality": "",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-142",
+    "name": "Bonavista de Bonmont",
+    "island": "",
+    "municipality": "Tarragona",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-143",
+    "name": "Bonito Hotel",
+    "island": "Ibiza",
+    "municipality": "Sant Antoni de Port",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-144",
+    "name": "Botel Alcudiamar Club",
+    "island": "Mallorca",
+    "municipality": "Port d'Alcúdia",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-145",
+    "name": "Boutique Hotel Petit Montisión",
+    "island": "Mallorca",
+    "municipality": "Palma",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-146",
+    "name": "Brach Madrid",
+    "island": "",
+    "municipality": "Madrid",
+    "region": "Madrid"
+  },
+  {
+    "id": "HS-147",
+    "name": "Bresca Ibiza",
+    "island": "Ibiza",
+    "municipality": "Eivissa",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-148",
+    "name": "Brisa Marina",
+    "island": "",
+    "municipality": "S'ILLIOT",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-149",
+    "name": "Brismar Hotel",
+    "island": "Mallorca",
+    "municipality": "Andratx",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-150",
+    "name": "Buendía Corralejo Nohotel",
+    "island": "Fuerteventura",
+    "municipality": "Corralejo / Fuerteventura",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-151",
+    "name": "Bull Astoria ",
+    "island": "Gran Canaria",
+    "municipality": "Las Palmas",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-152",
+    "name": "Bull Costa Canarias & Spa",
+    "island": "",
+    "municipality": "Playa San Agustín",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-153",
+    "name": "Bull Dorado Beach & Spa",
+    "island": "Gran Canaria",
+    "municipality": "Arguineguín",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-154",
+    "name": "Bull Escorial & Spa",
+    "island": "Gran Canaria",
+    "municipality": "Maspalomas",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-155",
+    "name": "Bull Eugenia Victoria & Spa",
+    "island": "Gran Canaria",
+    "municipality": "Maspalomas",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-156",
+    "name": "Bull Reina Isabel & Spa",
+    "island": "Gran Canaria",
+    "municipality": "Las Palmas",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-157",
+    "name": "Bull Vitalsuites & Spa",
+    "island": "Gran Canaria",
+    "municipality": "Maspalomas",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-158",
+    "name": "Cala Blanes",
+    "island": "",
+    "municipality": "Isla de Menorca",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-159",
+    "name": "Cala Cristal ",
+    "island": "",
+    "municipality": "Tarragona",
+    "region": "Cataluña"
+  },
+  {
+    "id": "HS-160",
+    "name": "Cala d'or Playa",
+    "island": "Mallorca",
+    "municipality": "Cala D'or",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-161",
+    "name": "Cala Gran Restaurante",
+    "island": "Mallorca",
+    "municipality": "Felanitx",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-162",
+    "name": "Cala Llombards",
+    "island": "Mallorca",
+    "municipality": "Santanyí",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-163",
+    "name": "Can Picafort Palace",
+    "island": "",
+    "municipality": "Can Picafort",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-164",
+    "name": "Can Uetam",
+    "island": "Mallorca",
+    "municipality": "Valldemossa, Illes Baleares",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-165",
+    "name": "Cappuccino Borne",
+    "island": "Mallorca",
+    "municipality": "Palma",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-166",
+    "name": "Cappuccino Madrid",
+    "island": "",
+    "municipality": "Madrid",
+    "region": "Madrid"
+  },
+  {
+    "id": "HS-167",
+    "name": "Cappuccino Marbella",
+    "island": "",
+    "municipality": "Marbella",
+    "region": "Andalucía"
+  },
+  {
+    "id": "HS-168",
+    "name": "Cappuccino Marina Ibiza",
+    "island": "Ibiza",
+    "municipality": "Eivissa",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-169",
+    "name": "Cappuccino Palau March",
+    "island": "Mallorca",
+    "municipality": "Palma",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-170",
+    "name": "Cappuccino Puerto Andratx",
+    "island": "Mallorca",
+    "municipality": "Port d'Andratx",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-171",
+    "name": "Cappuccino Puerto Pollensa",
+    "island": "Mallorca",
+    "municipality": "Port de Pollença",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-172",
+    "name": "Cappuccino Puerto Portals",
+    "island": "",
+    "municipality": "Portals Nous",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-173",
+    "name": "Cappuccino Sant Miquel",
+    "island": "Mallorca",
+    "municipality": "Palma",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-174",
+    "name": "Cappuccino Sevilla",
+    "island": "",
+    "municipality": "Sevilla",
+    "region": "Andalucía"
+  },
+  {
+    "id": "HS-175",
+    "name": "Cappuccino Valencia",
+    "island": "",
+    "municipality": "València",
+    "region": "Valencia"
+  },
+  {
+    "id": "HS-176",
+    "name": "Cappuccino Valldemossa",
+    "island": "Mallorca",
+    "municipality": "Valldemossa",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-177",
+    "name": "Caramelo Palma Beach",
+    "island": "Mallorca",
+    "municipality": "Palma",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-178",
+    "name": "Catalonia Albeniz",
+    "island": "",
+    "municipality": "Barcelona",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-179",
+    "name": "Catalonia Atenas ",
+    "island": "",
+    "municipality": "Barcelona",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-180",
+    "name": "Catalonia Atocha ",
+    "island": "",
+    "municipality": "Madrid",
+    "region": "Madrid"
+  },
+  {
+    "id": "HS-181",
+    "name": "Catalonia Avinyó",
+    "island": "",
+    "municipality": "Barcelona",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-182",
+    "name": "Catalonia Barcelona Beach",
+    "island": "",
+    "municipality": "Barcelona",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-183",
+    "name": "Catalonia Barcelona Plaza",
+    "island": "",
+    "municipality": "Barcelona",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-184",
+    "name": "Catalonia BCN 505",
+    "island": "",
+    "municipality": "Barcelona",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-185",
+    "name": "Catalonia Berlin Mitte ",
+    "island": "",
+    "municipality": "",
+    "region": "Berlín"
+  },
+  {
+    "id": "HS-186",
+    "name": "Catalonia Born ",
+    "island": "",
+    "municipality": "Barcelona",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-187",
+    "name": "Catalonia Bristol ",
+    "island": "",
+    "municipality": "Sant Andreu de la Barca",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-188",
+    "name": "Catalonia Castellnou ",
+    "island": "",
+    "municipality": "Barcelona",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-189",
+    "name": "Catalonia Catedral ",
+    "island": "",
+    "municipality": "Barcelona",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-190",
+    "name": "Catalonia Conde de Floridablanca",
+    "island": "",
+    "municipality": "Murcia",
+    "region": "Murcia "
+  },
+  {
+    "id": "HS-191",
+    "name": "Catalonia Del Mar ",
+    "island": "",
+    "municipality": "Cala Bona",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-192",
+    "name": "Catalonia Diagonal Centro ",
+    "island": "",
+    "municipality": "Barcelona",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-193",
+    "name": "Catalonia Donosti",
+    "island": "",
+    "municipality": "San Sebastián",
+    "region": "País Vasco"
+  },
+  {
+    "id": "HS-194",
+    "name": "Catalonia Eixample 1864",
+    "island": "",
+    "municipality": "Barcelona",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-195",
+    "name": "Catalonia El Pilar ",
+    "island": "",
+    "municipality": "Zaragoza",
+    "region": "Aragón"
+  },
+  {
+    "id": "HS-196",
+    "name": "Catalonia El Retiro",
+    "island": "",
+    "municipality": "Madrid",
+    "region": "Madrid"
+  },
+  {
+    "id": "HS-197",
+    "name": "Catalonia Excelsior ",
+    "island": "",
+    "municipality": "València",
+    "region": "Valencia"
+  },
+  {
+    "id": "HS-198",
+    "name": "Catalonia Giralda ",
+    "island": "",
+    "municipality": "Sevilla",
+    "region": "Andalucía"
+  },
+  {
+    "id": "HS-199",
+    "name": "Catalonia Goya ",
+    "island": "",
+    "municipality": "Madrid",
+    "region": "Madrid"
+  },
+  {
+    "id": "HS-200",
+    "name": "Catalonia Gracia",
+    "island": "",
+    "municipality": "Barcelona",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-201",
+    "name": "Catalonia Gran Hotel Verdi ",
+    "island": "",
+    "municipality": "Sabadell",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-202",
+    "name": "Catalonia Gran Vía BCN",
+    "island": "",
+    "municipality": "Barcelona",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-203",
+    "name": "Catalonia Gran Vía de Bilbao ",
+    "island": "",
+    "municipality": "Bilbo",
+    "region": "País Vasco"
+  },
+  {
+    "id": "HS-204",
+    "name": "Catalonia Gran Vía Madrid ",
+    "island": "",
+    "municipality": "Madrid",
+    "region": "Madrid"
+  },
+  {
+    "id": "HS-205",
+    "name": "Catalonia Granada ",
+    "island": "",
+    "municipality": "Granada",
+    "region": "Andalucía"
+  },
+  {
+    "id": "HS-206",
+    "name": "Catalonia Hispalis ",
+    "island": "",
+    "municipality": "Sevilla",
+    "region": "Andalucía"
+  },
+  {
+    "id": "HS-207",
+    "name": "Catalonia La Boqueria",
+    "island": "",
+    "municipality": "Barcelona",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-208",
+    "name": "Catalonia La Maquinista ",
+    "island": "",
+    "municipality": "Barcelona",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-209",
+    "name": "Catalonia Las Cañas ",
+    "island": "",
+    "municipality": "",
+    "region": "Navarra"
+  },
+  {
+    "id": "HS-210",
+    "name": "Catalonia Las Cortes ",
+    "island": "",
+    "municipality": "Madrid",
+    "region": "Madrid"
+  },
+  {
+    "id": "HS-211",
+    "name": "Catalonia Las Vegas ",
+    "island": "Tenerife",
+    "municipality": "Puerto de la Cruz",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-212",
+    "name": "Catalonia Magdalenes ",
+    "island": "",
+    "municipality": "Barcelona",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-213",
+    "name": "Catalonia Majorica ",
+    "island": "Mallorca",
+    "municipality": "Palma",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-214",
+    "name": "Catalonia Málaga",
+    "island": "",
+    "municipality": "Málaga",
+    "region": "Andalucía"
+  },
+  {
+    "id": "HS-215",
+    "name": "Catalonia Mikado ",
+    "island": "",
+    "municipality": "Barcelona",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-216",
+    "name": "Catalonia Mirador des Port ",
+    "island": "Menorca",
+    "municipality": "Menorca",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-217",
+    "name": "Catalonia Oro Negro ",
+    "island": "Tenerife",
+    "municipality": "Arona",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-218",
+    "name": "Catalonia Park Güell ",
+    "island": "",
+    "municipality": "Barcelona",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-219",
+    "name": "Catalonia Park Puxet ",
+    "island": "",
+    "municipality": "Barcelona",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-220",
+    "name": "Catalonia Passeig de Gracia ",
+    "island": "",
+    "municipality": "Barcelona",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-221",
+    "name": "Catalonia Plaça Catalunya",
+    "island": "",
+    "municipality": "Barcelona",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-222",
+    "name": "Catalonia Plaza España Madrid ",
+    "island": "",
+    "municipality": "Madrid",
+    "region": "Madrid"
+  },
+  {
+    "id": "HS-223",
+    "name": "Catalonia Plaza Mayor Madrid ",
+    "island": "",
+    "municipality": "Madrid",
+    "region": "Madrid"
+  },
+  {
+    "id": "HS-224",
+    "name": "Catalonia Plaza Mayor Salamanca ",
+    "island": "",
+    "municipality": "Salamanca",
+    "region": "Castilla y León "
+  },
+  {
+    "id": "HS-225",
+    "name": "Catalonia Port",
+    "island": "",
+    "municipality": "Barcelona",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-226",
+    "name": "Catalonia Portal de l'Àngel ",
+    "island": "",
+    "municipality": "Barcelona",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-227",
+    "name": "Catalonia Porto ",
+    "island": "",
+    "municipality": "",
+    "region": "Porto "
+  },
+  {
+    "id": "HS-228",
+    "name": "Catalonia Puerta del Mar",
+    "island": "",
+    "municipality": "Málaga",
+    "region": "Andalucía"
+  },
+  {
+    "id": "HS-229",
+    "name": "Catalonia Puerta del Sol ",
+    "island": "",
+    "municipality": "Madrid",
+    "region": "Madrid"
+  },
+  {
+    "id": "HS-230",
+    "name": "Catalonia Punta del Rey ",
+    "island": "",
+    "municipality": "Las Caletillas",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-231",
+    "name": "Catalonia Ramblas ",
+    "island": "",
+    "municipality": "Barcelona",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-232",
+    "name": "Catalonia Reina Victoria ",
+    "island": "",
+    "municipality": "Ronda",
+    "region": "Andalucía"
+  },
+  {
+    "id": "HS-233",
+    "name": "Catalonia Renaissance Fira ",
+    "island": "",
+    "municipality": "L'Hospitalet de Llobregat",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-234",
+    "name": "Catalonia Rigoletto ",
+    "island": "",
+    "municipality": "Barcelona",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-235",
+    "name": "Catalonia Roma ",
+    "island": "",
+    "municipality": "Barcelona",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-236",
+    "name": "Catalonia Ronda ",
+    "island": "",
+    "municipality": "Ronda",
+    "region": "Andalucía"
+  },
+  {
+    "id": "HS-237",
+    "name": "Catalonia Royal Ses Estaques ",
+    "island": "Ibiza",
+    "municipality": "Santa Eulària des Riu",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-238",
+    "name": "Catalonia Sabadell ",
+    "island": "",
+    "municipality": "Sabadell",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-239",
+    "name": "Catalonia Sagrada Familia ",
+    "island": "",
+    "municipality": "Barcelona",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-240",
+    "name": "Catalonia Santa Justa ",
+    "island": "",
+    "municipality": "Sevilla",
+    "region": "Andalucía"
+  },
+  {
+    "id": "HS-241",
+    "name": "Catalonia Ses Estaques ",
+    "island": "Ibiza",
+    "municipality": "Santa Eulària des Riu",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-242",
+    "name": "Catalonia Square",
+    "island": "",
+    "municipality": "Barcelona",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-243",
+    "name": "Central de Producción Santi Taura",
+    "island": "Mallorca",
+    "municipality": "Lloseta, Palma de Mallorca",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-244",
+    "name": "Centre de Dia de Son Carrió",
+    "island": "Mallorca",
+    "municipality": "Sant Llorenç des Cardassar",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-245",
+    "name": "Chiringuito Cala Major",
+    "island": "Mallorca",
+    "municipality": "Palma",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-246",
+    "name": "Chiringuito Cala Marçal",
+    "island": "Mallorca",
+    "municipality": "Felanitx",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-247",
+    "name": "Chiringuito Cala Sa Nau",
+    "island": "Mallorca",
+    "municipality": "Felanitx",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-248",
+    "name": "Chiringuito S'arenal Lluchmayor ",
+    "island": "Mallorca",
+    "municipality": "Llucmajor",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-249",
+    "name": "Chiringuito S'arenal Portocolom",
+    "island": "Mallorca",
+    "municipality": "Felanitx",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-250",
+    "name": "Claudia By Nura",
+    "island": "Mallorca",
+    "municipality": "Campos",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-251",
+    "name": "Club de Golf Vallromanes",
+    "island": "",
+    "municipality": "Vallromanes,",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-252",
+    "name": "Club Marmara del Mar",
+    "island": "",
+    "municipality": "PortoCristo",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-253",
+    "name": "Club Monte Anfi",
+    "island": "Gran Canaria",
+    "municipality": "Las palmas",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-254",
+    "name": "Club Puerto de Anfi",
+    "island": "Gran Canaria",
+    "municipality": "Las Palmas",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-255",
+    "name": "Cocina Central",
+    "island": "Mallorca",
+    "municipality": "Felanitx",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-256",
+    "name": "Cocina Central Anfi",
+    "island": "Gran Canaria",
+    "municipality": "Mogán",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-257",
+    "name": "Cocina Central Cappuccino",
+    "island": "Mallorca",
+    "municipality": "Palma",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-258",
+    "name": "Comarruga",
+    "island": "",
+    "municipality": "San Salvador, Tarragona",
+    "region": "Cataluña"
+  },
+  {
+    "id": "HS-259",
+    "name": "Condesa",
+    "island": "Mallorca",
+    "municipality": "Alcúdia",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-260",
+    "name": "Cook and Events",
+    "island": "Gran Canaria",
+    "municipality": "San Bartolomé de Tirajana",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-261",
+    "name": "Cook’s Club Calviá Beach",
+    "island": "",
+    "municipality": "Torrenova",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-262",
+    "name": "COR Barra i Taula",
+    "island": "Mallorca",
+    "municipality": "Palma, Illes Balears",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-263",
+    "name": "Corallium Beach",
+    "island": "Gran Canaria",
+    "municipality": "San Bartolomé de Tirajana",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-264",
+    "name": "Corallium Dunamar​",
+    "island": "Gran Canaria",
+    "municipality": "San Bartolomé de Tirajana",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-265",
+    "name": "Costa Café Palma de Mallorca",
+    "island": "Mallorca",
+    "municipality": "Palma",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-266",
+    "name": "Costa Málaga Torremolinos",
+    "island": "",
+    "municipality": "Málaga",
+    "region": "Andalucía"
+  },
+  {
+    "id": "HS-267",
+    "name": "Cristine Bedfor Sevilla",
+    "island": "",
+    "municipality": "Sevilla",
+    "region": "Andalucía"
+  },
+  {
+    "id": "HS-268",
+    "name": "Crowne Plaza Madrid - Centre Retiro",
+    "island": "",
+    "municipality": "Madrid",
+    "region": "Madrid"
+  },
+  {
+    "id": "HS-269",
+    "name": "Deya",
+    "island": "",
+    "municipality": "Santa Ponsa",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-270",
+    "name": "EIX Alcudia Hotel",
+    "island": "Mallorca",
+    "municipality": "Port d'Alcúdia",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-271",
+    "name": "EIX Lagotel Holiday Resort",
+    "island": "Mallorca",
+    "municipality": "Playa de Muro",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-272",
+    "name": "EIX Platja Daurada Hotel & Spa",
+    "island": "",
+    "municipality": "Can Picafort",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-273",
+    "name": "El Autor Hotel Madrid",
+    "island": "",
+    "municipality": "",
+    "region": "Madrid"
+  },
+  {
+    "id": "HS-274",
+    "name": "El Chaval Beach Club",
+    "island": "",
+    "municipality": "",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-275",
+    "name": "El Kiosko Baleares",
+    "island": "Mallorca",
+    "municipality": "Inca",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-276",
+    "name": "El Llorenç Parc de la Mar",
+    "island": "Mallorca",
+    "municipality": "Palma de Mallorca",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-277",
+    "name": "El Puerto Fuengirola",
+    "island": "",
+    "municipality": "Málaga",
+    "region": "Andalucía"
+  },
+  {
+    "id": "HS-278",
+    "name": "El Vicenç",
+    "island": "",
+    "municipality": "Cala Sant Vicenç",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-279",
+    "name": "Empuriabrava Marina",
+    "island": "",
+    "municipality": "Empuriabrava",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-280",
+    "name": "Engel&Völkers ",
+    "island": "",
+    "municipality": "",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-281",
+    "name": "Es Figueral Nou",
+    "island": "Mallorca",
+    "municipality": "Montuïri",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-282",
+    "name": "Es Gremi",
+    "island": "Mallorca",
+    "municipality": "Palma",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-283",
+    "name": "Estartit Playa",
+    "island": "",
+    "municipality": "Estartit Gerona",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-284",
+    "name": "Europe Playa Marina",
+    "island": "",
+    "municipality": "Mallorca - Islas Baleares",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-285",
+    "name": "Europe Villa Cortés",
+    "island": "Tenerife",
+    "municipality": "Arona - Tenerife",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-286",
+    "name": "Fairmont La Hacienda",
+    "island": "",
+    "municipality": "San Roque",
+    "region": "Andalucía"
+  },
+  {
+    "id": "HS-287",
+    "name": "Fet a Soller",
+    "island": "",
+    "municipality": "",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-288",
+    "name": "Fiesta Hotel Tanit",
+    "island": "Ibiza",
+    "municipality": "Sant Antoni de Portmany, Illes Balears",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-289",
+    "name": "Fil suites ",
+    "island": "Mallorca",
+    "municipality": "Palma",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-290",
+    "name": "Finca Banyols",
+    "island": "",
+    "municipality": "",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-291",
+    "name": "Finca Cabrita",
+    "island": "",
+    "municipality": "",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-292",
+    "name": "Flacalco ",
+    "island": "Mallorca",
+    "municipality": "Cala Ratjada",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-293",
+    "name": "Forn i Pastisseria Terrasa ",
+    "island": "Mallorca",
+    "municipality": "Santanyí",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-294",
+    "name": "Fundación las Medulas",
+    "island": "",
+    "municipality": "",
+    "region": "Castilla y León "
+  },
+  {
+    "id": "HS-295",
+    "name": "Garbí Cala Millor",
+    "island": "Mallorca",
+    "municipality": "Cala Millor",
+    "region": "Baleares- Mallorca"
+  },
+  {
+    "id": "HS-296",
+    "name": "Globales América",
+    "island": "",
+    "municipality": "",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-297",
+    "name": "Globales Apartamentos Cala Viñas",
+    "island": "",
+    "municipality": "Cala Vinyes",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-298",
+    "name": "Globales Apartamentos Nova",
+    "island": "Mallorca",
+    "municipality": "Palmanova",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-299",
+    "name": "Globales Apartamentos Verdemar",
+    "island": "Mallorca",
+    "municipality": "Santa Ponça",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-300",
+    "name": "Globales Cala Bona",
+    "island": "",
+    "municipality": "Cala Bona",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-301",
+    "name": "Globales Cala Viñas Hotel",
+    "island": "",
+    "municipality": "Cala Vinyes",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-302",
+    "name": "Globales Condes de Alcudia",
+    "island": "Mallorca",
+    "municipality": "Port d'Alcúdia",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-303",
+    "name": "Globales Costa de la Calma",
+    "island": "",
+    "municipality": "Costa de la Calma",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-304",
+    "name": "Globales Don Pedro",
+    "island": "",
+    "municipality": "Cala Sant Vicenç",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-305",
+    "name": "Globales Maioris",
+    "island": "",
+    "municipality": "Puigderrós",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-306",
+    "name": "Globales Mimosa",
+    "island": "Mallorca",
+    "municipality": "Palmanova",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-307",
+    "name": "Globales Palmanova",
+    "island": "Mallorca",
+    "municipality": "Palmanova",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-308",
+    "name": "Globales Palmanova Palace",
+    "island": "Mallorca",
+    "municipality": "Palmanova",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-309",
+    "name": "Globales Panamá",
+    "island": "Mallorca",
+    "municipality": "Palmanova",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-310",
+    "name": "Globales Samoa",
+    "island": "",
+    "municipality": "Cales de Mallorca",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-311",
+    "name": "Globales Simar",
+    "island": "",
+    "municipality": "Cala Sant Vicenç",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-312",
+    "name": "Globales Torrenova",
+    "island": "",
+    "municipality": "Torrenova",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-313",
+    "name": "Gold by Marina",
+    "island": "Gran Canaria",
+    "municipality": "Maspalomas",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-314",
+    "name": "Golf de S'Horta",
+    "island": "Mallorca",
+    "municipality": "Felanitx",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-315",
+    "name": "Gran Anfi",
+    "island": "Gran Canaria",
+    "municipality": "Mogán",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-316",
+    "name": "Gran Hotel Mas d'en Bruno",
+    "island": "",
+    "municipality": "Torroja del Priorat",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-317",
+    "name": "Gran Marbella Resort and Beach Club",
+    "island": "",
+    "municipality": "Marbella",
+    "region": "Andalucía"
+  },
+  {
+    "id": "HS-318",
+    "name": "Grand Hotel Centenari, Valencia, Autograph Collection",
+    "island": "",
+    "municipality": "València",
+    "region": "Valencia"
+  },
+  {
+    "id": "HS-319",
+    "name": "Grand Palladium Palace Ibiza Resort & Spa",
+    "island": "Mallorca",
+    "municipality": "Sant Jordi de ses Salines, Balearic Islands",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-320",
+    "name": "Grand Palladium Sicilia Resort & Spa",
+    "island": "",
+    "municipality": "Campofelice di Roccella",
+    "region": "Sicilia"
+  },
+  {
+    "id": "HS-321",
+    "name": "Grand Palladium White Island Resort & Spa",
+    "island": "Mallorca",
+    "municipality": "Sant Jordi de ses Salines, Illes Balears",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-322",
+    "name": "Grums Hotel & Spa",
+    "island": "",
+    "municipality": "Barcelona",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-323",
+    "name": "H10 Atlantic Sunset Horizons Collection",
+    "island": "",
+    "municipality": "",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-324",
+    "name": "H10 Big Sur",
+    "island": "Tenerife",
+    "municipality": "Los Cristianos",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-325",
+    "name": "H10 Blue Mar Boutique Hotel",
+    "island": "Mallorca",
+    "municipality": "Andratx",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-326",
+    "name": "H10 Casa Mimosa",
+    "island": "",
+    "municipality": "Barcelona",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-327",
+    "name": "H10 Casanova",
+    "island": "",
+    "municipality": "Barcelona",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-328",
+    "name": "H10 Conquistador",
+    "island": "",
+    "municipality": "Playa de la América",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-329",
+    "name": "H10 Costa Adeje Palace",
+    "island": "",
+    "municipality": "La Caleta",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-330",
+    "name": "H10 Costa Mogán",
+    "island": "Gran Canaria",
+    "municipality": "Mogán",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-331",
+    "name": "H10 Gran Tinerfe",
+    "island": "Tenerife",
+    "municipality": "Costa Adeje",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-332",
+    "name": "H10 Lanzarote Princess",
+    "island": "Lanzarote",
+    "municipality": "Playa Blanca",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-333",
+    "name": "H10 Las Palmeras",
+    "island": "",
+    "municipality": "Playa de la Américas",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-334",
+    "name": "H10 Madison",
+    "island": "",
+    "municipality": "Barcelona",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-335",
+    "name": "H10 Montcada",
+    "island": "",
+    "municipality": "Barcelona",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-336",
+    "name": "H10 Ocean Dreams",
+    "island": "Gran Canaria",
+    "municipality": "Corralejo , Las Palmas",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-337",
+    "name": "H10 Ocean Dunas",
+    "island": "Gran Canaria",
+    "municipality": "Corralejo, Las Palmas",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-338",
+    "name": "H10 Ocean Suites",
+    "island": "Gran Canaria",
+    "municipality": "Corralejo Las Palmas",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-339",
+    "name": "H10 Playa Esmeralda",
+    "island": "",
+    "municipality": "FUERTEVENTURA",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-340",
+    "name": "H10 Playa Meloneras Horizons Collection",
+    "island": "Gran Canaria",
+    "municipality": "Gran Canaria",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-341",
+    "name": "H10 Port Vell",
+    "island": "",
+    "municipality": "Barcelona",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-342",
+    "name": "H10 Racó del Pi",
+    "island": "",
+    "municipality": "Barcelona",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-343",
+    "name": "H10 Rubicón Horizons Collection",
+    "island": "Lanzarote",
+    "municipality": "Montaña Roja",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-344",
+    "name": "H10 Suites Lanzarote Gardens",
+    "island": "Lanzarote",
+    "municipality": "Costa Teguise",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-345",
+    "name": "H10 Taburiente Playa ",
+    "island": "La Palma",
+    "municipality": "Breña Baja",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-346",
+    "name": "H10 Tenerife Playa",
+    "island": "Tenerife",
+    "municipality": "Puerto de la Cruz,",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-347",
+    "name": "H10 Timanfaya Palace",
+    "island": "",
+    "municipality": "Montaña Roja",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-348",
+    "name": "H10 Tindaya",
+    "island": "Fuerteventura",
+    "municipality": "Costa Calma",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-349",
+    "name": "H10 Universitat",
+    "island": "",
+    "municipality": "Barcelona",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-350",
+    "name": "H10 White Suites Boutique Hotel",
+    "island": "Lanzarote",
+    "municipality": "Playa Blanca",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-351",
+    "name": "Hamacas Cala Ferrera",
+    "island": "Mallorca",
+    "municipality": "Felanitx",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-352",
+    "name": "Hard Rock Hotel Ibiza",
+    "island": "Ibiza",
+    "municipality": "Ibiza",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-353",
+    "name": "Hard Rock Hotel Marbella",
+    "island": "",
+    "municipality": "Malaga",
+    "region": "Andalucía"
+  },
+  {
+    "id": "HS-354",
+    "name": "Hard Rock Hotel Tenerife",
+    "island": "Tenerife",
+    "municipality": "Adeje",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-355",
+    "name": "Healthy Poke Alexandre",
+    "island": "Mallorca",
+    "municipality": "Palma de Mallorca",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-356",
+    "name": "Healthy Poke Picasso",
+    "island": "Mallorca",
+    "municipality": "Palma",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-357",
+    "name": "Hospital Universitario de Canarias",
+    "island": "Tenerife",
+    "municipality": "La Laguna",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-358",
+    "name": "Hostería de La Rábida",
+    "island": "",
+    "municipality": "La Rábida, Huelva",
+    "region": "Andalucía"
+  },
+  {
+    "id": "HS-359",
+    "name": "Hotel Agua Beach",
+    "island": "Mallorca",
+    "municipality": "Palmanova",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-360",
+    "name": "Hotel Aguere",
+    "island": "Tenerife",
+    "municipality": "La Laguna",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-361",
+    "name": "Hotel Antigua Palma",
+    "island": "Mallorca",
+    "municipality": "Palma de Mallorca",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-362",
+    "name": "Hotel Basílica",
+    "island": "Mallorca",
+    "municipality": "Palma",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-363",
+    "name": "Hotel Cádiz Bahía",
+    "island": "",
+    "municipality": "Tomares, Sevilla",
+    "region": "Andalucía"
+  },
+  {
+    "id": "HS-364",
+    "name": "Hotel Cala d´Or",
+    "island": "Mallorca",
+    "municipality": "Cala D'or",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-365",
+    "name": "Hotel Cappuccino - Palma",
+    "island": "Mallorca",
+    "municipality": "Palma",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-366",
+    "name": "Hotel Circulo Gran Vía, Autograph",
+    "island": "",
+    "municipality": "Madrid",
+    "region": "Madrid"
+  },
+  {
+    "id": "HS-367",
+    "name": "Hotel Cort",
+    "island": "Mallorca",
+    "municipality": "Palma",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-368",
+    "name": "Hotel Cupidor",
+    "island": "",
+    "municipality": "Paguera",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-369",
+    "name": "Hotel El Cid",
+    "island": "",
+    "municipality": "Sitges",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-370",
+    "name": "Hotel El Cortijo de Zahara",
+    "island": "",
+    "municipality": "Zahara de los Atunes",
+    "region": "Andalucía"
+  },
+  {
+    "id": "HS-371",
+    "name": "Hotel Event",
+    "island": "",
+    "municipality": "Tarifa",
+    "region": "Canarias - Fuerteventura"
+  },
+  {
+    "id": "HS-372",
+    "name": "Hotel Faro, a Lopesan Collection Hotel",
+    "island": "Gran Canaria",
+    "municipality": "Meloneras",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-373",
+    "name": "Hotel Figueres Pirineos",
+    "island": "",
+    "municipality": "Figueres",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-374",
+    "name": "Hotel Galeon y Galeon-Pavillon",
+    "island": "",
+    "municipality": "Sitges",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-375",
+    "name": "Hotel Gayá",
+    "island": "",
+    "municipality": "Paguera",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-376",
+    "name": "Hotel Hacienda Son Antem Golf Resort, Autograph Collection",
+    "island": "",
+    "municipality": "",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-377",
+    "name": "Hotel Horitzó",
+    "island": "",
+    "municipality": "Blanes",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-378",
+    "name": "Hotel Indigo Barcelona Plaza Espana",
+    "island": "",
+    "municipality": "Barcelona",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-379",
+    "name": "Hotel Kramer",
+    "island": "",
+    "municipality": "València",
+    "region": "Valencia"
+  },
+  {
+    "id": "HS-380",
+    "name": "Hotel L'Avenida",
+    "island": "Mallorca",
+    "municipality": "Palma",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-381",
+    "name": "Hotel Larios Málaga",
+    "island": "",
+    "municipality": "Málaga",
+    "region": "Andalucía"
+  },
+  {
+    "id": "HS-382",
+    "name": "Hotel Madrid Retiro",
+    "island": "",
+    "municipality": "Madrid",
+    "region": "Madrid"
+  },
+  {
+    "id": "HS-383",
+    "name": "Hotel Malcom and Barret",
+    "island": "",
+    "municipality": "València",
+    "region": "Valencia"
+  },
+  {
+    "id": "HS-384",
+    "name": "Hotel Martorell",
+    "island": "Mallorca",
+    "municipality": "Colònia de Sant Jordi",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-385",
+    "name": "Hotel Minister",
+    "island": "Mallorca",
+    "municipality": "Port de Sóller",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-386",
+    "name": "Hotel Nou Baleares",
+    "island": "Mallorca",
+    "municipality": "Palma",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-387",
+    "name": "Hotel Palacio de Santa Clara, Autograph",
+    "island": "",
+    "municipality": "València",
+    "region": "Valencia"
+  },
+  {
+    "id": "HS-388",
+    "name": "Hotel Palacio de Santa Paula, Autograph",
+    "island": "",
+    "municipality": "Granada",
+    "region": "Andalucía"
+  },
+  {
+    "id": "HS-389",
+    "name": "Hotel Palacio del Carmen, Autograph",
+    "island": "",
+    "municipality": "Santiago de Compostela",
+    "region": "Galicia"
+  },
+  {
+    "id": "HS-390",
+    "name": "Hotel Palacio del Retiro, Autograph",
+    "island": "",
+    "municipality": "Madrid",
+    "region": "Madrid"
+  },
+  {
+    "id": "HS-391",
+    "name": "Hotel Palacio Tondon, Autograph Collection",
+    "island": "",
+    "municipality": "Briñas",
+    "region": "La Rioja "
+  },
+  {
+    "id": "HS-392",
+    "name": "Hotel Platjador",
+    "island": "",
+    "municipality": "Sitges",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-393",
+    "name": "Hotel Portofino Mallorca",
+    "island": "Mallorca",
+    "municipality": "Palma",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-394",
+    "name": "Hotel Querencia de Sevilla,  Autograph Collection",
+    "island": "",
+    "municipality": "Sevilla",
+    "region": "Andalucía"
+  },
+  {
+    "id": "HS-395",
+    "name": "Hotel Rocamar Benidorm",
+    "island": "",
+    "municipality": "Benidorm",
+    "region": "Valencia"
+  },
+  {
+    "id": "HS-396",
+    "name": "Hotel Rosella",
+    "island": "Mallorca",
+    "municipality": "Sa Coma",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-397",
+    "name": "Hotel Salino Port Soller",
+    "island": "Mallorca",
+    "municipality": "Port de Sóller",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-398",
+    "name": "Hotel Santa Ponsa Pins",
+    "island": "Mallorca",
+    "municipality": "Santa Ponça",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-399",
+    "name": "Hotel Santo Mauro, Luxury",
+    "island": "",
+    "municipality": "Madrid",
+    "region": "Madrid"
+  },
+  {
+    "id": "HS-400",
+    "name": "Hotel Saratoga",
+    "island": "Mallorca",
+    "municipality": "Palma",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-401",
+    "name": "Hotel Sultán",
+    "island": "",
+    "municipality": "Can Picafort, Mallorca",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-402",
+    "name": "Hotel Tarifa Lances",
+    "island": "",
+    "municipality": "Tarifa",
+    "region": "Andalucía"
+  },
+  {
+    "id": "HS-403",
+    "name": "Hotel Tenerife Golf & Sea View",
+    "island": "",
+    "municipality": "Golf del Sur",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-404",
+    "name": "Hotel Terrassa Confort",
+    "island": "",
+    "municipality": "Terrassa",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-405",
+    "name": "Hotel TUI BLUE Zahara Beach",
+    "island": "",
+    "municipality": "Zahara de los Atunes",
+    "region": "Andalucía"
+  },
+  {
+    "id": "HS-406",
+    "name": "Hotel Villa Singala",
+    "island": "Mallorca",
+    "municipality": "Port de Pollença, Illes Balears",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-407",
+    "name": "HSLAB ESP",
+    "island": "",
+    "municipality": "",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-408",
+    "name": "Iberostar Heritage Grand Mencey",
+    "island": "Tenerife",
+    "municipality": "Santa Cruz de Tenerife",
+    "region": "Canarias - Tenerife"
+  },
+  {
+    "id": "HS-409",
+    "name": "Iberostar Real Novo Sancti Petri Golf Club",
+    "island": "",
+    "municipality": "Urb",
+    "region": "Andalucía"
+  },
+  {
+    "id": "HS-410",
+    "name": "Iberostar Selection Albufera Park",
+    "island": "Mallorca",
+    "municipality": "Playa del Muro",
+    "region": "Baleares- Mallorca"
+  },
+  {
+    "id": "HS-411",
+    "name": "Iberostar Selection Albufera Playa",
+    "island": "Mallorca",
+    "municipality": "Alcúdia",
+    "region": "Baleares- Mallorca"
+  },
+  {
+    "id": "HS-412",
+    "name": "Iberostar Selection Andalucía Playa",
+    "island": "",
+    "municipality": "Chiclana de la Frontera",
+    "region": "Andalucía- Cádiz"
+  },
+  {
+    "id": "HS-413",
+    "name": "Iberostar Selection Anthelia",
+    "island": "Tenerife",
+    "municipality": "Costa Adeje",
+    "region": "Canarias - Tenerife"
+  },
+  {
+    "id": "HS-414",
+    "name": "Iberostar Selection Creta Marine",
+    "island": "",
+    "municipality": "",
+    "region": "Creta"
+  },
+  {
+    "id": "HS-415",
+    "name": "Iberostar Selection Diar El Andalous",
+    "island": "",
+    "municipality": "",
+    "region": "Túnez"
+  },
+  {
+    "id": "HS-416",
+    "name": "Iberostar Selection Eolia Djerba",
+    "island": "",
+    "municipality": "",
+    "region": "Túnez"
+  },
+  {
+    "id": "HS-417",
+    "name": "Iberostar Selection Es Trenc",
+    "island": "Mallorca",
+    "municipality": "Colònia de Sant Jordi",
+    "region": "Baleares- Mallorca"
+  },
+  {
+    "id": "HS-418",
+    "name": "Iberostar Selection Fuerteventura Palace",
+    "island": "",
+    "municipality": "Las Gaviotas",
+    "region": "Canarias - Fuerteventura"
+  },
+  {
+    "id": "HS-419",
+    "name": "Iberostar Selection Jardín del Sol Suites",
+    "island": "Mallorca",
+    "municipality": "Calvià",
+    "region": "Baleares- Mallorca"
+  },
+  {
+    "id": "HS-420",
+    "name": "Iberostar Selection Kantaoui Bay",
+    "island": "",
+    "municipality": "",
+    "region": "Túnez"
+  },
+  {
+    "id": "HS-421",
+    "name": "Iberostar Selection Kuriat Palace",
+    "island": "",
+    "municipality": "",
+    "region": "Túnez"
+  },
+  {
+    "id": "HS-422",
+    "name": "Iberostar Selection Lagos Algarve",
+    "island": "",
+    "municipality": "",
+    "region": "Algarve"
+  },
+  {
+    "id": "HS-423",
+    "name": "Iberostar Selection Lanzarote Park",
+    "island": "Lanzarote",
+    "municipality": "Playa Blanca",
+    "region": "Canarias - Lanzarote"
+  },
+  {
+    "id": "HS-424",
+    "name": "Iberostar Selection Lisboa",
+    "island": "",
+    "municipality": "",
+    "region": "Lisboa"
+  },
+  {
+    "id": "HS-425",
+    "name": "Iberostar Selection Llaut Palma",
+    "island": "Mallorca",
+    "municipality": "Palma",
+    "region": "Baleares- Mallorca"
+  },
+  {
+    "id": "HS-426",
+    "name": "Iberostar Selection Marbella Coral Beach",
+    "island": "",
+    "municipality": "Marbella",
+    "region": "Andalucía- Málaga"
+  },
+  {
+    "id": "HS-427",
+    "name": "Iberostar Selection Mirage Hammamet",
+    "island": "",
+    "municipality": "",
+    "region": "Túnez"
+  },
+  {
+    "id": "HS-428",
+    "name": "Iberostar Selection Playa de Muro Village",
+    "island": "Mallorca",
+    "municipality": "Playa de Muro",
+    "region": "Baleares- Mallorca"
+  },
+  {
+    "id": "HS-429",
+    "name": "Iberostar Selection Playa de Palma",
+    "island": "Mallorca",
+    "municipality": "Palma",
+    "region": "Baleares- Mallorca"
+  },
+  {
+    "id": "HS-430",
+    "name": "Iberostar Selection Royal El Mansour",
+    "island": "",
+    "municipality": "",
+    "region": "Túnez"
+  },
+  {
+    "id": "HS-431",
+    "name": "Iberostar Selection Sábila",
+    "island": "Tenerife",
+    "municipality": "Costa Adeje",
+    "region": "Canarias - Tenerife"
+  },
+  {
+    "id": "HS-432",
+    "name": "Iberostar Selection Santa Eulalia Ibiza",
+    "island": "",
+    "municipality": "Santa Eulalia del Río",
+    "region": "Baleares- Ibiza"
+  },
+  {
+    "id": "HS-433",
+    "name": "Iberostar Waves Alcudia Park",
+    "island": "Tenerife",
+    "municipality": "Playa de",
+    "region": "Baleares- Mallorca"
+  },
+  {
+    "id": "HS-434",
+    "name": "Iberostar Waves Averroes",
+    "island": "",
+    "municipality": "",
+    "region": "Túnez"
+  },
+  {
+    "id": "HS-435",
+    "name": "Iberostar Waves Bahía de Palma",
+    "island": "Tenerife",
+    "municipality": "Playa de",
+    "region": "Baleares- Mallorca"
+  },
+  {
+    "id": "HS-436",
+    "name": "Iberostar Waves Bellevue",
+    "island": "",
+    "municipality": "",
+    "region": "Montenegro"
+  },
+  {
+    "id": "HS-437",
+    "name": "Iberostar Waves Bouganville Playa",
+    "island": "Tenerife",
+    "municipality": "Costa Adeje",
+    "region": "Canarias - Tenerife"
+  },
+  {
+    "id": "HS-438",
+    "name": "Iberostar Waves Cala Domingos",
+    "island": "",
+    "municipality": "Cala Domingos",
+    "region": "Baleares- Mallorca"
+  },
+  {
+    "id": "HS-439",
+    "name": "Iberostar Waves Cala Millor",
+    "island": "Mallorca",
+    "municipality": "Cala Millor",
+    "region": "Baleares- Mallorca"
+  },
+  {
+    "id": "HS-440",
+    "name": "Iberostar Waves Ciudad Blanca",
+    "island": "Mallorca",
+    "municipality": "Alcúdia",
+    "region": "Baleares- Mallorca"
+  },
+  {
+    "id": "HS-441",
+    "name": "Iberostar Waves Club Cala Barca",
+    "island": "",
+    "municipality": "Barca Trencada",
+    "region": "Baleares- Mallorca"
+  },
+  {
+    "id": "HS-442",
+    "name": "Iberostar Waves Club Palmeraie Marrakech",
+    "island": "",
+    "municipality": "",
+    "region": "Morocco"
+  },
+  {
+    "id": "HS-443",
+    "name": "Iberostar Waves Creta Panorama & Mare",
+    "island": "",
+    "municipality": "",
+    "region": "Creta"
+  },
+  {
+    "id": "HS-444",
+    "name": "Iberostar Waves Cristina",
+    "island": "Mallorca",
+    "municipality": "Playa de Palma",
+    "region": "Baleares- Mallorca"
+  },
+  {
+    "id": "HS-445",
+    "name": "Iberostar Waves Founty Beach",
+    "island": "",
+    "municipality": "",
+    "region": "Morocco"
+  },
+  {
+    "id": "HS-446",
+    "name": "Iberostar Waves Gaviotas Park",
+    "island": "",
+    "municipality": "Jandia",
+    "region": "Canarias - Fuerteventura"
+  },
+  {
+    "id": "HS-447",
+    "name": "Iberostar Waves Herceg Novi",
+    "island": "",
+    "municipality": "",
+    "region": "Montenegro"
+  },
+  {
+    "id": "HS-448",
+    "name": "Iberostar Waves Las Dalias",
+    "island": "Tenerife",
+    "municipality": "Costa Adeje",
+    "region": "Canarias - Tenerife"
+  },
+  {
+    "id": "HS-449",
+    "name": "Iberostar Waves Málaga Playa",
+    "island": "",
+    "municipality": "Torrox Costa",
+    "region": "Andalucía- Málaga"
+  },
+  {
+    "id": "HS-450",
+    "name": "Iberostar Waves Mehari Djerba",
+    "island": "",
+    "municipality": "",
+    "region": "Túnez"
+  },
+  {
+    "id": "HS-451",
+    "name": "Iberostar Waves Pinos Park",
+    "island": "",
+    "municipality": "Font de Sa Cala",
+    "region": "Baleares- Mallorca"
+  },
+  {
+    "id": "HS-452",
+    "name": "Iberostar Waves Playa de Muro",
+    "island": "Mallorca",
+    "municipality": "Playa de Muro",
+    "region": "Baleares- Mallorca"
+  },
+  {
+    "id": "HS-453",
+    "name": "Iberostar Waves Playa Gaviotas",
+    "island": "",
+    "municipality": "",
+    "region": "Canarias - Fuerteventura"
+  },
+  {
+    "id": "HS-454",
+    "name": "Iberostar Waves Royal Andalus",
+    "island": "",
+    "municipality": "Chiclana de la Frontera",
+    "region": "Andalucía- Cádiz"
+  },
+  {
+    "id": "HS-455",
+    "name": "Iberostar Waves Saïdia",
+    "island": "",
+    "municipality": "",
+    "region": "Morocco"
+  },
+  {
+    "id": "HS-456",
+    "name": "Iberostar Waves Slavija",
+    "island": "",
+    "municipality": "",
+    "region": "Montenegro"
+  },
+  {
+    "id": "HS-457",
+    "name": "IFA Altamarena",
+    "island": "Fuerteventura",
+    "municipality": "Morro Jable",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-458",
+    "name": "Ikos Andalusia",
+    "island": "",
+    "municipality": "Estepona",
+    "region": "Andalucía"
+  },
+  {
+    "id": "HS-459",
+    "name": "Ikos Porto Petro",
+    "island": "",
+    "municipality": "Portopetro",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-460",
+    "name": "Il Forno Via Mare",
+    "island": "Mallorca",
+    "municipality": "Can Pastilla",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-461",
+    "name": "Instituto Canario de Investigaciones Agrarias",
+    "island": "Tenerife",
+    "municipality": "La Laguna",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-462",
+    "name": "Isla Mallorca",
+    "island": "",
+    "municipality": "Cales de Mallorca",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-463",
+    "name": "Jevule Restaurante",
+    "island": "Gran Canaria",
+    "municipality": "San Bartolomé de Tirajana",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-464",
+    "name": "JOIA El Mirador by Iberostar",
+    "island": "Tenerife",
+    "municipality": "Costa Adeje",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-465",
+    "name": "Juniper Serra",
+    "island": "",
+    "municipality": "",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-466",
+    "name": "JW Marriott Hotel Madrid",
+    "island": "",
+    "municipality": "Madrid",
+    "region": "Madrid"
+  },
+  {
+    "id": "HS-467",
+    "name": "Kamaleónico",
+    "island": "",
+    "municipality": "",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-468",
+    "name": "Kumara Serenoa",
+    "island": "Gran Canaria",
+    "municipality": "Maspalomas",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-469",
+    "name": "Kyrat Amarac",
+    "island": "Mallorca",
+    "municipality": "Son Servera",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-470",
+    "name": "Kyrat Amarac Suites",
+    "island": "Mallorca",
+    "municipality": "Son Servera",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-471",
+    "name": "L'Artista Can Pastilla",
+    "island": "Mallorca",
+    "municipality": "Can Pastilla",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-472",
+    "name": "L'Artista Central de Producción",
+    "island": "",
+    "municipality": "",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-473",
+    "name": "L'Artista Paseo Marítimo",
+    "island": "Mallorca",
+    "municipality": "Palma",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-474",
+    "name": "L'Artista Son Moix ",
+    "island": "Mallorca",
+    "municipality": "Palma",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-475",
+    "name": "La Isla Café (World Duty Free Group, SAU)",
+    "island": "Mallorca",
+    "municipality": "Palma",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-476",
+    "name": "La Quinta Food",
+    "island": "",
+    "municipality": "Barcelona",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-477",
+    "name": "Làlia",
+    "island": "Mallorca",
+    "municipality": "Palma",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-478",
+    "name": "Lavandería Interhotelera",
+    "island": "Gran Canaria",
+    "municipality": "San Bartolomé de Tirajana",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-479",
+    "name": "Leonardo Hotel Port Portals",
+    "island": "Mallorca",
+    "municipality": "Son Servera",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-480",
+    "name": "Leonardo Royal Hotel Barcelona Forum",
+    "island": "",
+    "municipality": "Barcelona",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-481",
+    "name": "Lindner Golf Resort Portals Nous",
+    "island": "",
+    "municipality": "Portals Nous",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-482",
+    "name": "Lizarann Mallorca Fashion Outlet",
+    "island": "Mallorca",
+    "municipality": "Marratxí",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-483",
+    "name": "Lloret Santa Rosa",
+    "island": "",
+    "municipality": "Girona",
+    "region": "Cataluña"
+  },
+  {
+    "id": "HS-484",
+    "name": "Lobster Club",
+    "island": "",
+    "municipality": "Portals Nous",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-485",
+    "name": "Lopesan Baobab",
+    "island": "Gran Canaria",
+    "municipality": "Meloneras",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-486",
+    "name": "Lopesan Central Bellavista",
+    "island": "Gran Canaria",
+    "municipality": "San Bartolomé de Tirajana",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-487",
+    "name": "Lopesan Costa Meloneras",
+    "island": "Gran Canaria",
+    "municipality": "Meloneras",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-488",
+    "name": "Lopesan Villa del Conde",
+    "island": "Gran Canaria",
+    "municipality": "Meloneras",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-489",
+    "name": "L´Hermitage Hotel&Spa",
+    "island": "",
+    "municipality": "Orient",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-490",
+    "name": "M House",
+    "island": "Mallorca",
+    "municipality": "Palma",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-491",
+    "name": "Madrid Eurobuilding 2",
+    "island": "",
+    "municipality": "Madrid",
+    "region": "Madrid"
+  },
+  {
+    "id": "HS-492",
+    "name": "María 5 Restaurant ",
+    "island": "",
+    "municipality": "",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-493",
+    "name": "Mariant",
+    "island": "",
+    "municipality": "s'illiot",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-494",
+    "name": "Mariant Park",
+    "island": "Mallorca",
+    "municipality": "Sa Coma",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-495",
+    "name": "Marina Bayview",
+    "island": "Gran Canaria",
+    "municipality": "Puerto Rico",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-496",
+    "name": "Marina Suites",
+    "island": "Gran Canaria",
+    "municipality": "Puerto Rico",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-497",
+    "name": "Marino Portixol",
+    "island": "",
+    "municipality": "",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-498",
+    "name": "Marport ",
+    "island": "Mallorca",
+    "municipality": "Felanitx",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-499",
+    "name": "Mas que Menos FAN Mallorca",
+    "island": "Mallorca",
+    "municipality": "Palma de Mallorca",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-500",
+    "name": "Maurici Park Apartamentos ",
+    "island": "",
+    "municipality": "Empuriabrava",
+    "region": "Cataluña"
+  },
+  {
+    "id": "HS-501",
+    "name": "Medium Romàntic Sitges",
+    "island": "",
+    "municipality": "Sitges",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-502",
+    "name": "Medium Sitges Park",
+    "island": "",
+    "municipality": "Sitges",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-503",
+    "name": "Medium Valencia",
+    "island": "",
+    "municipality": "València",
+    "region": "Valencia"
+  },
+  {
+    "id": "HS-504",
+    "name": "Meloneras Golf Club",
+    "island": "Gran Canaria",
+    "municipality": "Las Palmas",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-505",
+    "name": "MIM Baqueira",
+    "island": "",
+    "municipality": "Baqueira",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-506",
+    "name": "MIM Mallorca",
+    "island": "",
+    "municipality": "S'Illot",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-507",
+    "name": "Mirador del Castillo",
+    "island": "",
+    "municipality": "Benidorm",
+    "region": "Murcia "
+  },
+  {
+    "id": "HS-508",
+    "name": "Monterrey Roses",
+    "island": "",
+    "municipality": "Roses Girona",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-509",
+    "name": "Morvedra Nou - Only Adults",
+    "island": "",
+    "municipality": "",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-510",
+    "name": "Mynd Adeje",
+    "island": "",
+    "municipality": "Callao Salvaje",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-511",
+    "name": "Mynd Yaiza",
+    "island": "Gran Canaria",
+    "municipality": "Playa Blanca, Las Palmas",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-512",
+    "name": "Na Petra",
+    "island": "Mallorca",
+    "municipality": "Felanitx",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-513",
+    "name": "Nativo Hotel Ibiza",
+    "island": "Ibiza",
+    "municipality": "Ibiza",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-514",
+    "name": "Negresco",
+    "island": "",
+    "municipality": "",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-515",
+    "name": "Nobu Hotel Ibiza Bay",
+    "island": "",
+    "municipality": "",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-516",
+    "name": "Nuevo Portil Golf",
+    "island": "",
+    "municipality": "Nuevo Portil Cartaya",
+    "region": "Andalucía"
+  },
+  {
+    "id": "HS-517",
+    "name": "Nura Boreal",
+    "island": "Mallorca",
+    "municipality": "Palma",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-518",
+    "name": "Nura Condór",
+    "island": "Mallorca",
+    "municipality": "Palma",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-519",
+    "name": "OD Barcelona",
+    "island": "",
+    "municipality": "Barcelona",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-520",
+    "name": "OD Sevilla",
+    "island": "",
+    "municipality": "Sevilla",
+    "region": "Andalucía"
+  },
+  {
+    "id": "HS-521",
+    "name": "OKU Ibiza",
+    "island": "Ibiza",
+    "municipality": "Sant Antoni de Portmany",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-522",
+    "name": "Olé Tropical Tenerife",
+    "island": "Tenerife",
+    "municipality": "Costa Adeje",
+    "region": "Canarias - Tenerife"
+  },
+  {
+    "id": "HS-523",
+    "name": "Olive Beach ",
+    "island": "",
+    "municipality": "",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-524",
+    "name": "Om Thalasso Villa del Conde ",
+    "island": "Gran Canaria",
+    "municipality": "San Bartolomé de Tirajana",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-525",
+    "name": "Ona Palmira Paguera",
+    "island": "Mallorca",
+    "municipality": "Peguera",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-526",
+    "name": "Ona Palmira Paradise",
+    "island": "Mallorca",
+    "municipality": "Peguera",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-527",
+    "name": "Only You Atocha Restaurante",
+    "island": "",
+    "municipality": "Madrid",
+    "region": "Madrid"
+  },
+  {
+    "id": "HS-528",
+    "name": "Only YOU Boutique Hotel",
+    "island": "",
+    "municipality": "Madrid",
+    "region": "Madrid"
+  },
+  {
+    "id": "HS-529",
+    "name": "Only YOU Hotel Atocha",
+    "island": "",
+    "municipality": "Madrid",
+    "region": "Madrid"
+  },
+  {
+    "id": "HS-530",
+    "name": "Only YOU Hotel Málaga",
+    "island": "",
+    "municipality": "Málaga",
+    "region": "Andalucía"
+  },
+  {
+    "id": "HS-531",
+    "name": "Only YOU Hotel Sevilla",
+    "island": "",
+    "municipality": "Sevilla",
+    "region": "Andalucía"
+  },
+  {
+    "id": "HS-532",
+    "name": "Only You Valencia",
+    "island": "",
+    "municipality": "Valencia",
+    "region": "Valencia"
+  },
+  {
+    "id": "HS-533",
+    "name": "Operador Hermanos Villegas",
+    "island": "",
+    "municipality": "",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-534",
+    "name": "Origo Mare",
+    "island": "",
+    "municipality": "Lajares",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-535",
+    "name": "Paguera Treff Boutique Hotel",
+    "island": "Mallorca",
+    "municipality": "Peguera",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-536",
+    "name": "Palacio de Congresos",
+    "island": "Gran Canaria",
+    "municipality": "San Bartolomé de Tirajana",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-537",
+    "name": "Palladium Hotel Cala Llonga",
+    "island": "",
+    "municipality": "Cala Llonga, Illes Balears",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-538",
+    "name": "Palladium Hotel Don Carlos",
+    "island": "Ibiza",
+    "municipality": "Santa Eulària des Riu, Illes Balears",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-539",
+    "name": "Palladium Hotel Menorca",
+    "island": "Menorca",
+    "municipality": "Menorca",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-540",
+    "name": "Palladium Hotel Palmyra",
+    "island": "Ibiza",
+    "municipality": "Sant Antoni de Portmany, Illes Balears",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-541",
+    "name": "Palmera Sur Restaurante",
+    "island": "Gran Canaria",
+    "municipality": "San Bartolomé de Tirajana",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-542",
+    "name": "Panadería Lozano",
+    "island": "Mallorca",
+    "municipality": "Palma",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-543",
+    "name": "Park Club Europe",
+    "island": "Tenerife",
+    "municipality": "Arona - Tenerife",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-544",
+    "name": "Parquemar aptos",
+    "island": "",
+    "municipality": "Cala d´Or",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-545",
+    "name": "Pasta e Pesto",
+    "island": "Mallorca",
+    "municipality": "Palma",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-546",
+    "name": "Petit Hotel Son Penya",
+    "island": "Mallorca",
+    "municipality": "Sant Llorenç des Cardassar",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-547",
+    "name": "Playa Binibeca",
+    "island": "",
+    "municipality": "",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-548",
+    "name": "Playa Cala Comtessa",
+    "island": "Mallorca",
+    "municipality": "Calvià",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-549",
+    "name": "Playa Cala en Porter",
+    "island": "",
+    "municipality": "",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-550",
+    "name": "Playa Cas Saboners Aptos",
+    "island": "Mallorca",
+    "municipality": "Calvià",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-551",
+    "name": "Playa Es Carregador",
+    "island": "Mallorca",
+    "municipality": "Calvià",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-552",
+    "name": "Playa Llucmajor",
+    "island": "Mallorca",
+    "municipality": "Llucmajor",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-553",
+    "name": "Playa Oratori",
+    "island": "Mallorca",
+    "municipality": "Santanyí",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-554",
+    "name": "Playa Palmira",
+    "island": "Mallorca",
+    "municipality": "Calvià",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-555",
+    "name": "Playa Punta Prima",
+    "island": "Menorca",
+    "municipality": "Sant Lluís",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-556",
+    "name": "Playa Son Bou",
+    "island": "",
+    "municipality": "",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-557",
+    "name": "Playa Xinxell",
+    "island": "Mallorca",
+    "municipality": "Calvià",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-558",
+    "name": "Plus Fariones Apartamentos",
+    "island": "Gran Canaria",
+    "municipality": "Puerto del Carmen, Las Palmas",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-559",
+    "name": "Plus Fariones Suite Hotel",
+    "island": "Lanzarote",
+    "municipality": "Puerto del Carmen",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-560",
+    "name": "Polideportivo Germans Escalas",
+    "island": "",
+    "municipality": "",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-561",
+    "name": "Port Salins Empuriabrava",
+    "island": "",
+    "municipality": "Empuriabrava, Girona",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-562",
+    "name": "Portals Hills Boutique Hotel",
+    "island": "",
+    "municipality": "Portals Nous",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-563",
+    "name": "Portofino Apartamentos ",
+    "island": "",
+    "municipality": "Santa Ponsa",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-564",
+    "name": "Potabilizadora",
+    "island": "Ibiza",
+    "municipality": "Sant Josep de sa Talaia",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-565",
+    "name": "Presentuoso",
+    "island": "",
+    "municipality": "",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-566",
+    "name": "Privado",
+    "island": "",
+    "municipality": "",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-567",
+    "name": "Puerto Alcudiamar",
+    "island": "Mallorca",
+    "municipality": "Alcúdia",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-568",
+    "name": "Puerto de la Luz",
+    "island": "Gran Canaria",
+    "municipality": "Las Palmas de Gran Canaria",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-569",
+    "name": "Puerto de Soller",
+    "island": "Mallorca",
+    "municipality": "Sóller",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-570",
+    "name": "Quiosco Cala Comtesa",
+    "island": "",
+    "municipality": "",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-571",
+    "name": "Quiosco Oratori",
+    "island": "",
+    "municipality": "",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-572",
+    "name": "Radisson Blu Arguineguin",
+    "island": "",
+    "municipality": "Arguineguin",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-573",
+    "name": "Radisson Blu Lanzarote",
+    "island": "Lanzarote",
+    "municipality": "Lanzarote",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-574",
+    "name": "Radisson Blu Mogán",
+    "island": "",
+    "municipality": "Lomo Quiebre",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-575",
+    "name": "Radisson Blu Tenerife ",
+    "island": "Tenerife",
+    "municipality": "Puerto de la Cruz",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-576",
+    "name": "Restaurante Alubia",
+    "island": "Mallorca",
+    "municipality": "Palma",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-577",
+    "name": "Restaurante Amú",
+    "island": "",
+    "municipality": "",
+    "region": "Andalucía"
+  },
+  {
+    "id": "HS-578",
+    "name": "Restaurante Atlantico",
+    "island": "Gran Canaria",
+    "municipality": "San Bartolomé de Tirajana,",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-579",
+    "name": "Restaurante Ayre Acapulco Ocean View",
+    "island": "Gran Canaria",
+    "municipality": "San Bartolomé de Tirajana",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-580",
+    "name": "Restaurante Camarinas Mazagón",
+    "island": "",
+    "municipality": "Mazagón",
+    "region": "Andalucía"
+  },
+  {
+    "id": "HS-581",
+    "name": "Restaurante El Aljibe del Obispo",
+    "island": "Lanzarote",
+    "municipality": "Yaiza, Lanzarote, España",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-582",
+    "name": "Restaurante El Puerto",
+    "island": "Gran Canaria",
+    "municipality": "San Bartolomé de Tirajana",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-583",
+    "name": "Restaurante Khun Gran Bahia",
+    "island": "Gran Canaria",
+    "municipality": "Mogán",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-584",
+    "name": "Restaurante La Cascada",
+    "island": "",
+    "municipality": "",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-585",
+    "name": "Restaurante La Llonja",
+    "island": "Mallorca",
+    "municipality": "Port de Pollença",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-586",
+    "name": "Restaurante La Posada",
+    "island": "Gran Canaria",
+    "municipality": "Mogán",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-587",
+    "name": "Restaurante Madunia",
+    "island": "Ibiza",
+    "municipality": "Sant Antoni de Portmany",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-588",
+    "name": "Restaurante Monte Vista",
+    "island": "Gran Canaria",
+    "municipality": "Mogán",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-589",
+    "name": "Restaurante Nelson",
+    "island": "",
+    "municipality": "Arinaga",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-590",
+    "name": "Restaurante Nube Steak House",
+    "island": "",
+    "municipality": "",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-591",
+    "name": "Restaurante Poke",
+    "island": "Gran Canaria",
+    "municipality": "Mogán",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-592",
+    "name": "Restaurante Puerto Vista",
+    "island": "",
+    "municipality": "",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-593",
+    "name": "Restaurante Samar",
+    "island": "Mallorca",
+    "municipality": "Son Servera,",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-594",
+    "name": "Restaurante Sunset",
+    "island": "Gran Canaria",
+    "municipality": "Maspalomas",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-595",
+    "name": "Restaurante Tropicana",
+    "island": "Gran Canaria",
+    "municipality": "Mogán",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-596",
+    "name": "Restaurante&Waves",
+    "island": "Gran Canaria",
+    "municipality": "San Bartolomé de Tirajana",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-597",
+    "name": "Ritzi Restaurant",
+    "island": "",
+    "municipality": "Portals Nous",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-598",
+    "name": "Robinson Club Jandia Playa",
+    "island": "Fuerteventura",
+    "municipality": "Morro Jable",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-599",
+    "name": "Robinson Esquinzo Playa",
+    "island": "",
+    "municipality": "",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-600",
+    "name": "Room Mate Alba",
+    "island": "",
+    "municipality": "Madrid",
+    "region": "Madrid"
+  },
+  {
+    "id": "HS-601",
+    "name": "Room Mate Alicia",
+    "island": "",
+    "municipality": "Madrid",
+    "region": "Madrid"
+  },
+  {
+    "id": "HS-602",
+    "name": "Room Mate Anna",
+    "island": "",
+    "municipality": "Barcelona",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-603",
+    "name": "Room Mate Carla",
+    "island": "",
+    "municipality": "Barcelona",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-604",
+    "name": "Room Mate Cosmo ",
+    "island": "",
+    "municipality": "València",
+    "region": "Valencia"
+  },
+  {
+    "id": "HS-605",
+    "name": "Room Mate Gerard",
+    "island": "",
+    "municipality": "Barcelona",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-606",
+    "name": "Room Mate Gorka",
+    "island": "",
+    "municipality": "Donostia",
+    "region": "País Vasco"
+  },
+  {
+    "id": "HS-607",
+    "name": "Room Mate Helen Berger ",
+    "island": "",
+    "municipality": "València",
+    "region": "Valencia"
+  },
+  {
+    "id": "HS-608",
+    "name": "Room Mate Leo",
+    "island": "",
+    "municipality": "Granada",
+    "region": "Andalucía"
+  },
+  {
+    "id": "HS-609",
+    "name": "Room Mate Macarena",
+    "island": "",
+    "municipality": "Madrid",
+    "region": "Madrid"
+  },
+  {
+    "id": "HS-610",
+    "name": "Room Mate Mario",
+    "island": "",
+    "municipality": "Madrid",
+    "region": "Madrid"
+  },
+  {
+    "id": "HS-611",
+    "name": "Room Mate Óscar",
+    "island": "",
+    "municipality": "Madrid",
+    "region": "Madrid"
+  },
+  {
+    "id": "HS-612",
+    "name": "Room Mate Pau",
+    "island": "",
+    "municipality": "Barcelona",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-613",
+    "name": "Room Mate Valeria",
+    "island": "",
+    "municipality": "Málaga",
+    "region": "Andalucía"
+  },
+  {
+    "id": "HS-614",
+    "name": "Rooms Ciencias",
+    "island": "",
+    "municipality": "València",
+    "region": "Valencia"
+  },
+  {
+    "id": "HS-615",
+    "name": "Roquetas De Mar",
+    "island": "",
+    "municipality": "Roquetas de Mar, Almería",
+    "region": "Andalucía"
+  },
+  {
+    "id": "HS-616",
+    "name": "Roquetas El Palmeral",
+    "island": "",
+    "municipality": "Roquetas de Mar, Almería",
+    "region": "Andalucía"
+  },
+  {
+    "id": "HS-617",
+    "name": "Sa Llotja Cala d’Or",
+    "island": "Mallorca",
+    "municipality": "Santanyí",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-618",
+    "name": "Sa Llotja Portocolom",
+    "island": "Mallorca",
+    "municipality": "Portocolom",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-619",
+    "name": "Salobre Hotel Resort & Serenity",
+    "island": "Gran Canaria",
+    "municipality": "Maspalomas",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-620",
+    "name": "Salou Apartamentos",
+    "island": "",
+    "municipality": "Salou",
+    "region": "Cataluña"
+  },
+  {
+    "id": "HS-621",
+    "name": "Salou Sunset ",
+    "island": "",
+    "municipality": "Salou, Tarragona",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-622",
+    "name": "Schwaiger",
+    "island": "Mallorca",
+    "municipality": "Palma, Balearic Islands",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-623",
+    "name": "Sevilla",
+    "island": "",
+    "municipality": "Sevilla",
+    "region": "Andalucía"
+  },
+  {
+    "id": "HS-624",
+    "name": "Sholeo Lodges Las Palmas Flats",
+    "island": "Gran Canaria",
+    "municipality": "Las Palmas de Gran Canaria",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-625",
+    "name": "Sholeo Lodges Maspalomas",
+    "island": "Gran Canaria",
+    "municipality": "Las Palmas de Gran Canaria",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-626",
+    "name": "Sholeo Los Gigantes",
+    "island": "",
+    "municipality": "Puerto de Santiago",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-627",
+    "name": "Sidecar Restaurante",
+    "island": "Gran Canaria",
+    "municipality": "San Bartolomé de Tirajana",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-628",
+    "name": "Sorrento Apartamentos",
+    "island": "",
+    "municipality": "Santa Ponsa",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-629",
+    "name": "Steigenberger Camp de Mar",
+    "island": "",
+    "municipality": "Camp de Mar",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-630",
+    "name": "Stella Maris",
+    "island": "Ibiza",
+    "municipality": "Sant Antoni de Portmany",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-631",
+    "name": "Suculenta Port de Sóller ",
+    "island": "",
+    "municipality": "Puerto de Soller",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-632",
+    "name": "Sun Club El Dorado ",
+    "island": "",
+    "municipality": "Cabo Regana",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-633",
+    "name": "Sunset Suites By Bull Hotels",
+    "island": "Gran Canaria",
+    "municipality": "San Bartolomé de Tirajana",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-634",
+    "name": "T 1057 Enrique Tomas Aeropuerto Sant Joan Palma de Mallorca",
+    "island": "Mallorca",
+    "municipality": "Palma",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-635",
+    "name": "T. 149 Enrique Tomas CC Fashion Outlet",
+    "island": "",
+    "municipality": "",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-636",
+    "name": "T.1026 Et Aeropuerto Sant Joan Palma de Mallorca",
+    "island": "Mallorca",
+    "municipality": "Palma",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-637",
+    "name": "T.1027 Enrique Tomás Foodies Aeropuerto Sant Joan",
+    "island": "Mallorca",
+    "municipality": "Palma",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-638",
+    "name": "T.1040 Enrique Tomás Foodies Aeropuerto De Ibiza",
+    "island": "Ibiza",
+    "municipality": "Sant Josep de sa Talaia",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-639",
+    "name": "T.1058 Enrique Tomás Aeropuerto Sant Joan",
+    "island": "Mallorca",
+    "municipality": "Palma",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-640",
+    "name": "T.396 Enrique Tomas Ibiza",
+    "island": "Ibiza",
+    "municipality": "Eivissa",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-641",
+    "name": "Tacande Portals - Costa",
+    "island": "",
+    "municipality": "",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-642",
+    "name": "Tacande Portals - Mar",
+    "island": "",
+    "municipality": "Bendinat",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-643",
+    "name": "Tahini Marbella Sushi Bar & Restaurant",
+    "island": "",
+    "municipality": "Malaga",
+    "region": "Andalucía"
+  },
+  {
+    "id": "HS-644",
+    "name": "Tahini Puerto Portals",
+    "island": "",
+    "municipality": "Portals Nous",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-645",
+    "name": "Tarifa Suites",
+    "island": "",
+    "municipality": "Tarifa",
+    "region": "Andalucía"
+  },
+  {
+    "id": "HS-646",
+    "name": "Terrazas Costa del Sol",
+    "island": "",
+    "municipality": "Málaga",
+    "region": "Andalucía"
+  },
+  {
+    "id": "HS-647",
+    "name": "Tienda Gourmet",
+    "island": "Lanzarote",
+    "municipality": "Yaiza, Lanzarote, España",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-648",
+    "name": "Tiki Bar ",
+    "island": "",
+    "municipality": "",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-649",
+    "name": "Trendhotel Alcudia",
+    "island": "Mallorca",
+    "municipality": "Alcúdia",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-650",
+    "name": "TRS Ibiza",
+    "island": "Ibiza",
+    "municipality": "Sant Antoni de Portmany",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-651",
+    "name": "TUI Magic Life",
+    "island": "Fuerteventura",
+    "municipality": "Pájara",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-652",
+    "name": "Ushuaïa Ibiza Beach Hotel",
+    "island": "Ibiza",
+    "municipality": "Sant Jordi de ses Salines",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-653",
+    "name": "Vestige Binidufà",
+    "island": "Menorca",
+    "municipality": "Es Mercadal",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-654",
+    "name": "Vestige Economato",
+    "island": "Menorca",
+    "municipality": "Es Mercadal",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-655",
+    "name": "Vestige Son Ermitá",
+    "island": "Menorca",
+    "municipality": "Alaior",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-656",
+    "name": "Vestige Son Vell",
+    "island": "",
+    "municipality": "",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-657",
+    "name": "Volare Portocolom",
+    "island": "Mallorca",
+    "municipality": "Felanitx",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-658",
+    "name": "Wellies Puerto Portals",
+    "island": "",
+    "municipality": "",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-659",
+    "name": "Zona de Almacén Hard Rock Tenerife",
+    "island": "Tenerife",
+    "municipality": "Adeje",
+    "region": "Canary Islands"
+  }
+]

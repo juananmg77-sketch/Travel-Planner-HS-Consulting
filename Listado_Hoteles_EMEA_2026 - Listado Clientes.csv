@@ -1,0 +1,660 @@
+ID_ESTABLECIMIENTO,Nombre del Establecimiento,Cadena Hotelera,Titular - Propiedad,CIF,País,Comunidad Autónoma,Isla,Municipio,Dirección Completa,Habitaciones,Plazas,Responsable Local,Cargo Local,Email Local,Responsable Corp,Cargo Corp,Email Corp,Edificio Prioritario,Servicio A01,Servicio A02,Servicio A03,Fecha Apertura,Fecha Cierre,STATUS
+HS-001,100 Montaditos Carlos V Ibiza,Quimicral,,,Spain,Balearic Islands,Ibiza,Eivissa,"C/ de Carles V, s/n, 07800 Eivissa, Illes Balears, España",250,250,,,,,,,NO,SI,SI,SI,,,Activo
+HS-002,100 Montaditos FAN Mallorca,Quimicral,,,Spain,Balearic Islands,Mallorca,Palma,"Carrer del Cardenal Rossell, 60, 49, Playa de Palma, 07007 Palma, Balearic Islands",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-003,100 Montaditos Marratxi,Quimicral,,,Spain,Balearic Islands,Mallorca,Marratxinet,"Carrer Gerrers, 52, 07141 Marratxinet, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-004,100 Montaditos Plaza Lorca,Quimicral,,,Spain,Balearic Islands,Mallorca,Palma,"Pl. d'Espanya, 1, Centre, 07002 Palma, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-005,45 Times Barcelona Hotel,Palladium,,,Spain,Catalonia,,Barcelona,"Pl. de Catalunya, 10, L'Eixample, 08002 Barcelona",65,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-006,Abora Buenaventura,Lopesan Hotels,,,Spain,Canary Islands,Gran Canaria,San Bartolomé de Tirajana,"Calle Gánigo, 6, 35100 San Bartolomé de Tirajana, Las Palmas",724,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-007,Abora Catarina,Lopesan Hotels,,,Spain,Canary Islands,Gran Canaria,Maspalomas,"Av. de Tirajana, 1, 35100 Maspalomas, Las Palmas",404,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-008,Abora Continental,Lopesan Hotels,,,Spain,Canary Islands,Gran Canaria,Maspalomas,"Av. de Italia, 2, 35100 Maspalomas, Las Palmas",369,0,,,,,,,NO,SI,SI,SI,,,Activo
+HS-009,Abora Interclub,Lopesan Hotels,,,Spain,Canary Islands,Gran Canaria,San Bartolomé de Tirajana,"C. los Jazmines, 2, 35100 San Bartolomé de Tirajana, Las Palmas",408,0,,,,,,,NO,SI,SI,SI,,,Activo
+HS-010,AC Baqueira Ski Resort,AC Hoteles - Grupo Belagua,,,Spain,Cataluña,,Baqueira,"Avenida Perimetral S/N Urb Val De Ruda, 25598 Baqueira, Lleida",141,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-011,AC Hotel A Coruña,AC Hoteles - Grupo Belagua,,,Spain,Galicia,,A Coruña,"R. Enrique Mariñas Romero, 34, 15009 A Coruña",116,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-012,AC Hotel Aitana,AC Hoteles - Grupo Belagua,,,Spain,Madrid,,Madrid,"P.º de la Castellana, 152, Chamartín, 28046 Madrid",111,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-013,AC Hotel Alcala de Henares,AC Hoteles - Grupo Belagua,,,Spain,Madrid,,Alcalá de Henares,"C/ de Octavio Paz, 25, 28805 Alcalá de Henares, Madrid",99,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-014,AC Hotel Algeciras,AC Hoteles - Grupo Belagua,,,Spain,Andalucía,,Algeciras,"Ctra. Del Rinconcillo Esq, Calle Hermanos Portilla, 11204 Algeciras, Cádiz",108,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-015,AC Hotel Badajoz,AC Hoteles - Grupo Belagua,,,Spain,Extremadura,,Badajoz,"Av. de Elvas, S/N, 06006 Badajoz",85,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-016,AC Hotel Burgos,AC Hoteles - Grupo Belagua,,,Spain,Castilla y León ,,Burgos,"P.º de la Audiencia, 7, 09003 Burgos",59,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-017,AC Hotel by Marriott Alicante,AC Hoteles - Grupo Belagua,,,Spain,Comunidad Valenciana,,Alacant,"Avinguda d'Elx, 3, 03008 Alacant, Alicante",93,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-018,AC Hotel by Marriott Ciudad de Sevilla,AC Hoteles - Grupo Belagua,,,Spain,Andalucía,,Sevilla,"Av. Manuel Siurot, 25, 41013 Sevilla",94,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-019,AC Hotel by Marriott Irla,AC Hoteles - Grupo Belagua,,,Spain,Catalonia,,Barcelona,"Carrer de Calvet, 40-42, Sarrià-Sant Gervasi, 08021 Barcelona",36,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-020,AC Hotel by Marriott Palacio de Santa Ana,AC Hoteles - Grupo Belagua,,,Spain,Castilla y León,,Valladolid,"Cam. de la Flecha, S/N, 47197 Valladolid",83,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-021,AC Hotel Cartagena ,AC Hoteles - Grupo Belagua,,,Spain,Murcia ,,Cartagena,"Calle Real, Pl. Héroes de Cavite, 2, 30201 Cartagena, Murcia",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-022,AC Hotel Ciudad de Toledo,AC Hoteles - Grupo Belagua,,,Spain,Madrid,,Toledo,"Ctra. Circunvalación, 15, 45005 Toledo",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-023,AC Hotel Ciudad de Tudela,AC Hoteles - Grupo Belagua,,,Spain,Navarra,,Tudela,"C. Misericordia, S/N, 31500 Tudela, Navarra",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-024,AC Hotel Ciutat de Palma,AC Hoteles - Grupo Belagua,,,Spain,Balearic Islands,Mallorca,Palma,"Plaça del Pont, 3, Ponent, 07014 Palma, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-025,AC Hotel Córdoba,AC Hoteles - Grupo Belagua,,,Spain,Andalucía,,Córdoba,"Av. de la Libertad, 24, Noroeste, 14006 Córdoba",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-026,AC Hotel Coslada Aeropuerto,AC Hoteles - Grupo Belagua,,,Spain,Madrid,,Madrid,"Cam. de las Rejas, San Blas-Canillejas, 28022 Madrid",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-027,AC Hotel Cuzco,AC Hoteles - Grupo Belagua,,,Spain,Madrid,,Madrid,"P.º de la Castellana, 152, Chamartín, 28046 Madrid",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-028,AC Hotel Diagonal L'Illa,AC Hoteles - Grupo Belagua,,,Spain,Catalonia,,Barcelona,"Av. Diagonal, 555, Les Corts, 08029 Barcelona",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-029,AC Hotel Elda,AC Hoteles - Grupo Belagua,,,Spain,Comunidad Valenciana,,Elda,"Plaza De La Ficia, Av. Chapí, 38, 03600 Elda, Alicante",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-030,AC Hotel Gavá Mar,AC Hoteles - Grupo Belagua,,,Spain,Catalonia,,Gavà,"Carrer dels Tellinaires, 33 - 35, 08850 Gavà, Barcelona",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-031,AC Hotel Gijon,AC Hoteles - Grupo Belagua,,,Spain,Asturias,,Gijón,"Av. de Oviedo, 15, Gijon-Sur, 33211 Gijón, Asturias",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-032,AC Hotel Gran Canaria,AC Hoteles - Grupo Belagua,,,Spain,Canary Islands,Gran Canaria,Las Palmas de Gran Canaria,"C. Eduardo Benot, 3-5, 35007 Las Palmas de Gran Canaria, Las Palmas",668,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-033,AC Hotel Guadalajara,AC Hoteles - Grupo Belagua,,,Spain,Madrid,,Guadalajara,"Av. del Ejército, 6, 19004 Guadalajara",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-034,AC Hotel Huelva,AC Hoteles - Grupo Belagua,,,Spain,Andalucía,,Huelva,"Av. de Andalucía, S/N, 21005 Huelva",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-035,AC Hotel Iberia Las Palmas,AC Hoteles - Grupo Belagua,,,Spain,Canary Islands,Gran Canaria,Las Palmas de Gran Canaria,"Avenida Alcalde J, Av. Alcalde José Ramirez Bethencourt, 8, 35003 Las Palmas de Gran Canaria, Las Palmas",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-036,AC Hotel La Finca,AC Hoteles - Grupo Belagua,,,Spain,Madrid,,Pozuelo de Alarcón,"P° Del Club Deportivo, Parque Empresarial La Finca, 1, Ed. 17, 28223 Pozuelo de Alarcón, Madrid",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-037,AC Hotel La Línea,AC Hoteles - Grupo Belagua,,,Spain,Andalucía,,La Línea de la Concepción,"C. los Caireles, 2, 11300 La Línea de la Concepción, Cádiz",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-038,AC Hotel La Rioja,AC Hoteles - Grupo Belagua,,,Spain,La Rioja ,,Logroño,"C. Madre de Dios, 21, 26004 Logroño, La Rioja",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-039,AC Hotel León San Antonio,AC Hoteles - Grupo Belagua,,,Spain,Castilla y León ,,León,"C. Velázquez, 10, 24005 León",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-040,AC Hotel Los Vascos,AC Hoteles - Grupo Belagua,,,Spain,Madrid,,Madrid,"Los Vascos, 27, Moncloa - Aravaca, 28040 Madrid",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-041,AC Hotel Madrid Feria,AC Hoteles - Grupo Belagua,,,Spain,Madrid,,Madrid,"C. Vía de los Poblados, 3, Hortaleza, 28033 Madrid",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-042,AC Hotel Málaga Palacio,AC Hoteles - Grupo Belagua,,,Spain,Andalucía,,Málaga,"Calle Cortina del Muelle, 1, Distrito Centro, 29015 Málaga",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-043,AC Hotel Murcia,AC Hoteles - Grupo Belagua,,,Spain,Murcia ,,Murcia,"Corner With, Avenida Juan Carlos I, C. Fernando Alonso Navarro, 39, 30009 Murcia",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-044,AC Hotel Oviedo Forum,AC Hoteles - Grupo Belagua,,,Spain,Asturias,,Oviedo,"Plaza De Los Ferroviarios, 1, 33003 Oviedo, Asturias",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-045,AC Hotel Palacio Universal,AC Hoteles - Grupo Belagua,,,Spain,Galicia,,Vigo,"Rúa Cánovas del Castillo, 28, 36202 Vigo, Pontevedra",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-046,AC Hotel Palencia,AC Hoteles - Grupo Belagua,,,Spain,Castilla y León ,,Palencia,"Av. de Cuba, 25, 34004 Palencia",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-047,AC Hotel Ponferrada,AC Hoteles - Grupo Belagua,,,Spain,Castilla y León ,,Ponferrada,"Av. Astorga, 2, 24400 Ponferrada, León",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-048,AC Hotel Recoletos,AC Hoteles - Grupo Belagua,,,Spain,Madrid,,Madrid,"C. de Recoletos, 18, Salamanca, 28001 Madrid",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-049,AC Hotel San Sebastian de Los Reyes,AC Hoteles - Grupo Belagua,,,Spain,Madrid,,San Sebastián de los Reyes,"Av. del Cerro del Águila, 15-17, 28703 San Sebastián de los Reyes, Madrid",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-050,AC Hotel Sant Cugat,AC Hoteles - Grupo Belagua,,,Spain,Catalonia,,,"Plaça de Xavier Cugat, 08174, Barcelona",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-051,AC Hotel Sants,AC Hoteles - Grupo Belagua,,,Spain,Catalonia,,Barcelona,"Pg. Sant Antoni, 36-40, Sants-Montjuïc, 08014 Barcelona",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-052,AC Hotel Sevilla Forum,AC Hoteles - Grupo Belagua,,,Spain,Andalucía,,Sevilla,"C. Luis Fuentes Bejarano, 45, 41020 Sevilla",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-053,AC Hotel Tarragona,AC Hoteles - Grupo Belagua,,,Spain,Cataluña,,Tarragona,"Av. de Roma, 8, 43005 Tarragona",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-054,AC Hotel Tenerife,AC Hoteles - Grupo Belagua,,,Spain,Canary Islands,Tenerife,Santa Cruz de Tenerife,"C. Candelaria, 31, 38003 Santa Cruz de Tenerife",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-055,AC Hotel Valencia,AC Hoteles - Grupo Belagua,,,Spain,Valencia,,València,"Av. de França, 67, Camins al Grau, 46023 València, Valencia",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-056,AC Hotel Zamora,AC Hoteles - Grupo Belagua,,,Spain,Castilla y León ,,Zamora,"Av. del Príncipe de Asturias, 43, 49029 Zamora",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-057,Acta Madfor Madrid,Acta Hotels,,,Spain,Madrid,,Madrid,"P.º de la Florida, 13",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-058,Aethos Mallorca,Aethos Mallorca,,,Spain,Balearic Islands,Mallorca,Peguera,"Carrer Mareselva, 2, 07160 Peguera, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-059,Africa Mar Apth,Africa Mar,,,Spain,Balearic Islands,,Can Picafort,"Ctra. Artà-Alcúdia, 43, 07458 Can Picafort, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-060,Agroturismo Sa Talaia,Palladium,,,Spain,Balearic Islands,Ibiza,"Ses Paisses, Ibiza",Es Puig 8,0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-061,Aguas de Ibiza Hotel,Aguas de Ibiza,,,Spain,Balearic Islands,Ibiza,"Santa Eulària des Riu, Illes Balears","Carrer Salvador Camacho, 14, ",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-062,Aire Catering,Aire Catering,,,Spain,Balearic Islands,Mallorca,Palma,"Local 17, Canal Sant Jordi, Carrer Son Oms, 29, 07610 Palma, Balearic Islands",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-063,Ajuntament de Sant Llorenç,Ajuntament de Sant Llorenç des Cardassar,,,Spain,Balearic Islands,Mallorca,Sant Llorenç des Cardassar,"07530 Sant Llorenç des Cardassar, Illes Balears, España",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-064,Akquaaa Boutique Hotel,Grums y Akquaaa,,,Spain,Catalonia,,Calafell,"Av. Sant Joan de Déu, 119, 43820 Calafell, Tarragona",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-065,Allegro Granada,Pierre et Vacances,,,Spain,Andalucía,,Granada,"Dirección: Av. de Pulianas, 10, Beiro, 18012 Granada",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-066,Allsun Albatros,Allsun Hotels,,,Spain,Canary Islands,Lanzarote,Costa Teguise,"Av. del Jablillo, 7, 35508 Costa Teguise, Las Palmas",0,0,,,,,,,NO,SI,SI,SI,,,Activo
+HS-067,Allsun Bahía del Este,Allsun Hotels,,,Spain,Balearic Islands,Mallorca,Cala Millor,"Avinguda Llevant, 4, 07560 Cala Millor, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-068,Allsun Barlovento,Allsun Hotels,,,Spain,Canary Islands,Fuerteventura,Costa Calma,"Av. Jahn Reisen, 2, 35627 Costa Calma, Las Palmas",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-069,Allsun Bella Paguera,Allsun Hotels,,,Spain,Balearic Islands,Mallorca,Peguera," Carrer José Maria Pemán, 15, 07160 Peguera, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-070,Allsun Borneo,Allsun Hotels,,,Spain,Balearic Islands,Mallorca,Cala Millor,"Carrer de sa Coma de Bolengues, 41, 07810 Cala Millor, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-071,Allsun Coral,Allsun Hotels,,,Spain,Balearic Islands,Mallorca,Port d'Alcúdia,"Carrer de l'Estrella de Mar, s/n, 07410 Port d'Alcúdia, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-072,Allsun Cormorán,Allsun Hotels,,,Spain,Balearic Islands,Mallorca,Peguera,"Carrer Putxet, 2, 07160 Peguera, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-073,Allsun Cristóbal Colón,Allsun Hotels,,,Spain,Balearic Islands,Mallorca,Palma,"Calle Parcelas, 13, Playa de Palma, 07610 Palma, Balearic Islands",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-074,Allsun Eden Alcudia,Allsun Hotels,,,Spain,Balearic Islands,Mallorca,Alcúdia,"Carretera d'Artà, 135, 07410 Alcúdia, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-075,Allsun Eden Playa,Allsun Hotels,,,Spain,Balearic Islands,,,"Av. Platges de Muro, 07458 Mallorca, Illes Balears, España",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-076,Allsun Espléndido,Allsun Hotels,,,Spain,Canary Islands,Gran Canaria,Maspalomas,"Av Touroperador Sunair, 3, 35100 Maspalomas, Las Palmas",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-077,Allsun Esquinzo Beach,Allsun Hotels,,,Spain,Canary Islands,Fuerteventura,Esquinzo,"C. Gran Canaria, 8, 35627 Esquinzo, Las Palmas",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-078,Allsun Estrella de Mar,Allsun Hotels,,,Spain,Balearic Islands,Mallorca,Port d'Alcúdia,"Carrer de l'Estrella de Mar, s/n, 07410 Port d'Alcúdia, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-079,Allsun Illot Park,Allsun Hotels,,,Spain,Balearic Islands,,Cala Lliteres,"Carrer Monturiol, 45, 07580 Cala Lliteres, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-080,Allsun Kontiki,Allsun Hotels,,,Spain,Balearic Islands,Mallorca,Palma,"Carrer de Marbella, 30, Platja de Palma, 07610 Palma, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-081,Allsun Los Hibiscos,Allsun Hotels,,,Spain,Canary Islands,Tenerife,Costa Adeje,"Urbanizacion San Eugenio no name s/n, 38660 Costa Adeje, Santa Cruz de Tenerife",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-082,Allsun Lucana,Allsun Hotels,,,Spain,Canary Islands,Gran Canaria,Maspalomas,"Plaza del Sol, 4, 35100 Maspalomas, Las Palmas",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-083,Allsun Lux de Mar,Allsun Hotels,,,Spain,Balearic Islands,Mallorca,Cala Ratjada,"Avinguda Cala Agulla, 120, 07590 Cala Agulla, Balearic Islands",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-084,Allsun Marena Beach,Allsun Hotels,,,Spain,Balearic Islands,Mallorca,Arenal,"Carrer d'Amílcar, 1, Platja de Palma, 07600 PLAYA DE, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-085,Allsun Orient Beach,Allsun Hotels,,,Spain,Balearic Islands,Mallorca,Sant Llorenç des Cardassar,"Avinguda les Palmeres, 4, 07560 Sant Llorenç des Cardassar, Balearic Islands",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-086,Allsun Orquídea,Allsun Hotels,,,Spain,Balearic Islands,Mallorca,Port d'Alcúdia,"Carrer de les Canyes, 5, 07410 Port d'Alcúdia, Illes Balears",0,0,,,,,,,NO,SI,SI,SI,,,Activo
+HS-087,Allsun Paguera Park,Allsun Hotels,,,Spain,Balearic Islands,Mallorca,Peguera,"Carrer de Palmira, 17, 07160 Peguera, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-088,Allsun Pil.larí,Allsun Hotels,,,Spain,Balearic Islands,Mallorca,Palma,"Carrer de Marbella, 24, Platja de Palma, 07610 Palma, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-089,Allsun Riviera Playa,Allsun Hotels,,,Spain,Balearic Islands,Mallorca,Palma,"Carrer de Marbella, 26, Platja de Palma, 07610 Palma, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-090,Allsun Sumba,Allsun Hotels,,,Spain,Balearic Islands,Mallorca,Cala Millor,"Av. sa Coma, 41, 43, 07560 Cala Millor, Balearic Islands",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-091,Allsun Vera Beach,Allsun Hotels,,,Spain,Balearic Islands,Mallorca,Peguera,"Carrer de Palmira, 10, 07160 Peguera, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-092,Almond Valley,Almond Valley,,,Spain,Balearic Islands,Mallorca,Pollença,"07460 Pollença, Illes Balears, España",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-093,Altea Beach ,Pierre et Vacances,,,Spain,Valencia,,Altea,"Puerto Deportivo Marina Greenwich, Calle Currica, 31",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-094,Altea Port,Pierre et Vacances,,,Spain,Valencia,,Altea,"Calle Currica, 31 ",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-095,Amagatay Menorca,Annua Hoteles,,,Spain,Balearic Islands,Menorca,"Alaior, Balearic Is Menorca","Finca Torralba Gran, Carretera Alaior a Calan Porter s/n, ",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-096,Amê Gastrobeach Club,Marport,,,Spain,Balearic Islands,Mallorca,Cala Millor,"Parc de la Mar, S/N, 07560 Cala Millor, Balearic Islands",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-097,Ametlla de Mallorca,Ametlla de Mallorca,,,Spain,Balearic Islands,,,"Carrer des Cos, 44, 07550 Son Servera, Illes Balears, España",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-098,Andana Restaurante,Maca de Castro,,,Spain,Balearic Islands,,,"Pl. d'Espanya, 6, Llevant, 07002 Palma, Illes Balears, España",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-099,Anfi Beach Club,Anfi Grupo,,,Spain,Canary Islands,Gran Canaria,Las Palmas,"Barranco de la Verga, 35129 Las Palmas",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-100,Anfi Emerald Hotel,Anfi Grupo,,,Spain,Canary Islands,Gran Canaria,Mogán,"Av. Canadá, 35138 Mogán, Las Palmas",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-101,Anfi Tauro Golf,Lopesan Hotels,,,Spain,Canary Islands,,,"Valle de Tauro, s/n, 35138, Las Palmas",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-102,Ansia,Marport,,,Spain,Balearic Islands,Mallorca,"Palma, Illes Balears","Passeig Portitxol, s/n",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-103,Apartamentos Es Trenc,Apartamentos Es Trenc,,,1 España,Baleares- Mallorca,Mallorca,"Colònia de Sant Jordi, Illes Balears","C/ Marina 22, 07638. Colonia de Sant Jordi (Mallorca)",412,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-104,Apartamentos Posidonia,Apartamentos Posidonia,,,Spain,Balearic Islands,Mallorca,Colònia de Sant Jordi,"Carrer Caravel·la, 12, 07638 Colònia de Sant Jordi, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-105,Apartamentos Ros,Pierre et Vacances,,,Spain,Balearic Islands,,,"Carrer des Riu, 37, 07840 Santa Eulària des Riu, Illes Balears, España",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-106,Apartamentos Tivoli,Casus Capital,,,Spain,Canary Islands,,,"Av. de Madrid, 6, Playa del Inglés, Gran Canaria (España",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-107,Apartamentos Zahara Sol,Q Hoteles,,,Spain,Andalucía,,Tarifa,"La Tahona, 43, 11393 Tarifa, Cádiz",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-108,Astoria Playa,Astoria Playa,,,Spain,Balearic Islands,Mallorca,Port d'Alcúdia,"Carrer de l'Astoria, 1, 07400 Port d'Alcúdia, Illes Balears",136,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-109,Bahía Calpe,Pierre et Vacances,,,Spain,Valencia,,Alicante,"Av. Valencia, 24, 03710 Calp, Alicante",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-110,Balneario 1 Port d'Alcudia Sa Sipia,Balneario,,,Spain,Balearic Islands,Mallorca,Alcúdia,"Carrer dels Ànecs, 2, 07458 Muro, Illes Balears, España",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-111,Balneario 6,Alcudiamar ,,,Spain,Balearic Islands,Mallorca,Alcúdia,"Playa de Alcudia s/n, 07400 Alcúdia, Illes Balears, España",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-112,Bar Blau Portocolom,Marport,,,Spain,Balearic Islands,Mallorca,Felanitx,"Carretera Faro, s/n, 07670 Portocolom, Illes Balears, España",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-113,Bar Niza,Aethos Mallorca,,,Spain,Balearic Islands,Mallorca,Peguera,"Calle Nica 9, 07160 Peguera, Calvià, Mallorca España",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-114,Barcelona Sants,Pierre et Vacances,,,Spain,Catalonia,,Barcelona,"Carrer de Sants, n°387 ",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-115,Barefoot Hotel Mallorca,Arcona Hotels - Barefoot ,,,Spain,Balearic Islands,Mallorca,Portocolom,"Carrer de la Pinta, 34, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-116,Barra de Pintxos Calle Fábrica 1 ,Quimicral,,,Spain,Balearic Islands,Mallorca,Palma,"C. de la Fàbrica, 1, Ponent, 07013 Palma, Illes Balears, España",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-117,Bauló Mar Suites,Apartamentos Bauló Mar,,,Spain,Balearic Islands,,Can Picafort,"Av. Son Bauló, 5, 07458 Can Picafort, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-118,Beewii Beach Paguera,Marport,,,Spain,Balearic Islands,,,"Playa Palmira Beach, Paguera",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-119,Beewii Portals S'Esponja,Marport,,,Spain,Balearic Islands,,,Escuela de Vela Portals,0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-120,Bella Pasta,Anfi Grupo,,,Spain,Canary Islands,,,Plaza Anfi,0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-121,Bellamar Aptos,Bellamar,,,Spain,Balearic Islands,Mallorca,Pollença,"Passeig de Londres, 56, 07470 Pollença, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-122,Benalma Hotel Costa del Sol,Benalma Hotel Costa del Sol,,,Spain,Andalucía,,"Benalmádena, Málaga","Carretera Nacional 340, km 217",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-123,Benalmadena Príncipe,Pierre et Vacances,,,Spain,Andalucía,,Benalmadena,"Calle los Girasoles, 8 ",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-124,Benidorm East,Pierre et Vacances,,,Spain,Valencia,,"Benidorm, Alicante","C. de Oslo, 2, 03503 Benidorm, Alicante",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-125,Benidorm Horizon Apartamentos,Pierre et Vacances,,,Spain,Valencia,,BENIDORM,"C. de Viena, 7, 03503 Benidorm, Alicante",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-126,Benidorm Levante,Pierre et Vacances,,,Spain,Valencia,,Benidorm,"Av. de Europa, 22",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-127,Benidorm Poniente,Pierre et Vacances,,,Spain,Valencia,,Benidorm,"Calle Adolfo Suárez, 7",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-128,Best Delta,Best Hotels,,,Spain,Balearic Islands,,,"Urbanización Puig de Ros, s/n, Carrer Tudó, 07609, Balearic Islands",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-129,Bi Bap,Bi Bap,,,Spain,Balearic Islands,Mallorca,Palma,"Plaça del Mercat, 3, 07001 Palma, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-130,Bi Bap Manifactura,Bi Bap,,,Spain,Balearic Islands,,,"Plaça del Mercat, 2 - 3, Centre, 07001 Palma, Illes Balears, España",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-131,Binibeca Menorca,Pierre et Vacances,,,Spain,Balearic Islands,Menorca,Sant Lluís,"Passeig de la Mar, 26, 07711 Sant Lluís, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-132,Blanes Playa,Pierre et Vacances,,,Spain,Catalonia,,"Blanes, Gerona","Passeig de s'Abanell, 32",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-133,Blau Colonia Sant Jordi,Blau,,,Spain,Balearic Islands,Mallorca,Colònia de Sant Jordi,"Camí de Sa Síquia 3, 3, 07638 Colònia de Sant Jordi, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-134,Blau Punta Reina,Blau,,,Spain,Balearic Islands,,Cala Anguila-Cala Mendia,"Plaça de s'Algar, 07680 Cala Anguila-Cala Mendia, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-135,Bless Hotel Ibiza,BLESS Hotels,,,Spain,Balearic Islands,Ibiza,Ibiza,"Av. Cala Nova, s/n, 07849 Ibiza, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-136,Bless Hotel Madrid,BLESS Hotels,,,Spain,Madrid,,Madrid,"C. de Velázquez, 62, Salamanca, 28001 Madrid",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-137,Bo Hotel,Bo Hotel,,,2 Portugal,Lisboa,Mallorca,Palma,"Carrer de Jaume Ferrer, 2, Centre, 07012 Palma, Illes Balears",220,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-138,Bocoi Portocolom,Marport,,,Spain,Balearic Islands,Mallorca,"Portocolom, Balearic Island","Carrer d'En Cristòfor Colom, 11, bajo",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-139,Bodega,Bodega Stratvs,,,Spain,Canary Islands,Lanzarote,Lanzarote,"Carretera Lz Km. 30 La Geria- Uga Km. 18, Yaiza, ",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-140,Bonavida Palms,Grupo Boulevard,,,Spain,Balearic Islands,,Port d'alcudia,Carrer de Minerva 31 07400 Port d'alcudia,0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-141,Bonavida Pins,Grupo Boulevard,,,Spain,Balearic Islands,,,"Carrer de Minerva Nº28, 07400, Puerto de Alcudia",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-142,Bonavista de Bonmont,Pierre et Vacances,,,Spain,Catalonia,,Tarragona,"Carrer de les Terres Noves, 2, 43300 Bonmont Terres Noves, Tarragona",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-143,Bonito Hotel,Aguas de Ibiza,,,Spain,Balearic Islands,Ibiza,Sant Antoni de Port,"Carrer des Molí, 8",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-144,Botel Alcudiamar Club,Alcudiamar ,,,Spain,Balearic Islands,Mallorca,Port d'Alcúdia,"Paseo Marítimo, 1, 07400 Port d'Alcúdia, Balearic Islands",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-145,Boutique Hotel Petit Montisión,Quimicral,,,Spain,Balearic Islands,Mallorca,Palma,C/Socors 3,0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-146,Brach Madrid,Brach Hotels,,,Spain,Madrid,,Madrid,"C.Gran Vía, 20, Centro, 28013 Madrid",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-147,Bresca Ibiza,Quimicral,,,Spain,Balearic Islands,Ibiza,Eivissa,"Passeig de ses Fonts, 3, 07820 Sant Antoni de Portmany, Illes Balears, España",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-148,Brisa Marina,Mariant Hotels,,,Spain,Balearic Islands,,S'ILLIOT,"Passeig Neptú, 15, 07560 S'Illot, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-149,Brismar Hotel,Brismar,,,Spain,Balearic Islands,Mallorca,Andratx,"Av. del Almte. Riera Alemany, 6, Andratx, Islas Baleares",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-150,Buendía Corralejo Nohotel,Satocan Turismo,,,Spain,Canary Islands,Fuerteventura,Corralejo / Fuerteventura,"Calle la Atalaya, 2",227,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-151,Bull Astoria ,Bull Hotels ,,,Spain,Canary Islands,Gran Canaria,Las Palmas,"Calle de, C. Fernando Guanarteme, 54, 35010 Las Palmas de Gran Canaria, Las Palmas",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-152,Bull Costa Canarias & Spa,Bull Hotels ,,,Spain,Canary Islands,,Playa San Agustín,"C. las Retamas, 1, 35100 Playa San Agustín-Gran Canaria, Las Palmas",242,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-153,Bull Dorado Beach & Spa,Bull Hotels ,,,Spain,Canary Islands,Gran Canaria,Arguineguín,"Av. los Canarios, 1, 35120 Arguineguín, Las Palmas",366,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-154,Bull Escorial & Spa,Bull Hotels ,,,Spain,Canary Islands,Gran Canaria,Maspalomas,"Av. de Italia, 6, 35100 Maspalomas, Las Palmas",239,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-155,Bull Eugenia Victoria & Spa,Bull Hotels ,,,Spain,Canary Islands,Gran Canaria,Maspalomas,"Av. de Gran Canaria, 26, 35100 Maspalomas, Las Palmas",162,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-156,Bull Reina Isabel & Spa,Bull Hotels ,,,Spain,Canary Islands,Gran Canaria,Las Palmas,"C. Alfredo L Jones, 40, 35008 Las Palmas de Gran Canaria, Las Palmas",219,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-157,Bull Vitalsuites & Spa,Bull Hotels ,,,Spain,Canary Islands,Gran Canaria,Maspalomas,"Dirección: Av. de Gran Canaria, 80, 35100 Maspalomas, Las Palmas",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-158,Cala Blanes,Pierre et Vacances,,,Spain,Balearic Islands,,Isla de Menorca,AVENIDA DE LA PLAYA S/N - Cala en Blanes,0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-159,Cala Cristal ,Pierre et Vacances,,,Spain,Cataluña,,Tarragona,"Playa Cristal, 9 Miami Playa",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-160,Cala d'or Playa,Cala d'or Playa,,,Spain,Balearic Islands,Mallorca,Cala D'or,"Av. Punta Grossa, 1, 07660 Cala D'or, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-161,Cala Gran Restaurante,Marport,,,Spain,Balearic Islands,Mallorca,Felanitx,"07200 Felanitx, Illes Balears, España",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-162,Cala Llombards,Marport,,,Spain,Balearic Islands,Mallorca,Santanyí,"07690 Cala Llombards, Illes Balears, España",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-163,Can Picafort Palace,Magic Hotels,,,Spain,Balearic Islands,,Can Picafort,"Ctra. Artà-Alcúdia, Km 22, 9, 07458 Can Picafort, Balearic Islands",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-164,Can Uetam,Can Uetam,,,Spain,Balearic Islands,Mallorca,"Valldemossa, Illes Baleares","Carrer de Camí Antic a Palma, 3",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-165,Cappuccino Borne,Grupo Cappuccino,,,Spain,Balearic Islands,Mallorca,Palma,"Pl. del Rei Joan Carles I, 9, Centre, 07012 Palma, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-166,Cappuccino Madrid,Grupo Cappuccino,,,Spain,Madrid,,Madrid,"Pl. de la Independencia, nº 5, Salamanca, 28001 Madrid",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-167,Cappuccino Marbella,Grupo Cappuccino,,,Spain,Andalucía,,Marbella," C. José Meliá, S/N, 29602 Marbella, Málaga",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-168,Cappuccino Marina Ibiza,Grupo Cappuccino,,,Spain,Balearic Islands,Ibiza,Eivissa," Passeig Joan Carles I, 20, 07800 Eivissa, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-169,Cappuccino Palau March,Grupo Cappuccino,,,Spain,Balearic Islands,Mallorca,Palma,"C. del Conquistador, 13, Centre, 07001 Palma, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-170,Cappuccino Puerto Andratx,Grupo Cappuccino,,,Spain,Balearic Islands,Mallorca,Port d'Andratx,"Av. Mateo Bosch, 31, 07157 Port d'Andratx, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-171,Cappuccino Puerto Pollensa,Grupo Cappuccino,,,Spain,Balearic Islands,Mallorca,Port de Pollença,"Passeig d'Anglada Camarasa, 77, 07470 Port de Pollença, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-172,Cappuccino Puerto Portals,Grupo Cappuccino,,,Spain,Balearic Islands,,Portals Nous,"Plaça de Portals, 07181 Portals Nous, Illes Balear",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-173,Cappuccino Sant Miquel,Grupo Cappuccino,,,Spain,Balearic Islands,Mallorca,Palma,"Carrer de Sant Miquel, 53, Centre, 07002 Palma, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-174,Cappuccino Sevilla,Grupo Cappuccino,,,Spain,Andalucía,,Sevilla,"C. San Fernando, 41, Casco Antiguo, 41004 Sevilla",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-175,Cappuccino Valencia,Grupo Cappuccino,,,Spain,Valencia,,València,"Pça. de la Reina, 1, s/n, Ciutat Vella, 46001 València, Valencia",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-176,Cappuccino Valldemossa,Grupo Cappuccino,,,Spain,Balearic Islands,Mallorca,Valldemossa,"Plaça Ramon Llull, 5, 07170 Valldemossa, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-177,Caramelo Palma Beach,Globales,,,Spain,Balearic Islands,Mallorca,Palma,"Carrer de Sant Ramon Nonat, 16, Platja de Palma, 07610 Palma, Illes Balears",318,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-178,Catalonia Albeniz,Catalonia Hotels,,,Spain,Catalonia,,Barcelona,"Carrer d'Aragó, 591, 593, Sant Martí, 08026 Barcelona",49,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-179,Catalonia Atenas ,Catalonia Hotels,,,Spain,Catalonia,,Barcelona,"Avinguda Meridiana, 151, Sant Martí, 08026 Barcelona",218,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-180,Catalonia Atocha ,Catalonia Hotels,,,Spain,Madrid,,Madrid,"C. de Atocha, 81, Centro, 28012 Madrid",138,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-181,Catalonia Avinyó,Catalonia Hotels,,,Spain,Catalonia,,Barcelona,"Carrer d'Avinyó, 16, Ciutat Vella, 08002 Barcelona",89,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-182,Catalonia Barcelona Beach,Catalonia Hotels,,,Spain,Catalonia,,Barcelona,"Carrer d'Espronceda, 6, Sant Martí, 08005 Barcelona",84,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-183,Catalonia Barcelona Plaza,Catalonia Hotels,,,Spain,Catalonia,,Barcelona,Plaza España 6 8,363,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-184,Catalonia BCN 505,Catalonia Hotels,,,Spain,Catalonia,,Barcelona,"C/ de Muntaner, 505, Sarrià-Sant Gervasi, 08022 Barcelona",116,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-185,Catalonia Berlin Mitte ,Catalonia Hotels,,,Germany,Berlín,,,"Köpenicker Str. 80-82, 10179 Berlin, Alemania",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-186,Catalonia Born ,Catalonia Hotels,,,Spain,Catalonia,,Barcelona,"Carrer del Rec Comtal, 16-18, Ciutat Vella, 08003 Barcelona",90,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-187,Catalonia Bristol ,Catalonia Hotels,,,Spain,Catalonia,,Sant Andreu de la Barca,"Via de l'Esport, 4, 08740 Sant Andreu de la Barca, Barcelona",59,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-188,Catalonia Castellnou ,Catalonia Hotels,,,Spain,Catalonia,,Barcelona,"Carrer de Castellnou, 61, Sarrià-Sant Gervasi, 08017 Barcelona",49,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-189,Catalonia Catedral ,Catalonia Hotels,,,Spain,Catalonia,,Barcelona,"Carrer dels Arcs, 10, Ciutat Vella, 08002 Barcelona",73,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-190,Catalonia Conde de Floridablanca,Catalonia Hotels,,,Spain,Murcia ,,Murcia,"C. Princesa, 18, 30002 Murcia",82,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-191,Catalonia Del Mar ,Catalonia Hotels,,,Spain,Balearic Islands,,Cala Bona,"Polígon del Moll, 15, 07550 Cala Bona, Illes Balears",189,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-192,Catalonia Diagonal Centro ,Catalonia Hotels,,,Spain,Catalonia,,Barcelona,"Carrer de Balmes, 142, 146, Eixample, 08008 Barcelona",87,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-193,Catalonia Donosti,Catalonia Hotels,,,Spain,País Vasco,,San Sebastián,"Alto San Bartolome Kalea, 9",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-194,Catalonia Eixample 1864,Catalonia Hotels,,,Spain,Catalonia,,Barcelona,"Carrer de Roger de Llúria, 60, L'Eixample, 08009 Barcelona",124,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-195,Catalonia El Pilar ,Catalonia Hotels,,,Spain,Aragón,,Zaragoza,"C. de la Manifestación, 16, Casco Antiguo, 50003 Zaragoza",65,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-196,Catalonia El Retiro,Catalonia Hotels,,,Spain,Madrid,,Madrid,"Av. de la Ciudad de Barcelona, 113, Retiro, 28007 Madrid",62,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-197,Catalonia Excelsior ,Catalonia Hotels,,,Spain,Valencia,,València,"C/ de la Barcelonina, 5, Ciutat Vella, 46002 València, Valencia",84,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-198,Catalonia Giralda ,Catalonia Hotels,,,Spain,Andalucía,,Sevilla,"Cjón. Sierra Nevada, 3, Casco Antiguo, 41003 Sevilla",108,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-199,Catalonia Goya ,Catalonia Hotels,,,Spain,Madrid,,Madrid,"Calle de Goya, 49, Salamanca, 28001 Madrid",90,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-200,Catalonia Gracia,Catalonia Hotels,,,Spain,Catalonia,,Barcelona,"Carrer de Còrsega, 368, L'Eixample, 08037 Barcelona",79,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-201,Catalonia Gran Hotel Verdi ,Catalonia Hotels,,,Spain,Catalonia,,Sabadell,"Av. de Francesc Macià, 62, 08208 Sabadell, Barcelona",195,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-202,Catalonia Gran Vía BCN,Catalonia Hotels,,,Spain,Catalonia,,Barcelona,"Gran Via de les Corts Catalanes, 550, L'Eixample, 08011 Barcelona",63,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-203,Catalonia Gran Vía de Bilbao ,Catalonia Hotels,,,Spain,País Vasco,,Bilbo,"Gran Vía de Don Diego López de Haro, 73, Abando, 48011 Bilbo, Bizkaia",106,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-204,Catalonia Gran Vía Madrid ,Catalonia Hotels,,,Spain,Madrid,,Madrid,"Gran Vía, 7-9, Centro, 28013 Madrid",185,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-205,Catalonia Granada ,Catalonia Hotels,,,Spain,Andalucía,,Granada,"Av. de Madrid, 10, Albaicín, 18012 Granada",153,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-206,Catalonia Hispalis ,Catalonia Hotels,,,Spain,Andalucía,,Sevilla,"Av. de Andalucía, 52, 41006 Sevilla",99,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-207,Catalonia La Boqueria,Catalonia Hotels,,,Spain,Catalonia,,Barcelona,"Carrer de l'Hospital, 26, Ciutat Vella, 08001 Barcelona",25,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-208,Catalonia La Maquinista ,Catalonia Hotels,,,Spain,Catalonia,,Barcelona,"Carrer de São Paulo, 33, 37, San Andrés de Palomar, 08030 Barcelona",92,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-209,Catalonia Las Cañas ,Catalonia Hotels,,,Spain,Navarra,,,,0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-210,Catalonia Las Cortes ,Catalonia Hotels,,,Spain,Madrid,,Madrid,"C. del Prado, 6, Centro, 28014 Madrid",65,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-211,Catalonia Las Vegas ,Catalonia Hotels,,,Spain,Canary Islands,Tenerife,Puerto de la Cruz,"Av. de Cristobal Colón, 2, 38400 Puerto de la Cruz, Santa Cruz de Tenerife",265,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-212,Catalonia Magdalenes ,Catalonia Hotels,,,Spain,Catalonia,,Barcelona,"Carrer de les Magdalenes, 13, 15, Ciutat Vella, 08002 Barcelona",61,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-213,Catalonia Majorica ,Catalonia Hotels,,,Spain,Balearic Islands,Mallorca,Palma,"Carrer de la Garita, 3, Ponent, 07015 Palma, Illes Balears",168,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-214,Catalonia Málaga,Catalonia Hotels,,,Spain,Andalucía,,Málaga,"C/ Pacífico, 44, Carretera de Cádiz, 29004 Málaga",105,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-215,Catalonia Mikado ,Catalonia Hotels,,,Spain,Catalonia,,Barcelona,"Pg. de la Bonanova, 58, Sarrià-Sant Gervasi, 08017 Barcelona",68,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-216,Catalonia Mirador des Port ,Catalonia Hotels,,,Spain,Balearic Islands,Menorca,Menorca,"Carrer de Dalt Vilanova, 1, 07701 Menorca, Illes Balears",73,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-217,Catalonia Oro Negro ,Catalonia Hotels,,,Spain,Canary Islands,Tenerife,Arona,"Av. Arquitecto Gómez Cuesta, 14, 38660 Arona, Santa Cruz de Tenerife",269,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-218,Catalonia Park Güell ,Catalonia Hotels,,,Spain,Catalonia,,Barcelona,"Passeig de la Mare de Déu del Coll, 10, Gràcia, 08023 Barcelona",140,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-219,Catalonia Park Puxet ,Catalonia Hotels,,,Spain,Catalonia,,Barcelona,"Carrer del Putxet, 68, 74, Distrito de Sarrià-Sant Gervasi, 08023 Barcelona",151,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-220,Catalonia Passeig de Gracia ,Catalonia Hotels,,,Spain,Catalonia,,Barcelona,"Gran Via de les Corts Catalanes, 644, L'Eixample, 08007 Barcelona",74,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-221,Catalonia Plaça Catalunya,Catalonia Hotels,,,Spain,Catalonia,,Barcelona,"Carrer de Bergara, 11, L'Eixample, 08002 Barcelona",150,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-222,Catalonia Plaza España Madrid ,Catalonia Hotels,,,Spain,Madrid,,Madrid,"Gran Vía, 70, Centro, 28013 Madrid",164,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-223,Catalonia Plaza Mayor Madrid ,Catalonia Hotels,,,Spain,Madrid,,Madrid,"C. de Atocha, 36, Centro, 28012 Madrid",82,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-224,Catalonia Plaza Mayor Salamanca ,Catalonia Hotels,,,Spain,Castilla y León ,,Salamanca,"C. Espoz y Mina, 23, 25, 37002 Salamanca",67,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-225,Catalonia Port,Catalonia Hotels,,,Spain,Catalonia,,Barcelona,"Carrer Ample, 1, Ciutat Vella, 08002 Barcelona",41,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-226,Catalonia Portal de l'Àngel ,Catalonia Hotels,,,Spain,Catalonia,,Barcelona,"Avda. del Portal de l'Àngel, 17, Ciutat Vella, 08002 Barcelona",84,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-227,Catalonia Porto ,Catalonia Hotels,,,Portugal,Porto ,,,"Rua de Entreparedes 92, 4000-198 Porto, Portugal",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-228,Catalonia Puerta del Mar,Catalonia Hotels,,,Spain,Andalucía,,Málaga,"C. Prta del Mar, 5, Distrito Centro, 29005 Málaga",74,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-229,Catalonia Puerta del Sol ,Catalonia Hotels,,,Spain,Madrid,,Madrid,"C. de Atocha, 23, Centro, 28012 Madrid",64,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-230,Catalonia Punta del Rey ,Catalonia Hotels,,,Spain,Canary Islands,,Las Caletillas,"Av. Maritima, 165, 38520 Las Caletillas, Santa Cruz de Tenerife",437,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-231,Catalonia Ramblas ,Catalonia Hotels,,,Spain,Catalonia,,Barcelona,"Carrer de Pelai, 28, Ciutat Vella, 08001 Barcelona",225,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-232,Catalonia Reina Victoria ,Catalonia Hotels,,,Spain,Andalucía,,Ronda,"C. Jerez, 25, 29400 Ronda, Málaga",95,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-233,Catalonia Renaissance Fira ,Catalonia Hotels,,,Spain,Catalonia,,L'Hospitalet de Llobregat,"Pl. d'Europa, 50-52, 08902 L'Hospitalet de Llobregat, Barcelona",357,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-234,Catalonia Rigoletto ,Catalonia Hotels,,,Spain,Catalonia,,Barcelona,"Carrer de Sabino Arana, 22, 24, Distrito de Les Corts, 08028 Barcelona",65,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-235,Catalonia Roma ,Catalonia Hotels,,,Spain,Catalonia,,Barcelona,"Av. de Roma, 31, L'Eixample, 08029 Barcelona",49,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-236,Catalonia Ronda ,Catalonia Hotels,,,Spain,Andalucía,,Ronda,"C. Virgen de la Paz, 16, 29400 Ronda, Málaga",80,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-237,Catalonia Royal Ses Estaques ,Catalonia Hotels,,,Spain,Balearic Islands,Ibiza,Santa Eulària des Riu,"Ses Estaques, Carrer Salvador Camacho, S/N, 07840 Santa Eulària des Riu, Balearic Islands",207,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-238,Catalonia Sabadell ,Catalonia Hotels,,,Spain,Catalonia,,Sabadell,"Plaça de Catalunya, 10-12, 08206 Sabadell, Barcelona",110,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-239,Catalonia Sagrada Familia ,Catalonia Hotels,,,Spain,Catalonia,,Barcelona,"Carrer d'Aragó, 577, 579, Sant Martí, 08026 Barcelona",211,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-240,Catalonia Santa Justa ,Catalonia Hotels,,,Spain,Andalucía,,Sevilla,"Av. José Laguillo, 8, 41003 Sevilla",125,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-241,Catalonia Ses Estaques ,Catalonia Hotels,,,Spain,Balearic Islands,Ibiza,Santa Eulària des Riu,"Carrer Salvador Camacho, S/N, 07840 Santa Eulària des Riu, Balearic Islands",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-242,Catalonia Square,Catalonia Hotels,,,Spain,Catalonia,,Barcelona,"Rda. de Sant Pere, 9, Eixample, 08010 Barcelona",58,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-243,Central de Producción Santi Taura,Mallorca C Collection,,,Spain,Balearic Islands,Mallorca,"Lloseta, Palma de Mallorca","Joan Carles I, 48 ",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-244,Centre de Dia de Son Carrió,Ajuntament de Sant Llorenç des Cardassar,,,Spain,Balearic Islands,Mallorca,Sant Llorenç des Cardassar,"07540 Son Carrió, Illes Balears, España",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-245,Chiringuito Cala Major,Marport,,,Spain,Balearic Islands,Mallorca,Palma,"Carrer Gavina, Ponent, 07015 Palma, Illes Balears, España",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-246,Chiringuito Cala Marçal,Marport,,,Spain,Balearic Islands,Mallorca,Felanitx,"Carrer de Cala Marçal, 17, 07670 Felanitx, Illes Balears, España",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-247,Chiringuito Cala Sa Nau,Marport,,,Spain,Balearic Islands,Mallorca,Felanitx,"Carrer de Cala Sanau, 07669 Felanitx, Illes Balears, España",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-248,Chiringuito S'arenal Lluchmayor ,Marport,,,Spain,Balearic Islands,Mallorca,Llucmajor,"Carretera de l'Arenal, 35, Platja de Palma i Pla de Sant Jordi, 07610 Palma, Illes Balears, España",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-249,Chiringuito S'arenal Portocolom,Marport,,,Spain,Balearic Islands,Mallorca,Felanitx,"Carretera Faro, s/n, 07670 Portocolom, Illes Balears, España",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-250,Claudia By Nura,Nura Hotels,,,Spain,Balearic Islands,Mallorca,Campos,"Carrer de Ses Escoles, 07630 Campos, ",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-251,Club de Golf Vallromanes,Club de Golf Vallromanes,,,Spain,Catalonia,,"Vallromanes,","Passeig de la Torre Tavernera, s/n,  Barcelona",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-252,Club Marmara del Mar,Marmara del Mar,,,Spain,Balearic Islands,,PortoCristo,"Av. Violetas, 101, 07680 Cala Romantica, Balearic Islands",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-253,Club Monte Anfi,Anfi Grupo,,,Spain,Canary Islands,Gran Canaria,Las palmas,"Barranco de la Verga, 35129 Las palmas, Las Palmas",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-254,Club Puerto de Anfi,Anfi Grupo,,,Spain,Canary Islands,Gran Canaria,Las Palmas,"Barranco de la Verga, 35129 Las Palmas",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-255,Cocina Central,Marport,,,Spain,Balearic Islands,Mallorca,Felanitx,"07200 Felanitx, Illes Balears, España",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-256,Cocina Central Anfi,Anfi Grupo,,,Spain,Canary Islands,Gran Canaria,Mogán,"Playa Anfi del Mar, 35129 las, C. Dalí, 26, 35129 Mogán, Las Palmas, España",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-257,Cocina Central Cappuccino,Grupo Cappuccino,,,Spain,Balearic Islands,Mallorca,Palma,"Carrer Pocomaco, 2, 07011 Palma, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-258,Comarruga,Pierre et Vacances,,,Spain,Cataluña,,"San Salvador, Tarragona","Av. Palfuriana, 133 ",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-259,Condesa,Condesa,,,Spain,Balearic Islands,Mallorca,Alcúdia,"Carrer de les Roselles, 4, 07410 Alcúdia, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-260,Cook and Events,Lopesan Hotels,,,Spain,Canary Islands,Gran Canaria,San Bartolomé de Tirajana,"35290 San Bartolomé de Tirajana, Las Palmas, España",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-261,Cook’s Club Calviá Beach,Globales,,,Spain,Balearic Islands,,Torrenova,"Calle Alta Esquina - C/ Pineda, 07181 Torrenova, Balearic Islands",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-262,COR Barra i Taula,Mallorca C Collection,,,Spain,Balearic Islands,Mallorca,"Palma, Illes Balears","Plaça del Comtat del Rosselló, S/N",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-263,Corallium Beach,Lopesan Hotels,,,Spain,Canary Islands,Gran Canaria,San Bartolomé de Tirajana,"C. los Jazmines, 25, 35100 San Bartolomé de Tirajana, Las Palmas",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-264,Corallium Dunamar​,Lopesan Hotels,,,Spain,Canary Islands,Gran Canaria,San Bartolomé de Tirajana,"C. Helsinki, 8, 35100 San Bartolomé de Tirajana, Las Palmas",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-265,Costa Café Palma de Mallorca,Quimicral,,,Spain,Balearic Islands,Mallorca,Palma,"Pl. d'Espanya, 5, Llevant, 07002 Palma, Illes Balears, España",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-266,Costa Málaga Torremolinos,Pierre et Vacances,,,Spain,Andalucía,,Málaga,"Av. Isabel Manoja, 9, 29620 Torremolinos, Málaga, España",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-267,Cristine Bedfor Sevilla,Cristine Bedfor,,,Spain,Andalucía,,Sevilla,"C. Amor de Dios, 29, Casco Antiguo, 41002 Sevilla",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-268,Crowne Plaza Madrid - Centre Retiro,Grand Hotel Colón,,,Spain,Madrid,,Madrid,"C. del Pez Volador, 1, Retiro, 28007 Madrid",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-269,Deya,Pierre et Vacances,,,Spain,Balearic Islands,,Santa Ponsa,"Carrer de Ramon de Montcada, 27, 07180 Santa Ponça, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-270,EIX Alcudia Hotel,Eix Hotels,,,Spain,Balearic Islands,Mallorca,Port d'Alcúdia,"Carrer de Teodor Canet, 43, 07400 Port d'Alcúdia, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-271,EIX Lagotel Holiday Resort,Eix Hotels,,,Spain,Balearic Islands,Mallorca,Playa de Muro,"Carrer Circuit del Llac, sn, 07458 Playa de Muro, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-272,EIX Platja Daurada Hotel & Spa,Eix Hotels,,,Spain,Balearic Islands,,Can Picafort,"Passeig Colón, s/n, 07458 Can Picafort, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-273,El Autor Hotel Madrid,AC Hoteles - Grupo Belagua,,,Spain,Madrid,,,"Calle Zorrilla, 19, Madrid, CP 28014",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-274,El Chaval Beach Club,Marport,,,Spain,Balearic Islands,,,Magaluf,0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-275,El Kiosko Baleares,Quimicral,,,Spain,Balearic Islands,Mallorca,Inca,"Plaça Mallorca, 07300 Inca, Balearic Islands",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-276,El Llorenç Parc de la Mar,Mallorca C Collection,,,Spain,Balearic Islands,Mallorca,Palma de Mallorca,"Plaça de Llorenç Villalonga, 4, Centre, 07001 Palma, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-277,El Puerto Fuengirola,Pierre et Vacances,,,Spain,Andalucía,,Málaga,"Paseo Marítimo Rey de España, 32",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-278,El Vicenç,Mallorca C Collection,,,Spain,Balearic Islands,,Cala Sant Vicenç,"Carrer de Cala Molins, 6, 07469 Cala Sant Vicenç, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-279,Empuriabrava Marina,Pierre et Vacances,,,Spain,Catalonia,,Empuriabrava,Sector Calle Cavallo de Mar 25 30 ,0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-280,Engel&Völkers ,Engel&Völkers ,,,Spain,Balearic Islands,,,,0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-281,Es Figueral Nou,Mallorca C Collection,,,Spain,Balearic Islands,Mallorca,Montuïri,"Carretera de Montuiri a Sant Joan km7 s/n, 07230 Montuïri, Balearic Islands",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-282,Es Gremi,Es Gremi Centro Musical,,,Spain,Balearic Islands,Mallorca,Palma,Gremi Porgadors 16,0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-283,Estartit Playa,Pierre et Vacances,,,Spain,Catalonia,,Estartit Gerona,"Avda. de la Costa Brava, 16 ",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-284,Europe Playa Marina,Europe Hotels,,,Spain,Balearic Islands,,Mallorca - Islas Baleares,"Passeig Illetes, 68, 07181 ses Illetes, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-285,Europe Villa Cortés,Europe Hotels,,,Spain,Canary Islands,Tenerife,Arona - Tenerife,"Avenida Rafael Puig, nº38; Playa de las Américas",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-286,Fairmont La Hacienda,Fairmont ,,,Spain,Andalucía,,San Roque,"Calle Faro de Punta Mala, 2, 11360 San Roque, Cádiz",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-287,Fet a Soller,Fet a Sóller ,,,Spain,Balearic Islands,,,"07100 Sóller, Illes Balears, España",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-288,Fiesta Hotel Tanit,Palladium,,,Spain,Balearic Islands,Ibiza,"Sant Antoni de Portmany, Illes Balears","Camí del Portixol, 1",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-289,Fil suites ,Dreamplace Hotels,,,Spain,Balearic Islands,Mallorca,Palma,"Carrer de la Ferreria, 14, Centre, 07002 Palma, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-290,Finca Banyols,Finca Banyols,,,Spain,Balearic Islands,,,"07340 Camí de Banyols s/n, 07340 Alaró, Illes Balears, España",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-291,Finca Cabrita,Finca Cabrita,,,Spain,Balearic Islands,,,"6L 13 Estate Nazareth, Nazareth, St Thomas 00802, Islas Vírgenes de los Estados Unidos",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-292,Flacalco ,Flacalco Hotels & Apartments,,,Spain,Balearic Islands,Mallorca,Cala Ratjada,"Calle Bustamante, 39, Cala Ratjada  ",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-293,Forn i Pastisseria Terrasa ,Forn Terrassa,,,Spain,Balearic Islands,Mallorca,Santanyí,"Plaça Major, 25, 07650 Santanyí, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-294,Fundación las Medulas,Fundación las Medulas,,,Spain,Castilla y León ,,,Ponferrada,0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-295,Garbí Cala Millor,Garbí Cala Millor,,,Spain,Baleares- Mallorca,Mallorca,Cala Millor,"Carrer Cristòfol Colom, 146, 07560 Cala Millor, Illes Balears",287,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-296,Globales América,Globales,,,Spain,Balearic Islands,,,"Carrer de Cala Domingos, s/n, 07689 Cales de Mallorca, Illes Balears, España",372,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-297,Globales Apartamentos Cala Viñas,Globales,,,Spain,Balearic Islands,,Cala Vinyes,"Calle Las Sirenas, 17, 07181 Cala Vinyes, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-298,Globales Apartamentos Nova,Globales,,,Spain,Balearic Islands,Mallorca,Palmanova,"Av. de Cas Saboners, 6, 07181 Palmanova, Illes Balears",135,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-299,Globales Apartamentos Verdemar,Globales,,,Spain,Balearic Islands,Mallorca,Santa Ponça,"Carrer de Ramon de Montcada, 14, 07180 Santa Ponça, Illes Balears",197,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-300,Globales Cala Bona,Globales,,,Spain,Balearic Islands,,Cala Bona,"Carrer del Lliri, s/n, 07559 Cala Bona, Illes Balears",86,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-301,Globales Cala Viñas Hotel,Globales,,,Spain,Balearic Islands,,Cala Vinyes,"Carrer de les Sirenes, 15, 07181 Cala Vinyes, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-302,Globales Condes de Alcudia,Globales,,,Spain,Balearic Islands,Mallorca,Port d'Alcúdia,"Avinguda de la Platja, 4, 07410 Port d'Alcúdia, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-303,Globales Costa de la Calma,Globales,,,Spain,Balearic Islands,,Costa de la Calma,"Carrer de's Centre, 4, 07183 Costa de la Calma, Illes Balears",109,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-304,Globales Don Pedro,Globales,,,Spain,Balearic Islands,,Cala Sant Vicenç,"Carrer Cala Clara, 4, 07469 Cala Sant Vicenç, Illes Balears",153,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-305,Globales Maioris,Globales,,,Spain,Balearic Islands,,Puigderrós,"Carrer del Tudó, 6, 07609 Puigderrós, Illes Balears",238,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-306,Globales Mimosa,Globales,,,Spain,Balearic Islands,Mallorca,Palmanova,"Av. de Cas Saboners, 28, 07181 Palmanova, Illes Balears",290,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-307,Globales Palmanova,Globales,,,Spain,Balearic Islands,Mallorca,Palmanova,"Carrer Miquel Sants Oliver, 13, 07181 Palmanova, Illes Balears",214,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-308,Globales Palmanova Palace,Globales,,,Spain,Balearic Islands,Mallorca,Palmanova,"Carrer Miquel Sants Oliver, 15, 07181 Palmanova, Illes Balears",193,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-309,Globales Panamá,Globales,,,Spain,Balearic Islands,Mallorca,Palmanova,"Carrer de París, 4, 07181 Palmanova, Illes Balears",186,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-310,Globales Samoa,Globales,,,Spain,Balearic Islands,,Cales de Mallorca,"Carrer de Formentor, s/n, 07689 Cales de Mallorca, Illes Balears",340,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-311,Globales Simar,Globales,,,Spain,Balearic Islands,,Cala Sant Vicenç,"Carrer del Temporal, s/n, 07469 Cala Sant Vicenç, Illes Balears",160,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-312,Globales Torrenova,Globales,,,Spain,Balearic Islands,,Torrenova,"Carrer Sant Miquel de Liria, 6, 07181 Torrenova, Illes Balears",87,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-313,Gold by Marina,Satocan Turismo,,,Spain,Canary Islands,Gran Canaria,Maspalomas,"Av. Estados Unidos, 15, 35100 Maspalomas, Las Palmas",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-314,Golf de S'Horta,Marport,,,Spain,Balearic Islands,Mallorca,Felanitx,"07669 S'Horta, Illes Balears, España",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-315,Gran Anfi,Anfi Grupo,,,Spain,Canary Islands,Gran Canaria,Mogán,"C. Anfi del Mar, 33A, 35120 Mogán, Las Palmas, España",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-316,Gran Hotel Mas d'en Bruno,Mas d'en Bruno,,,Spain,Catalonia,,Torroja del Priorat,"MAS D'EN BRUNO, Polígono 5 Parcela 71, 43737 Torroja del Priorat, Tarragona",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-317,Gran Marbella Resort and Beach Club,Gran Marbella Resort and Beach Club,,,Spain,Andalucía,,Marbella,"Avenida José Ribera, 25, Urb. Real de Zaragoza, 29604 Marbella, Málaga",135,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-318,"Grand Hotel Centenari, Valencia, Autograph Collection",AC Hoteles - Grupo Belagua,,,Spain,Valencia,,València,"Pl. de l'Ajuntament, 25, 2, Ciutat Vella, 46002 València, Valencia",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-319,Grand Palladium Palace Ibiza Resort & Spa,Palladium,,,Spain,Balearic Islands,Mallorca,"Sant Jordi de ses Salines, Balearic Islands","Platja d'en Bossa, S/N",359,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-320,Grand Palladium Sicilia Resort & Spa,Palladium,,,Italy,Sicilia,,Campofelice di Roccella,Viale Himera 7/8 ss 113 Km 204.3 ,0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-321,Grand Palladium White Island Resort & Spa,Palladium,,,Spain,Balearic Islands,Mallorca,"Sant Jordi de ses Salines, Illes Balears","Carrer 34 de la Platja d'en Bossa, s/n",470,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-322,Grums Hotel & Spa,Grums y Akquaaa,,,Spain,Catalonia,,Barcelona,"Carrer de Palaudàries, 26, 08004 Barcelona",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-323,H10 Atlantic Sunset Horizons Collection,H10,,,Spain,Canary Islands,,,"Av. Adeje 300, s/n, 38678, Santa Cruz de Tenerife",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-324,H10 Big Sur,H10,,,Spain,Canary Islands,Tenerife,Los Cristianos,"Av. Juan Carlos I, 28, 38650 Los Cristianos, Santa Cruz de Tenerife",181,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-325,H10 Blue Mar Boutique Hotel,H10,,,Spain,Balearic Islands,Mallorca,Andratx,"Camí Salinar, 8, 07160 Andratx, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-326,H10 Casa Mimosa,H10,,,Spain,Catalonia,,Barcelona,"Carrer de Pau Claris, 179, L'Eixample, 08037 Barcelona",195,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-327,H10 Casanova,H10,,,Spain,Catalonia,,Barcelona,"Gran Via de les Corts Catalanes, 559, L'Eixample, 08011 Barcelona",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-328,H10 Conquistador,H10,,,Spain,Canary Islands,,Playa de la América,"Av. Rafael Puig Lluvina, 36, ",367,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-329,H10 Costa Adeje Palace,H10,,,Spain,Canary Islands,,La Caleta,"Playa La Enramada, 38679 La Caleta, Santa Cruz de Tenerife",467,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-330,H10 Costa Mogán,H10,,,Spain,Canary Islands,Gran Canaria,Mogán,"Av. Playa del Cura, 4, 35138 Mogán, Las Palmas",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-331,H10 Gran Tinerfe,H10,,,Spain,Canary Islands,Tenerife,Costa Adeje,"Av. Rafael Puig Lluvina, 13, 38660 Costa Adeje, Santa Cruz de Tenerife",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-332,H10 Lanzarote Princess,H10,,,Spain,Canary Islands,Lanzarote,Playa Blanca,"C. Maciot, 1, 35580 Playa Blanca, Las Palmas",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-333,H10 Las Palmeras,H10,,,Spain,Canary Islands,,Playa de la Américas,"Av. Rafael Puig Lluvina, 28, 38660 Playa de la Américas, Santa Cruz de Tenerife",305,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-334,H10 Madison,H10,,,Spain,Catalonia,,Barcelona,"Carrer del Dr. Joaquim Pou, 2, 4-6, Ciutat Vella, 08002 Barcelona",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-335,H10 Montcada,H10,,,Spain,Catalonia,,Barcelona,"Via Laietana, 24, Ciutat Vella, 08003 Barcelona",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-336,H10 Ocean Dreams,H10,,,Spain,Canary Islands,Gran Canaria,"Corralejo , Las Palmas","C. Las Palmeras, 2, 35660 Corralejo, Las Palmas",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-337,H10 Ocean Dunas,H10,,,Spain,Canary Islands,Gran Canaria,"Corralejo, Las Palmas","C. la Red, 1, 35660 Corralejo, Las Palmas",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-338,H10 Ocean Suites,H10,,,Spain,Canary Islands,Gran Canaria,Corralejo Las Palmas,"C. Las Palmeras, 1, 35660 Corralejo, Las Palmas",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-339,H10 Playa Esmeralda,H10,,,Spain,Canary Islands,,FUERTEVENTURA,"C. Punta del Roquito, 2, 35627 Costa Calma, Las Palmas",304,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-340,H10 Playa Meloneras Horizons Collection,H10,,,Spain,Canary Islands,Gran Canaria,Gran Canaria,"C. Mar Caspio, 5, 35100 Gran Canaria, Las Palmas",510,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-341,H10 Port Vell,H10,,,Spain,Catalonia,,Barcelona,"Pas de Sota Muralla, 9, Ciutat Vella, 08003 Barcelona",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-342,H10 Racó del Pi,H10,,,Spain,Catalonia,,Barcelona,"Carrer del Pi, 7, Ciutat Vella, 08002 Barcelona",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-343,H10 Rubicón Horizons Collection,H10,,,Spain,Canary Islands,Lanzarote,Montaña Roja,35580 Montaña Roja,0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-344,H10 Suites Lanzarote Gardens,H10,,,Spain,Canary Islands,Lanzarote,Costa Teguise,"Av. de las Islas Canarias, 13, 35508 Costa Teguise, Las Palmas",78,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-345,H10 Taburiente Playa ,H10,,,Spain,Canary Islands,La Palma,Breña Baja,"Tr.ª de los Cancajos, 36, 38712 Breña Baja, Santa Cruz de Tenerife",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-346,H10 Tenerife Playa,H10,,,Spain,Canary Islands,Tenerife,"Puerto de la Cruz,","Av. de Cristobal Colón, 12, Santa Cruz de Tenerife",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-347,H10 Timanfaya Palace,H10,,,Spain,Canary Islands,,Montaña Roja,"C/ Gran Canaria, 1. Urb, 35580 Montaña Roja, Las Palmas",295,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-348,H10 Tindaya,H10,,,Spain,Canary Islands,Fuerteventura,Costa Calma,"C. Punta del Roquito, s/n, 35627 Costa Calma, Las Palmas",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-349,H10 Universitat,H10,,,Spain,Catalonia,,Barcelona,"Ronda de la Univ., 21, L'Eixample, 08007 Barcelona",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-350,H10 White Suites Boutique Hotel,H10,,,Spain,Canary Islands,Lanzarote,Playa Blanca,"C. Janubio, 1, 35580 Playa Blanca, Las Palmas",114,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-351,Hamacas Cala Ferrera,Marport,,,Spain,Balearic Islands,Mallorca,Felanitx,"07669 Cala Ferrera, Illes Balears, España",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-352,Hard Rock Hotel Ibiza,Hard Rock Hoteles,,,Spain,Balearic Islands,Ibiza,Ibiza,"Platja d'en Bossa, s/n, 07817 Ibiza, Balearic Islands",493,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-353,Hard Rock Hotel Marbella,Hard Rock Hoteles,,,Spain,Andalucía,,Malaga,"Urbanización Nueva Andalucía, s/n",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-354,Hard Rock Hotel Tenerife,Hard Rock Hoteles,,,Spain,Canary Islands,Tenerife,Adeje,"Avenida de Adeje 300, 38678 Playa Paraíso",624,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-355,Healthy Poke Alexandre,Quimicral,,,Spain,Balearic Islands,Mallorca,Palma de Mallorca,plaza Jaume II 07002 Palma de Mallorca,0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-356,Healthy Poke Picasso,Quimicral,,,Spain,Balearic Islands,Mallorca,Palma,AV Picasso 58 07014 Palma,0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-357,Hospital Universitario de Canarias,Complejo Hospitalario Universitario de Canarias,,,Spain,Canary Islands,Tenerife,La Laguna,"Carretera Ofra S/N, 38320 La Laguna, Santa Cruz de Tenerife",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-358,Hostería de La Rábida,Hostería de La Rábida,,,Spain,Andalucía,,"La Rábida, Huelva","Urbanizacion Rabida Urbanizacion, 108",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-359,Hotel Agua Beach,Agua Beach,,,Spain,Balearic Islands,Mallorca,Palmanova,"Passeig Mar, 24, 07181 Palmanova,",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-360,Hotel Aguere,Aguere,,,Spain,Canary Islands,Tenerife,La Laguna,"C. Obispo Rey Redondo, 55,  Santa Cruz de Tenerife",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-361,Hotel Antigua Palma,Hotel Antigua Palma,,,Spain,Balearic Islands,Mallorca,Palma de Mallorca,"Carrer del Sol, 1",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-362,Hotel Basílica,Hotel Basílica,,,Spain,Balearic Islands,Mallorca,Palma," Calle Can Troncoso, 3 07001 Palma ",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-363,Hotel Cádiz Bahía,Q Hoteles,,,Spain,Andalucía,,"Tomares, Sevilla",Edificio Puerta Aljarafe – Parque Aljarafe s/n,0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-364,Hotel Cala d´Or,Hotel Cala dOr,,,Spain,Balearic Islands,Mallorca,Cala D'or,"Av. de Bèlgica, 49, 07660 Cala D'or, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-365,Hotel Cappuccino - Palma,Grupo Cappuccino,,,Spain,Balearic Islands,Mallorca,Palma,"Plaça de Cort, Distrito Centro, 07001 Palma, Balearic",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-366,"Hotel Circulo Gran Vía, Autograph",AC Hoteles - Grupo Belagua,,,Spain,Madrid,,Madrid,"Gran Vía, 24, Centro, 28013 Madrid",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-367,Hotel Cort,Treguer Hotels ,,,Spain,Balearic Islands,Mallorca,Palma,"Plaça de Cort, 11, 07001 Palma, Balearic Islands",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-368,Hotel Cupidor,Hotel Cupidor,,,Spain,Balearic Islands,,Paguera,"Carrer des Capdellà, 4",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-369,Hotel El Cid,Hotel Sitges,,,Spain,Catalonia,,Sitges,"Calle San José, 39, 08870 Sitges, Barcelona",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-370,Hotel El Cortijo de Zahara,Q Hoteles,,,Spain,Andalucía,,Zahara de los Atunes,"Avenida Cabo de Plata, 6 - Playa de, 11393 Zahara de los Atunes, Cádiz",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-371,Hotel Event,Q Hoteles,,,1 España,Canarias - Fuerteventura,,Tarifa,"Dirección: Mar Adriatico, 11380 Tarifa, Cádiz",130,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-372,"Hotel Faro, a Lopesan Collection Hotel",Lopesan Hotels,,,Spain,Canary Islands,Gran Canaria,Meloneras,"Plaza de Colón, 1, 35100 Meloneras, Las Palmas",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-373,Hotel Figueres Pirineos,Pierre et Vacances,,,Spain,Catalonia,,Figueres,"Avenida Salvador Dali, 68, 17600 Figueres, ",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-374,Hotel Galeon y Galeon-Pavillon,Hotel Sitges,,,Spain,Catalonia,,Sitges,"Sant Francesc, 46-48, Carrer de Sant Bartomeu, 56, 08870 Sitges, Barcelona",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-375,Hotel Gayá,Hotel Gayá,,,Spain,Balearic Islands,,Paguera,"C/ Niza, 3 07160 Paguera ",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-376,"Hotel Hacienda Son Antem Golf Resort, Autograph Collection",AC Hoteles - Grupo Belagua,,,Spain,Balearic Islands,,,"Hotel Son Antem, Ma-19, Salida 20, 07620, Balearic Islands",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-377,Hotel Horitzó,Pierre et Vacances,,,Spain,Catalonia,,Blanes,11 Paseo Marítimo s'Abanell,0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-378,Hotel Indigo Barcelona Plaza Espana,Grape Hospitality,,,Spain,Catalonia,,Barcelona,"Gran Vía de Les Corts Catalanes, 322-324",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-379,Hotel Kramer,Room Mate,,,Spain,Valencia,,València,"Avinguda de Campanar, 90, Campanar, 46015 València, Valencia",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-380,Hotel L'Avenida,Treguer Hotels ,,,Spain,Balearic Islands,Mallorca,Palma,"C/ Nuredduna, 1, 3B, Levante, 07006 Palma, Balearic Islands",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-381,Hotel Larios Málaga,AC Hoteles - Grupo Belagua,,,Spain,Andalucía,,Málaga,"C. Marqués de Larios, 2, Distrito Centro, 29005 Málaga",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-382,Hotel Madrid Retiro,Grand Hotel Colón,,,Spain,Madrid,,Madrid,"C. del Pez Volador, 11, Retiro, 28007 Madrid",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-383,Hotel Malcom and Barret,Room Mate,,,Spain,Valencia,,València,"Av. d'Ausiàs March, 59, Quatre Carreres, 46013 València, Valencia",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-384,Hotel Martorell,Hotel Martorell,,,Spain,Balearic Islands,Mallorca,Colònia de Sant Jordi,"Carrer Cervantes, 2, 07638 Colònia de Sant Jordi, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-385,Hotel Minister,Hotel Minister,,,Spain,Balearic Islands,Mallorca,Port de Sóller,"Paseo de la Playa, 12, 07108 Port de Sóller, Balearic Islands",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-386,Hotel Nou Baleares,Treguer Hotels ,,,Spain,Balearic Islands,Mallorca,Palma,"Plaça Francesc García i Orell, 8, Llevant, 07006 Palma, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-387,"Hotel Palacio de Santa Clara, Autograph",AC Hoteles - Grupo Belagua,,,Spain,Valencia,,València,"C/ de Pascual i Genís, 22, Ciutat Vella, 46002 València, Valencia",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-388,"Hotel Palacio de Santa Paula, Autograph",AC Hoteles - Grupo Belagua,,,Spain,Andalucía,,Granada,"C. Gran Vía de Colón, 31, Centro, 18001 Granada",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-389,"Hotel Palacio del Carmen, Autograph",AC Hoteles - Grupo Belagua,,,Spain,Galicia,,Santiago de Compostela,"Rúa das Oblatas, S/N, 15703 Santiago de Compostela, A Coruña",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-390,"Hotel Palacio del Retiro, Autograph",AC Hoteles - Grupo Belagua,,,Spain,Madrid,,Madrid,"C. de Alfonso XII, 14, Retiro, 28014 Madrid",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-391,"Hotel Palacio Tondon, Autograph Collection",AC Hoteles - Grupo Belagua,,,Spain,La Rioja ,,Briñas,"C. Campo, 2, 26290 Briñas, La Rioja",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-392,Hotel Platjador,Hotel Sitges,,,Spain,Catalonia,,Sitges,"Passeig de la Ribera, 35, 08870 Sitges, Barcelona",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-393,Hotel Portofino Mallorca,Portofino Mallorca,,,Spain,Balearic Islands,Mallorca,Palma,"Carrer de Trafalgar, 24, Platja de Palma, 07007 Palma, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-394,"Hotel Querencia de Sevilla,  Autograph Collection",AC Hoteles - Grupo Belagua,,,Spain,Andalucía,,Sevilla,"C. Fernández y González, 4, Casco Antiguo, 41001 Sevilla",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-395,Hotel Rocamar Benidorm,Mirador del Castillo,,,Spain,Valencia,,Benidorm,"C/ dels Quatre Cantons, 18, 03501 Benidorm, Alicante",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-396,Hotel Rosella,Intelier,,,Spain,Balearic Islands,Mallorca,Sa Coma,"Carrer Tamarell, s/n, 07560 Sa Coma, Illes Balears•964 39 44 97",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-397,Hotel Salino Port Soller,Treguer Hotels ,,,Spain,Balearic Islands,Mallorca,Port de Sóller,"Camí del Far, 15, 07100 Port de Sóller, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-398,Hotel Santa Ponsa Pins,Nura Hotels,,,Spain,Balearic Islands,Mallorca,Santa Ponça,"Avinguda del Rei Jaume I, 115, 07180 Santa Ponça, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-399,"Hotel Santo Mauro, Luxury",AC Hoteles - Grupo Belagua,,,Spain,Madrid,,Madrid,"Calle de Zurbano, 36, Chamberí, 28010 Madrid",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-400,Hotel Saratoga,Hotel Saratoga,,,Spain,Balearic Islands,Mallorca,Palma,"Pg. de Mallorca, 6, Centre, 07012 Palma, Illes Balears",189,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-401,Hotel Sultán,Sultán ,,,Spain,Balearic Islands,,"Can Picafort, Mallorca","Passeig Colón, 147 07458 CAN PICAFORT (MALLORCA)",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-402,Hotel Tarifa Lances,Q Hoteles,,,Spain,Andalucía,,Tarifa,"Playa de los Lances, Calle, Mar Adriatico, 38, 11380 Tarifa, Cádiz",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-403,Hotel Tenerife Golf & Sea View,Satocan Turismo,,,Spain,Canary Islands,,Golf del Sur,"Urb, 38620 Golf del Sur, Santa Cruz de Tenerife",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-404,Hotel Terrassa Confort,Hotel Terrassa Confort,,,Spain,Catalonia,,Terrassa," Avinguda de Santa Eulàlia, 236, 08223 Terrassa, Barcelona",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-405,Hotel TUI BLUE Zahara Beach,Q Hoteles,,,Spain,Andalucía,,Zahara de los Atunes,"Avenida de Atlanterra 5 - Playa de, 11393 Zahara de los Atunes, Cádiz",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-406,Hotel Villa Singala,Hotel Villa Singala,,,Spain,Balearic Islands,Mallorca,"Port de Pollença, Illes Balears","Carrer del Far, 0, 07470 Port de Pollença, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-407,HSLAB ESP,HSLAB,,,Spain,Balearic Islands,,,,0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-408,Iberostar Heritage Grand Mencey,Iberostar Hotels,,,1 España,Canarias - Tenerife,Tenerife,Santa Cruz de Tenerife,"Calle Dr. Jose Naveiras, 38, 38004 Santa Cruz de Tenerife",261,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-409,Iberostar Real Novo Sancti Petri Golf Club,Iberostar Hotels,,,Spain,Andalucía,,Urb,"11130 Urb. Novo Santi Petri, Cádiz",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-410,Iberostar Selection Albufera Park,Iberostar Hotels,,,1 España,Baleares- Mallorca,Mallorca,Playa del Muro,"Calle Dunes, 1, Avenida Playas de Muro, 07458 Playa del Muro, Mallorca, Balearic Islands",250,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-411,Iberostar Selection Albufera Playa,Iberostar Hotels,,,1 España,Baleares- Mallorca,Mallorca,Alcúdia,"Avda. Playa de Muro, s/n, 07458 Alcúdia, Illes Balears",402,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-412,Iberostar Selection Andalucía Playa,Iberostar Hotels,,,1 España,Andalucía- Cádiz,,Chiclana de la Frontera,"Calle Amílcar Barca, Urbanización Novo Sancti Petri, 11130 Chiclana de la Frontera, Cádiz",290,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-413,Iberostar Selection Anthelia,Iberostar Hotels,,,1 España,Canarias - Tenerife,Tenerife,Costa Adeje,"C. Londres, 15, 38660 Costa Adeje, Santa Cruz de Tenerife",472,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-414,Iberostar Selection Creta Marine,Iberostar Hotels,,,3 Grecia,Creta,,,"P.B. Box 265, Panormos 741 00, Grecia",359,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-415,Iberostar Selection Diar El Andalous,Iberostar Hotels,,,5 Túnez,Túnez,,,"40 Port El Kantaoui BP, Sousse 4089, Túnez",379,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-416,Iberostar Selection Eolia Djerba,Iberostar Hotels,,,5 Túnez,Túnez,,,"B.P. N° 82, Zone touristique Midoun, Djerba 4116, Túnez",315,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-417,Iberostar Selection Es Trenc,Iberostar Hotels,,,1 España,Baleares- Mallorca,Mallorca,Colònia de Sant Jordi,"Carrer Cristòfol Colón, s/n, 07638 Colònia de Sant Jordi, Illes Balears",412,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-418,Iberostar Selection Fuerteventura Palace,Iberostar Hotels,,,1 España,Canarias - Fuerteventura,,Las Gaviotas,"Pje. Playas, 1, 35626 Las Gaviotas, Las Palmas",130,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-419,Iberostar Selection Jardín del Sol Suites,Iberostar Hotels,,,1 España,Baleares- Mallorca,Mallorca,Calvià,"Huguet de's Far, s/n, 07180 Calvià",260,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-420,Iberostar Selection Kantaoui Bay,Iberostar Hotels,,,5 Túnez,Túnez,,,"Jinene El Kantaoui, Hammam Sousse B.P. 243 Túnez، 4089, Túnez",358,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-421,Iberostar Selection Kuriat Palace,Iberostar Hotels,,,5 Túnez,Túnez,,,"Zone touristique DKHILA، Route Touristique, Monastir 5061, Túnez",481,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-422,Iberostar Selection Lagos Algarve,Iberostar Hotels,,,2 Portugal,Algarve,,,"Estrada Da Meia Praia, 8600-315 Lagos, Portugal",332,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-423,Iberostar Selection Lanzarote Park,Iberostar Hotels,,,1 España,Canarias - Lanzarote,Lanzarote,Playa Blanca,"Av. Archipiélago, 7, 35580 Playa Blanca, Las Palmas",355,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-424,Iberostar Selection Lisboa,Iberostar Hotels,,,Portugal,Lisboa,,,"R. Castilho 64, 1250-071 Lisboa, Portugal",220,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-425,Iberostar Selection Llaut Palma,Iberostar Hotels,,,1 España,Baleares- Mallorca,Mallorca,Palma,"Av. d'Amèrica, 2, Platja de Palma i Pla de Sant Jordi, 07600 Palma, Illes Balears",186,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-426,Iberostar Selection Marbella Coral Beach,Iberostar Hotels,,,1 España,Andalucía- Málaga,,Marbella,"Urbanización Coral Beach, N-340, Km.176, 29602 Marbella, Málaga",170,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-427,Iberostar Selection Mirage Hammamet,Iberostar Hotels,,,5 Túnez,Túnez,,,"Avenue Bettino Craxi, Yasmine Hammamet 8050, Túnez",190,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-428,Iberostar Selection Playa de Muro Village,Iberostar Hotels,,,1 España,Baleares- Mallorca,Mallorca,Playa de Muro,"Av. de s'Albufera, 6, 07458 Playa de Muro, Mallorca, Illes Balears",190,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-429,Iberostar Selection Playa de Palma,Iberostar Hotels,,,1 España,Baleares- Mallorca,Mallorca,Palma,"Calle Marbella 36, 07610 Playa de Palma",348,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-430,Iberostar Selection Royal El Mansour,Iberostar Hotels,,,5 Túnez,Túnez,,,"B.P. 217, Avenue Taher Sfar, 5111 Route de la Corniche, Hiboun, Túnez",447,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-431,Iberostar Selection Sábila,Iberostar Hotels,,,1 España,Canarias - Tenerife,Tenerife,Costa Adeje,"Av. Ernesto Sarti, 5, 38679 Costa Adeje, Santa Cruz de Tenerife",404,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-432,Iberostar Selection Santa Eulalia Ibiza,Iberostar Hotels,,,1 España,Baleares- Ibiza,,Santa Eulalia del Río,"Calle Mestral, 42, Urbanización s'Argamassa, 07849 Santa Eulalia del Río, Ibiza, Balearic Islands",293,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-433,Iberostar Waves Alcudia Park,Iberostar Hotels,,,1 España,Baleares- Mallorca,Tenerife,Playa de,"Av. de s'Albufera, 30, 07458 Playa de, Illes Balears",366,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-434,Iberostar Waves Averroes,Iberostar Hotels,,,5 Túnez,Túnez,,,"Yasmine Hammamet 8052, Túnez",256,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-435,Iberostar Waves Bahía de Palma,Iberostar Hotels,,,1 España,Baleares- Mallorca,Tenerife,Playa de,"Carrer de Marbella, 32, Platja de Palma i Pla de Sant Jordi, 07610 Playa de, Illes Balears",402,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-436,Iberostar Waves Bellevue,Iberostar Hotels,,,4 Montenegro,Montenegro,,,"Bečići 85310, Montenegro",578,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-437,Iberostar Waves Bouganville Playa,Iberostar Hotels,,,1 España,Canarias - Tenerife,Tenerife,Costa Adeje,"Av. Eugenio Dominguez Alfonso, 23, 38660 Costa Adeje, Santa Cruz de Tenerife",261,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-438,Iberostar Waves Cala Domingos,Iberostar Hotels,,,1 España,Baleares- Mallorca,,Cala Domingos,"Carrer de Cala Domingos, s/n, 07689 Cala Domingos, Illes Balears",433,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-439,Iberostar Waves Cala Millor,Iberostar Hotels,,,1 España,Baleares- Mallorca,Mallorca,Cala Millor,"Carrer Castell, 7, 07560 Cala Millor, Illes Balears",287,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-440,Iberostar Waves Ciudad Blanca,Iberostar Hotels,,,1 España,Baleares- Mallorca,Mallorca,Alcúdia,"Carretera d'Artà, 43, 07400 Alcúdia, Illes Balears",303,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-441,Iberostar Waves Club Cala Barca,Iberostar Hotels,,,1 España,Baleares- Mallorca,,Barca Trencada,"Sa Barca Trencada, S/N, Carrer de la Barca Trencada, 18D, 07691 Barca Trencada, Balearic Islands",685,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-442,Iberostar Waves Club Palmeraie Marrakech,Iberostar Hotels,,,6 Morocco,Morocco,,,"Commune Rurale Ouidane, 6, Americhich 03759, Marruecos",319,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-443,Iberostar Waves Creta Panorama & Mare,Iberostar Hotels,,,3 Grecia,Creta,,,"CJ8X+9H, IBEROSTAR Creta Panorama & Mare, Πάνορμο Γεροπόταμος, ΤΘ 32, Lavris 741 00, Grecia",454,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-444,Iberostar Waves Cristina,Iberostar Hotels,,,1 España,Baleares- Mallorca,Mallorca,Playa de Palma,"Carrer de Bartomeu Xamena, s/n, Platja de Palma, 07610 Playa de Palma, Illes Balears",423,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-445,Iberostar Waves Founty Beach,Iberostar Hotels,,,6 Morocco,Morocco,,,"Chemin des Dunes BP 1039, Agadir 80000, Marruecos",470,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-446,Iberostar Waves Gaviotas Park,Iberostar Hotels,,,1 España,Canarias - Fuerteventura,,Jandia,"Pje. Playas, 3, 35626 Jandia, Las Palmas",486,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-447,Iberostar Waves Herceg Novi,Iberostar Hotels,,,4 Montenegro,Montenegro,,,"Luke Vukalovića, Njivice 85347, Montenegro",238,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-448,Iberostar Waves Las Dalias,Iberostar Hotels,,,1 España,Canarias - Tenerife,Tenerife,Costa Adeje,"C. Gran Bretaña, 1, 38660 Costa Adeje, Santa Cruz de Tenerife",189,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-449,Iberostar Waves Málaga Playa,Iberostar Hotels,,,1 España,Andalucía- Málaga,,Torrox Costa,"Avenida Ferrara, s/n, 29770 Torrox Costa, Málaga",170,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-450,Iberostar Waves Mehari Djerba,Iberostar Hotels,,,5 Túnez,Túnez,,,"Route Touristique Midoun Djerba, Djerba 4116, Túnez",300,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-451,Iberostar Waves Pinos Park,Iberostar Hotels,,,1 España,Baleares- Mallorca,,Font de Sa Cala,"Carretera de Sa Font de Sa Gala, 33, 07589 Font de Sa Cala, Illes Balears",213,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-452,Iberostar Waves Playa de Muro,Iberostar Hotels,,,1 España,Baleares- Mallorca,Mallorca,Playa de Muro,"Av. de s'Albufera, 8, 07458 Playa de Muro, Mallorca, Illes Balears",443,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-453,Iberostar Waves Playa Gaviotas,Iberostar Hotels,,,1 España,Canarias - Fuerteventura,,,"Pje. Playas, 2, 35625, Las Palmas",214,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-454,Iberostar Waves Royal Andalus,Iberostar Hotels,,,1 España,Andalucía- Cádiz,,Chiclana de la Frontera," Calle Amílcar Barca, Urbanización Novo Sancti Petri s/n, 11130 Chiclana de la Frontera, Cádiz",549,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-455,Iberostar Waves Saïdia,Iberostar Hotels,,,6 Morocco,Morocco,,,"Hôtel Med Azur S.A. BP Nº 331, Saidia 60600, Marruecos",484,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-456,Iberostar Waves Slavija,Iberostar Hotels,,,4 Montenegro,Montenegro,,,"1 Veljka Vlahovića, Budva, Montenegro",125,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-457,IFA Altamarena,Lopesan Hotels,,,Spain,Canary Islands,Fuerteventura,Morro Jable,"Av. del Saladar, 28, 35625 Morro Jable, Las Palmas",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-458,Ikos Andalusia,Ikos Resorts,,,Spain,Andalucía,,Estepona,"N-340, Km 164, 29680 Estepona, Málaga",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-459,Ikos Porto Petro,Ikos Resorts,,,Spain,Balearic Islands,,Portopetro,"Carrer d'es Far, 16, 07691 Portopetro, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-460,Il Forno Via Mare,Il Forno,,,Spain,Balearic Islands,Mallorca,Can Pastilla,"Avinguda de Bartomeu Riutort, 51, 07610 Can Pastilla, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-461,Instituto Canario de Investigaciones Agrarias,Instituto Canario de Investigaciones Agrarias,,,Spain,Canary Islands,Tenerife,La Laguna," TF-156, 168, 38297 La Laguna, Santa Cruz de Tenerife",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-462,Isla Mallorca,Negresco e Isla Mallorca,,,Spain,Balearic Islands,,Cales de Mallorca,"Carrer de Cala Antena, s/n, 07689 Cales de Mallorca, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-463,Jevule Restaurante,Satocan Turismo,,,Spain,Canary Islands,Gran Canaria,San Bartolomé de Tirajana,"San Bartolomé de Tirajana, Las Palmas, España",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-464,JOIA El Mirador by Iberostar,Iberostar Hotels,,,Spain,Canary Islands,Tenerife,Costa Adeje,"Av. de Bruselas, s/n, 38660 Costa Adeje, Santa Cruz de Tenerife",105,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-465,Juniper Serra,Juniper Serra,,,Spain,Balearic Islands,,,,0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-466,JW Marriott Hotel Madrid,AC Hoteles - Grupo Belagua,,,Spain,Madrid,,Madrid,"C. de Sevilla, 2, Centro, 28014 Madrid",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-467,Kamaleónico,Kamaleónico y Marino Portixol,,,Spain,Balearic Islands,,,"La Rambla, 20, Centre, 07003 Palma, Illes Balears, España",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-468,Kumara Serenoa,Lopesan Hotels,,,Spain,Canary Islands,Gran Canaria,Maspalomas,"Av. Touroperador Fritidsresor, 4",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-469,Kyrat Amarac,Kyrat Hotels,,,Spain,Balearic Islands,Mallorca,Son Servera,"Carrer de la Vinya del Mar, 1, 07560 Son Servera, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-470,Kyrat Amarac Suites,Kyrat Hotels,,,Spain,Balearic Islands,Mallorca,Son Servera,"Carrer de la Vinya del Mar, 4, 07560 Son Servera, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-471,L'Artista Can Pastilla,L'Artista Pizzeria,,,Spain,Balearic Islands,Mallorca,Can Pastilla,Calle Palangres 10,0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-472,L'Artista Central de Producción,L'Artista Pizzeria,,,Spain,Balearic Islands,,,,0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-473,L'Artista Paseo Marítimo,L'Artista Pizzeria,,,Spain,Balearic Islands,Mallorca,Palma,"Av. de Gabriel Roca, 34",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-474,L'Artista Son Moix ,L'Artista Pizzeria,,,Spain,Balearic Islands,Mallorca,Palma,"Camí dels Reis, 138 ",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-475,"La Isla Café (World Duty Free Group, SAU)",Quimicral,,,Spain,Balearic Islands,Mallorca,Palma,"Palma, Illes Balears, España",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-476,La Quinta Food,Catalonia Hotels,,,Spain,Catalonia,,Barcelona,"Pl. d'Espanya, 8, Sants-Montjuïc, 08014 Barcelona",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-477,Làlia,Club Social Laila,,,Spain,Balearic Islands,Mallorca,Palma,"Carrer d'En Morei, 2, Centre, 07001 Palma, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-478,Lavandería Interhotelera,Lopesan Hotels,,,Spain,Canary Islands,Gran Canaria,San Bartolomé de Tirajana,"35118, Las Palmas, España",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-479,Leonardo Hotel Port Portals,Leonardo Hotels,,,Spain,Balearic Islands,Mallorca,Son Servera,"Carrer de la Vinya del Mar, 4, 07560 Son Servera, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-480,Leonardo Royal Hotel Barcelona Forum,Leonardo Hotels,,,Spain,Catalonia,,Barcelona,"Pg. del Taulat, 278, Sant Martí, 08019 Barcelona",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-481,Lindner Golf Resort Portals Nous,Lindner,,,Spain,Balearic Islands,,Portals Nous," Arquitecto Francisco Casas, 18, 07181 Portals Nous, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-482,Lizarann Mallorca Fashion Outlet,Quimicral,,,Spain,Balearic Islands,Mallorca,Marratxí,"Ma-13, Km 7,1, 07141 Inca, Illes Balears, España",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-483,Lloret Santa Rosa,Pierre et Vacances,,,Spain,Cataluña,,Girona,"Carrer de la Sénia del Barral, 39,  Lloret de Mar, ",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-484,Lobster Club,Grupo Cappuccino,,,Spain,Balearic Islands,,Portals Nous,"Passatge a la Mar, 1, 07181 Portals Nous, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-485,Lopesan Baobab,Lopesan Hotels,,,Spain,Canary Islands,Gran Canaria,Meloneras,"C. Mar Adriático, 1, 35100 Meloneras, Las Palmas",677,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-486,Lopesan Central Bellavista,Lopesan Hotels,,,Spain,Canary Islands,Gran Canaria,San Bartolomé de Tirajana,"C. Partera Leonorita, 8, 35100 Maspalomas, Las Palmas, España",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-487,Lopesan Costa Meloneras,Lopesan Hotels,,,Spain,Canary Islands,Gran Canaria,Meloneras,"C. Mar Mediterráneo, 1, 35100 Meloneras, Las Palmas",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-488,Lopesan Villa del Conde,Lopesan Hotels,,,Spain,Canary Islands,Gran Canaria,Meloneras,"C. Mar Mediterráneo, 7, 35100 Meloneras, Las Palmas",561,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-489,L´Hermitage Hotel&Spa,Negresco e Isla Mallorca,,,Spain,Balearic Islands,,Orient,"Carretera de Alaró a Bunyola, Km 8, 07349 Orient",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-490,M House,UR Hotels,,,Spain,Balearic Islands,Mallorca,Palma,"Carrer de Can Maçanet, 1A, Centre, 07003 Palma, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-491,Madrid Eurobuilding 2,Pierre et Vacances,,,Spain,Madrid,,Madrid,Calle Orense 69,0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-492,María 5 Restaurant ,Treguer Hotels ,,,Spain,Balearic Islands,,,,0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-493,Mariant,Mariant Hotels,,,Spain,Balearic Islands,,s'illiot,"Carrer Llevant, 11, 07560 S'Illot, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-494,Mariant Park,Mariant Hotels,,,Spain,Balearic Islands,Mallorca,Sa Coma,"Avinguda de les Savines, 178, 07560 Sa Coma, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-495,Marina Bayview,Satocan Turismo,,,Spain,Canary Islands,Gran Canaria,Puerto Rico,"Av. Guayadeque, 3, 35130 Puerto Rico, Las Palmas",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-496,Marina Suites,Satocan Turismo,,,Spain,Canary Islands,Gran Canaria,Puerto Rico,"C. Juan Díaz Rodríguez, 10, 35130 Puerto Rico, Las Palmas",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-497,Marino Portixol,Kamaleónico y Marino Portixol,,,Spain,Balearic Islands,,,"Carrer de la Sirena, 1, Platja de Palma i Pla de Sant Jordi, 07006 Palma, Illes Balears, España",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-498,Marport ,Marport,,,Spain,Balearic Islands,Mallorca,Felanitx,"07200 Felanitx, Illes Balears, España",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-499,Mas que Menos FAN Mallorca,Quimicral,,,Spain,Balearic Islands,Mallorca,Palma de Mallorca,CC Fan Mallorca C/ del Cardenal Roselloneses s/n local 84.,0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-500,Maurici Park Apartamentos ,Pierre et Vacances,,,Spain,Cataluña,,Empuriabrava,"Av. Joan Carles I, s / n, 17487 Empuriabrava, Girona",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-501,Medium Romàntic Sitges,Medium,,,Spain,Catalonia,,Sitges,"Carrer de Sant Isidre, 33-35, 08870 Sitges, Barcelona",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-502,Medium Sitges Park,Medium,,,Spain,Catalonia,,Sitges,"Carrer Jesús, 16, 08870 Sitges, Barcelona",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-503,Medium Valencia,Medium,,,Spain,Valencia,,València," Av. d'Amado Granell Mesado, 48, Quatre Carreres, 46013 València, Valencia",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-504,Meloneras Golf Club,Lopesan Hotels,,,Spain,Canary Islands,Gran Canaria,Las Palmas,"Carretera GC-500, s/n, San Bartolomé de Tirajana",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-505,MIM Baqueira,MIM Hotels,,,Spain,Catalonia,,Baqueira,Avda Perimetrau s/n – Urb. Val de Ruda,0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-506,MIM Mallorca,MIM Hotels,,,Spain,Balearic Islands,,S'Illot,"Carrer Gregal, 22, 07687 S'Illot, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-507,Mirador del Castillo,Mirador del Castillo,,,Spain,Murcia ,,Benidorm,"C/ dels Quatre Cantons, 20, 03501 Benidorm, Alicante",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-508,Monterrey Roses,Pierre et Vacances,,,Spain,Catalonia,,Roses Girona,"Passeig Maritim, 72, 17480 Roses, Girona",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-509,Morvedra Nou - Only Adults,Annua Hoteles,,,Spain,Balearic Islands,,,"Camí de Macarella, Km 7, 07760, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-510,Mynd Adeje,Canarian Hospitality ,,,Spain,Canary Islands,,Callao Salvaje,"C. el Jable, 36, 38678 Callao Salvaje, Santa Cruz de Tenerife",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-511,Mynd Yaiza,Canarian Hospitality ,,,Spain,Canary Islands,Gran Canaria,"Playa Blanca, Las Palmas","C. Janubio, 3, 35580 Playa Blanca, Las Palmas",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-512,Na Petra,Marport,,,Spain,Balearic Islands,Mallorca,Felanitx,"07200 Felanitx, Illes Balears, España",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-513,Nativo Hotel Ibiza,Aguas de Ibiza,,,Spain,Balearic Islands,Ibiza,Ibiza,"Carrer els Clavells, 24 ",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-514,Negresco,Negresco e Isla Mallorca,,,Spain,Balearic Islands,,,"Av. Callao 924, C1023 Cdad. Autónoma de Buenos Aires, Argentina",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-515,Nobu Hotel Ibiza Bay,Nobu,,,Spain,Balearic Islands,,,"Carrer de Ses Feixes, 52, 07800, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-516,Nuevo Portil Golf,Nuevo Portil Golf,,,Spain,Andalucía,,Nuevo Portil Cartaya,"Av. Cristóbal Colón, s/n, 21459 Nuevo Portil Cartaya, Huelva",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-517,Nura Boreal,Nura Hotels,,,Spain,Balearic Islands,Mallorca,Palma,"Carrer de la Mar Jònica, 9, 07610 Palma, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-518,Nura Condór,Nura Hotels,,,Spain,Balearic Islands,Mallorca,Palma,"Carrer de la Mar Aràbiga, 1, 07610 Palma, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-519,OD Barcelona,OD Hotels,,,Spain,Catalonia,,Barcelona,"Carrer d'Aragó, 300",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-520,OD Sevilla,OD Hotels,,,Spain,Andalucía,,Sevilla,"Dirección: Pl. de la Encarnación, 15, Casco Antiguo, 41003 Sevilla",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-521,OKU Ibiza,OKU Hotels,,,Spain,Balearic Islands,Ibiza,Sant Antoni de Portmany,"Camí del Portixol, 2, 07820 Sant Antoni de Portmany, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-522,Olé Tropical Tenerife,Iberostar Hotels,,,1 España,Canarias - Tenerife,Tenerife,Costa Adeje,"C. Bolivia, s/n, 38660 Costa Adeje, Santa Cruz de Tenerife",219,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-523,Olive Beach ,Olive Beach,,,Spain,Balearic Islands,,,,0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-524,Om Thalasso Villa del Conde ,Lopesan Hotels,,,Spain,Canary Islands,Gran Canaria,San Bartolomé de Tirajana,"P.º de las Meloneras, 35100 Maspalomas, Las Palmas, España",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-525,Ona Palmira Paguera,Ona Hotels,,,Spain,Balearic Islands,Mallorca,Peguera,"Carrer dels Ametllers, 7, 07160 Peguera, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-526,Ona Palmira Paradise,Ona Hotels,,,Spain,Balearic Islands,Mallorca,Peguera,"Carrer de les Gavines, 24, 07160 Peguera, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-527,Only You Atocha Restaurante,Only You Hoteles,,,Spain,Madrid,,Madrid,Paseo de la Infanta Isabel 13  ,0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-528,Only YOU Boutique Hotel,Only You Hoteles,,,Spain,Madrid,,Madrid,"Calle Barquillo, 21",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-529,Only YOU Hotel Atocha,Only You Hoteles,,,Spain,Madrid,,Madrid,Paseo de la Infanta Isabel 13,0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-530,Only YOU Hotel Málaga,Only You Hoteles,,,Spain,Andalucía,,Málaga,"Alameda Principal, 1",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-531,Only YOU Hotel Sevilla,Only You Hoteles,,,Spain,Andalucía,,Sevilla,"Av. de Kansas City, 7, 41018 Sevilla",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-532,Only You Valencia,Only You Hoteles,,,Spain,Valencia,,Valencia,"Plaça de Rodrigo Botet, 5, Ciutat Vella, 46002 València, Valencia",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-533,Operador Hermanos Villegas,Anfi Grupo,,,Spain,Canary Islands,,,Club Gran Anfi / Av. Anfi,0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-534,Origo Mare,Pierre et Vacances,,,Spain,Canary Islands,,Lajares,"C. Majanicho, 100, 35650 Lajares, Las Palmas",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-535,Paguera Treff Boutique Hotel,Treff,,,Spain,Balearic Islands,Mallorca,Peguera,"Bulevar de Peguera, 31, 07160 Peguera, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-536,Palacio de Congresos,Lopesan Hotels,,,Spain,Canary Islands,Gran Canaria,San Bartolomé de Tirajana,"35290 San Bartolomé de Tirajana, Las Palmas, España",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-537,Palladium Hotel Cala Llonga,Palladium,,,Spain,Balearic Islands,,"Cala Llonga, Illes Balears","Carrer des Munt Aconcagua, s/n",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-538,Palladium Hotel Don Carlos,Palladium,,,Spain,Balearic Islands,Ibiza,"Santa Eulària des Riu, Illes Balears","Carrer els Rosers, 53",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-539,Palladium Hotel Menorca,Palladium,,,Spain,Balearic Islands,Menorca,Menorca,"Vía Jardín, s/n, 07740 Menorca",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-540,Palladium Hotel Palmyra,Palladium,,,Spain,Balearic Islands,Ibiza,"Sant Antoni de Portmany, Illes Balears","Avinguda del Doctor Fleming, 18",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-541,Palmera Sur Restaurante,Satocan Turismo,,,Spain,Canary Islands,Gran Canaria,San Bartolomé de Tirajana,"Av. Estados Unidos, 15, 35100 Maspalomas, Las Palmas, España",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-542,Panadería Lozano,Panadería Lozano,,,Spain,Balearic Islands,Mallorca,Palma,"Carrer Gremi de Tintorers, 31, Nord, 07009 Palma, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-543,Park Club Europe,Europe Hotels,,,Spain,Canary Islands,Tenerife,Arona - Tenerife," Avenida Rafael Puig, nº23; Playa de Las Américas",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-544,Parquemar aptos,Parquemar,,,Spain,Balearic Islands,,Cala d´Or," Av Parc de la Mar, 6, 07660 Santanyi, Islas Baleares",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-545,Pasta e Pesto,Pasta e Pesto,,,Spain,Balearic Islands,Mallorca,Palma,"Plaça del Mercat, 4, 07001 Palma, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-546,Petit Hotel Son Penya,Treguer Hotels ,,,Spain,Balearic Islands,Mallorca,Sant Llorenç des Cardassar,"finca Son Penya, Son Berga Vell, Camino de, 07530 Sant Llorenç des Cardassar, Balearic Islands",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-547,Playa Binibeca,Marport,,,Spain,Balearic Islands,,,MENORCA,0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-548,Playa Cala Comtessa,Marport,,,Spain,Balearic Islands,Mallorca,Calvià,"Cala Comtesa, España",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-549,Playa Cala en Porter,Marport,,,Spain,Balearic Islands,,,Menorca,0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-550,Playa Cas Saboners Aptos,Playa Cas Saboners Aptos,,,Spain,Balearic Islands,Mallorca,Calvià,"Av. de Cas Saboners, 07181, Illes Balears, España",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-551,Playa Es Carregador,Marport,,,Spain,Balearic Islands,Mallorca,Calvià,"Palmanova, Illes Balears, España",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-552,Playa Llucmajor,Marport,,,Spain,Balearic Islands,Mallorca,Llucmajor,"07620 Llucmajor, Illes Balears, España",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-553,Playa Oratori,Marport,,,Spain,Balearic Islands,Mallorca,Santanyí,"Platja de s'Oratori, Passatge a la Mar, 5, 07181 Portals Nous, Illes Balears, España",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-554,Playa Palmira,Marport,,,Spain,Balearic Islands,Mallorca,Calvià,"Bulevar de Peguera, 62A, 07160 Peguera, Illes Balears, España",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-555,Playa Punta Prima,Marport,,,Spain,Balearic Islands,Menorca,Sant Lluís,"Platja de Punta Prima, 07713 Sa Punta Prima, Illes Balears, España",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-556,Playa Son Bou,Marport,,,Spain,Balearic Islands,,,menorca,0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-557,Playa Xinxell,Marport,,,Spain,Balearic Islands,Mallorca,Calvià,"07184 Calvià, Illes Balears, España",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-558,Plus Fariones Apartamentos,Plus Fariones,,,Spain,Canary Islands,Gran Canaria,"Puerto del Carmen, Las Palmas","C. Timanfaya, 8",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-559,Plus Fariones Suite Hotel,Plus Fariones,,,Spain,Canary Islands,Lanzarote,Puerto del Carmen,"C. Acatife, 1, 35510 Puerto del Carmen, Las Palmas",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-560,Polideportivo Germans Escalas,IME,,,Spain,Balearic Islands,,,"Carretera de Sebastià Arrom, 4 C.P.: 07008",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-561,Port Salins Empuriabrava,Pierre et Vacances,,,Spain,Catalonia,,"Empuriabrava, Girona","Av. Fages de Climent, 10, 15, ",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-562,Portals Hills Boutique Hotel,Portals Hills,,,Spain,Balearic Islands,,Portals Nous,"Carrer d'en Seguí, 4, 07181 Portals Nous, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-563,Portofino Apartamentos ,Pierre et Vacances,,,Spain,Balearic Islands,,Santa Ponsa,"Av. de Gabriel Roca, 40, Ponent, 07014 Palma, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-564,Potabilizadora,Palladium Ibiza Potabilizadora,,,Spain,Balearic Islands,Ibiza,Sant Josep de sa Talaia,"07830 Sant Josep de sa Talaia, Illes Balears, España",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-565,Presentuoso,L'Artista Pizzeria,,,Spain,Balearic Islands,,,,0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-566,Privado,Privado,,,Spain,Balearic Islands,,,,0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-567,Puerto Alcudiamar,Alcudiamar ,,,Spain,Balearic Islands,Mallorca,Alcúdia,"Passeig Marítim, 1, 07400 Port d'Alcúdia, Illes Balears, España",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-568,Puerto de la Luz,Pierre et Vacances,,,Spain,Canary Islands,Gran Canaria,Las Palmas de Gran Canaria,"C. Juan Rejón, 42, 35008 Las Palmas de Gran Canaria, Las Palmas",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-569,Puerto de Soller,Marport,,,Spain,Balearic Islands,Mallorca,Sóller,"Platja des Traves, 07108 Sóller, Balearic Islands, España",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-570,Quiosco Cala Comtesa,Marport,,,Spain,Balearic Islands,,,Playa Illetas,0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-571,Quiosco Oratori,Marport,,,Spain,Balearic Islands,,,Playa Portals Nous,0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-572,Radisson Blu Arguineguin,Radisson Blu,,,Spain,Canary Islands,,Arguineguin,"Diseminado Bco, 35120 Arguineguin, Las Palmas",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-573,Radisson Blu Lanzarote,Radisson Blu,,,Spain,Canary Islands,Lanzarote,Lanzarote,"Av. del Mar, 26, 35508 Lanzarote",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-574,Radisson Blu Mogán,Radisson Blu,,,Spain,Canary Islands,,Lomo Quiebre,"Av. Los Marrero, 35, Puerto de Mogán, 35138 Lomo Quiebre, Las Palmas",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-575,Radisson Blu Tenerife ,Radisson Blu,,,Spain,Canary Islands,Tenerife,Puerto de la Cruz,"Carretera General Puerto de la Cruz - Arenas, 51, 38400",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-576,Restaurante Alubia,Restaurante Alubia,,,Spain,Balearic Islands,Mallorca,Palma,"Pg. de Mallorca, 34, Centre, 07012 Palma, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-577,Restaurante Amú,Gran Marbella Resort and Beach Club,,,Spain,Andalucía,,,,0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-578,Restaurante Atlantico,Restaurante Atlantico,,,Spain,Canary Islands,Gran Canaria,"San Bartolomé de Tirajana,","Av. de Gran Canaria, 80, 35100  Las Palmas",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-579,Restaurante Ayre Acapulco Ocean View,Apartamentos Ocean View,,,Spain,Canary Islands,Gran Canaria,San Bartolomé de Tirajana,"C. los Pinos, 13 Las Palmas",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-580,Restaurante Camarinas Mazagón,Hostería de La Rábida,,,Spain,Andalucía,,Mazagón,"Av. Conquistadores, 178, 21130 Mazagón, Huelva",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-581,Restaurante El Aljibe del Obispo,Bodega Stratvs,,,Spain,Canary Islands,Lanzarote,"Yaiza, Lanzarote, España","Carretera Lz Km. 30 La Geria- Uga Km. 18,  ",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-582,Restaurante El Puerto,Satocan Turismo,,,Spain,Canary Islands,Gran Canaria,San Bartolomé de Tirajana,"C. Juan Díaz Rodríguez, 10, 35130 Puerto Rico, Las Palmas, España",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-583,Restaurante Khun Gran Bahia,Anfi Grupo,,,Spain,Canary Islands,Gran Canaria,Mogán,"35129 Barranco de la Verga, Las Palmas, España",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-584,Restaurante La Cascada,Anfi Grupo,,,Spain,Canary Islands,,,Anfi Beach Club - Monte Anfi - Av. Anfi del Mar,0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-585,Restaurante La Llonja,Restaurante La Llonja,,,Spain,Balearic Islands,Mallorca,Port de Pollença,"Muelle VIEJO BAJO;REST. LA LONJA, 07470 Port de Pollença, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-586,Restaurante La Posada,Anfi Grupo,,,Spain,Canary Islands,Gran Canaria,Mogán,"35129 Barranco de la Verga, Las Palmas, España",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-587,Restaurante Madunia,Restaurante Madunia,,,Spain,Balearic Islands,Ibiza,Sant Antoni de Portmany,"Ctra. Cap Negret, 16, 07820 Sant Antoni de Portmany, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-588,Restaurante Monte Vista,Anfi Grupo,,,Spain,Canary Islands,Gran Canaria,Mogán,"35140 Mogán, Las Palmas, España",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-589,Restaurante Nelson,Restaurante Nelson,,,Spain,Canary Islands,,Arinaga,"Av. Polizón, 47, 35118 ",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-590,Restaurante Nube Steak House,Anfi Grupo,,,Spain,Canary Islands,,,Anfi Emeral Club,0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-591,Restaurante Poke,Anfi Grupo,,,Spain,Canary Islands,Gran Canaria,Mogán,"35140 Mogán, Las Palmas, España",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-592,Restaurante Puerto Vista,Anfi Grupo,,,Spain,Canary Islands,,,Club Puerto Anfi,0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-593,Restaurante Samar,Kyrat Hotels,,,Spain,Balearic Islands,Mallorca,"Son Servera,","Carrer de la Vinya del Mar, 1,  Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-594,Restaurante Sunset,Satocan Turismo,,,Spain,Canary Islands,Gran Canaria,Maspalomas,"Urbanización Salobre Golf, GC 1 km 53, 35100 Maspalomas, Las Palmas",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-595,Restaurante Tropicana,Anfi Grupo,,,Spain,Canary Islands,Gran Canaria,Mogán,"35140 Mogán, Las Palmas, España",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-596,Restaurante&Waves,Satocan Turismo,,,Spain,Canary Islands,Gran Canaria,San Bartolomé de Tirajana,"San Bartolomé de Tirajana, Las Palmas, España",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-597,Ritzi Restaurant,Bo Hotel,,,Spain,Balearic Islands,,Portals Nous," Ctra. Vella, 9, 07181 Portals Nous, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-598,Robinson Club Jandia Playa,Robinson,,,Spain,Canary Islands,Fuerteventura,Morro Jable,"Av. del Saladar, 6, 35626 Morro Jable, Las Palmas",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-599,Robinson Esquinzo Playa,Robinson,,,Spain,Canary Islands,,,"Urbanizacion Butihondo C, C. Gran Canaria, 2, 35626, Las Palmas",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-600,Room Mate Alba,Room Mate,,,Spain,Madrid,,Madrid," C. de las Huertas, 16, Centro, 28012 Madrid",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-601,Room Mate Alicia,Room Mate,,,Spain,Madrid,,Madrid,"C. del Prado, 2, Centro, 28014 Madrid",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-602,Room Mate Anna,Room Mate,,,Spain,Catalonia,,Barcelona,"C/ d'Aragó, 271, L'Eixample, 08007 Barcelona",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-603,Room Mate Carla,Room Mate,,,Spain,Catalonia,,Barcelona,"C/ de Mallorca, 288, L'Eixample, 08037 Barcelona",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-604,Room Mate Cosmo ,Room Mate,,,Spain,Valencia,,València,"Av. de María Cristina, 8, Ciutat Vella, 46001 València, Valencia",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-605,Room Mate Gerard,Room Mate,,,Spain,Catalonia,,Barcelona,"C/ d'Ausiàs Marc, 34, L'Eixample, 08010 Barcelona",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-606,Room Mate Gorka,Room Mate,,,Spain,País Vasco,,Donostia,"Gipuzkoa Plaza, 11, 20004 Donostia, Gipuzkoa",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-607,Room Mate Helen Berger ,Room Mate,,,Spain,Valencia,,València,"C/ de les Comèdies, 22, 24, Ciutat Vella, 46003 València, Valencia",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-608,Room Mate Leo,Room Mate,,,Spain,Andalucía,,Granada,"Calle Campo Verde, 1, Centro, 18001 Granada",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-609,Room Mate Macarena,Room Mate,,,Spain,Madrid,,Madrid,"Gran Vía, 43, Centro, 28013 Madrid",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-610,Room Mate Mario,Room Mate,,,Spain,Madrid,,Madrid,"C. de Campomanes, 4, Centro, 28013 Madrid",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-611,Room Mate Óscar,Room Mate,,,Spain,Madrid,,Madrid,"Pl. de Pedro Zerolo, 12, Centro, 28004 Madrid",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-612,Room Mate Pau,Room Mate,,,Spain,Catalonia,,Barcelona,"C/ de Fontanella, 7, L'Eixample, 08010 Barcelona",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-613,Room Mate Valeria,Room Mate,,,Spain,Andalucía,,Málaga,"Plaza Poeta Alfonso Canales, 5, Distrito Centro, 29001 Málaga",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-614,Rooms Ciencias,Room Mate,,,Spain,Valencia,,València,"Av. de l'Institut Obrer de València, 20, Quatre Carreres, 46013 València, Valencia",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-615,Roquetas De Mar,Pierre et Vacances,,,Spain,Andalucía,,"Roquetas de Mar, Almería",Résidence,0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-616,Roquetas El Palmeral,Pierre et Vacances,,,Spain,Andalucía,,"Roquetas de Mar, Almería","Av. Mediterráneo, 12, 04740 de Mar, Almería",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-617,Sa Llotja Cala d’Or,Restaurantes Sa Llotja,,,Spain,Balearic Islands,Mallorca,Santanyí," Carrer Vial D, 10, 07660 Santanyí, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-618,Sa Llotja Portocolom,Restaurantes Sa Llotja,,,Spain,Balearic Islands,Mallorca,Portocolom,"Edificio Portuario, Carrer dels Pescadors, s/n, 07670 Portocolom, Balearic Islands",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-619,Salobre Hotel Resort & Serenity,Satocan Turismo,,,Spain,Canary Islands,Gran Canaria,Maspalomas,"Urbanización Salobre Golf, GC 1 km 53, 35100 Maspalomas, Las Palmas",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-620,Salou Apartamentos,Pierre et Vacances,,,Spain,Cataluña,,Salou,"Calle Pompeu Fabra, 25",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-621,Salou Sunset ,Pierre et Vacances,,,Spain,Catalonia,,"Salou, Tarragona","Carrer del Vendrell, 9, 43840 Salou, Tarragona",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-622,Schwaiger,Schwaiger Xino's,,,Spain,Balearic Islands,Mallorca,"Palma, Balearic Islands","Centro Comercial Son Moix, Camí de la Vileta, 39",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-623,Sevilla,Pierre et Vacances,,,Spain,Andalucía,,Sevilla,"Calle Pagés del Corro, 102",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-624,Sholeo Lodges Las Palmas Flats,Canarian Hospitality ,,,Spain,Canary Islands,Gran Canaria,Las Palmas de Gran Canaria,"C. Juan Rejón, 20, 35008 Las Palmas de Gran Canaria, Las Palmas",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-625,Sholeo Lodges Maspalomas,Canarian Hospitality ,,,Spain,Canary Islands,Gran Canaria,Las Palmas de Gran Canaria,"C. Juan Rejón, 20, 35008 Las Palmas de Gran Canaria, Las Palmas",269,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-626,Sholeo Los Gigantes,Canarian Hospitality ,,,Spain,Canary Islands,,Puerto de Santiago,"Av. la Gaviota, 3, 38687 Puerto de Santiago, Santa Cruz de Tenerife",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-627,Sidecar Restaurante,Satocan Turismo,,,Spain,Canary Islands,Gran Canaria,San Bartolomé de Tirajana,"C. Swing, 35128 Maspalomas, Las Palmas, España",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-628,Sorrento Apartamentos,Pierre et Vacances,,,Spain,Balearic Islands,,Santa Ponsa,"Avenida Del Rei Jaume I, Nº 86 , 07180 Santa Ponsa",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-629,Steigenberger Camp de Mar,Steigenberger Hotels & Resorts ,,,Spain,Balearic Islands,,Camp de Mar,"Carrer Taula, 2, 07160 Camp de Mar, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-630,Stella Maris,Marble Hotels,,,Spain,Balearic Islands,Ibiza,Sant Antoni de Portmany,"Ctra. Cap Negret, 16, 07820 Sant Antoni de Portmany, Illes Balears Teléfono: ",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-631,Suculenta Port de Sóller ,Schwaiger Xino's,,,Spain,Balearic Islands,,Puerto de Soller,Calle Marina 62,0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-632,Sun Club El Dorado ,Sun Club,,,Spain,Balearic Islands,,Cabo Regana,"Ctra. Cabo Blanco, Km 11, 07609 Cabo Regana, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-633,Sunset Suites By Bull Hotels,Bull Hotels ,,,Spain,Canary Islands,Gran Canaria,San Bartolomé de Tirajana,"Calle Bentayga, 2, 35130 Puerto Rico, Gran Canaria, Las Palmas",60,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-634,T 1057 Enrique Tomas Aeropuerto Sant Joan Palma de Mallorca,Quimicral,,,Spain,Balearic Islands,Mallorca,Palma,"Palma, Illes Balears, España",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-635,T. 149 Enrique Tomas CC Fashion Outlet,Quimicral,,,Spain,Balearic Islands,,,"Aeropuerto de Palma de Mallorca Módulo C, Planta 2, Puerta C68, Carretera de l'Aeroport, Local 04CP20L02, 07611",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-636,T.1026 Et Aeropuerto Sant Joan Palma de Mallorca,Quimicral,,,Spain,Balearic Islands,Mallorca,Palma,"Palma, Illes Balears, España",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-637,T.1027 Enrique Tomás Foodies Aeropuerto Sant Joan,Quimicral,,,Spain,Balearic Islands,Mallorca,Palma,"Palma, Illes Balears, España",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-638,T.1040 Enrique Tomás Foodies Aeropuerto De Ibiza,Quimicral,,,Spain,Balearic Islands,Ibiza,Sant Josep de sa Talaia,"Aeropuerto San José Ibiza Lado Aire, Sala embarque, 07800 Ibiza, Illes Balears, España",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-639,T.1058 Enrique Tomás Aeropuerto Sant Joan,Quimicral,,,Spain,Balearic Islands,Mallorca,Palma,"Carrer de Sant Joan, Centre, 07012 Palma, Illes Balears, España",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-640,T.396 Enrique Tomas Ibiza,Quimicral,,,Spain,Balearic Islands,Ibiza,Eivissa,"Carrer de la Mare de Déu, 13, 07400 Eivissa, Illes Balears, España",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-641,Tacande Portals - Costa,Dreamplace Hotels,,,Spain,Balearic Islands,,,"Carrer d'en Caldentei, 15, 07181 Bendinat, Illes Balears, España",284,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-642,Tacande Portals - Mar,Dreamplace Hotels,,,Spain,Balearic Islands,,Bendinat,"Carrer d'en Caldentei, 15, 07181 Bendinat, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-643,Tahini Marbella Sushi Bar & Restaurant,Grupo Cappuccino,,,Spain,Andalucía,,Malaga,"C. José Meliá, S/N, 29602 Malaga, Málaga",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-644,Tahini Puerto Portals,Grupo Cappuccino,,,Spain,Balearic Islands,,Portals Nous,"Plaça de Portals, 2, 07184 Portals Nous, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-645,Tarifa Suites,Q Hoteles,,,Spain,Andalucía,,Tarifa,"C. Fernán Pérez Portocarrero, 1, 11380 Tarifa, Cádiz",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-646,Terrazas Costa del Sol,Pierre et Vacances,,,Spain,Andalucía,,Málaga,"Av. Sierra Morena, 2, 29692 Manilva, Málaga",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-647,Tienda Gourmet,Bodega Stratvs,,,Spain,Canary Islands,Lanzarote,"Yaiza, Lanzarote, España","Carretera Lz Km. 30 La Geria- Uga Km. 18, ",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-648,Tiki Bar ,Anfi Grupo,,,Spain,Canary Islands,,,"Mogan Anfi Del Mar, Las Palmas de Gran Canaria, Gran Canaria España",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-649,Trendhotel Alcudia,Magic Hotels,,,Spain,Balearic Islands,Mallorca,Alcúdia,"Avinguda de Mèxic, 3, 07400 Alcúdia, Illes Balears",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-650,TRS Ibiza,Palladium,,,Spain,Balearic Islands,Ibiza,Sant Antoni de Portmany,"Camí del Portixol, 1, 07820 Sant Antoni de Portmany, Illes Balears",378,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-651,TUI Magic Life,TUI Magic Life,,,Spain,Canary Islands,Fuerteventura,Pájara,"C. Pueblos, 1, 35626 Esquinzo, Las Palmas",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-652,Ushuaïa Ibiza Beach Hotel,Palladium,,,Spain,Balearic Islands,Ibiza,Sant Jordi de ses Salines,"Ctra. de Platja d'en Bossa, 10, 07817 Sant Jordi de ses Salines, Illes Balears",415,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-653,Vestige Binidufà,Vestige Collection,,,Spain,Balearic Islands,Menorca,Es Mercadal,"Diseminado Binideufa, 18, 07750, Illes Balears, España",11,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-654,Vestige Economato,Vestige Collection,,,Spain,Balearic Islands,Menorca,Es Mercadal,"Camí de Son March, finca, Camí de Son Vell, s/n, 07769, Illes Balears, España",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-655,Vestige Son Ermitá,Vestige Collection,,,Spain,Balearic Islands,Menorca,Alaior,"07730 Alaior, Illes Balears, España",11,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-656,Vestige Son Vell,Vestige Collection,,,Spain,Balearic Islands,,,"Camí de Son March, Camí de Son Vell, s/n, 07769 Ciutadella de Menorca, Illes Balears",34,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-657,Volare Portocolom,Marport,,,Spain,Balearic Islands,Mallorca,Felanitx,"P. Co, Carrer d'En Cristòfor Colom, 43, 07670 Portocolom, Illes Balears, España",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-658,Wellies Puerto Portals,Grupo Cappuccino,,,Spain,Balearic Islands,,,"Puerto Portals, Local 22, 07818, Balearic Islands",0,0,,,,,,,NO,NO,NO,NO,,,Activo
+HS-659,Zona de Almacén Hard Rock Tenerife,Hard Rock Hoteles,,,Spain,Canary Islands,Tenerife,Adeje,"Avenida de Adeje 300, 38678 Playa Paraíso",0,0,,,,,,,NO,NO,NO,NO,,,Activo
