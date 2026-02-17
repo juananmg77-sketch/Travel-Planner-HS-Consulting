@@ -857,7 +857,7 @@ function Dashboard({ stats, summaryByAuditor, onNavigate, onTriggerPlanning, onT
           onMouseEnter={e => e.currentTarget.style.transform = "translateY(-4px)"}
           onMouseLeave={e => e.currentTarget.style.transform = "translateY(0)"}
         >
-          <div style={{ fontSize: 12, textTransform: "uppercase", color: "#999", fontWeight: 700, letterSpacing: 1 }}>Total Trayectos</div>
+          <div style={{ fontSize: 12, textTransform: "uppercase", color: "#2563EB", fontWeight: 700, letterSpacing: 1 }}>Total Trayectos</div>
           <div style={{ fontSize: 48, fontWeight: 800, color: "#111", marginTop: 8 }}>{stats.total}</div>
           <div style={{ fontSize: 14, color: "#666", marginTop: 8 }}>Planificación completa</div>
         </div>
