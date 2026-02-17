@@ -47,17 +47,20 @@ function normalizeRegion(r) {
 function inferIsland(base) {
   if (!base) return null;
   const b = base.toLowerCase();
-  if (b.includes("gran canaria") || b.includes("palmas")) return "Gran Canaria";
+  if (b.includes("gran canaria") || b === "las palmas" || b.includes("las palmas de gran canaria")) return "Gran Canaria";
   if (b.includes("tenerife")) return "Tenerife";
   if (b.includes("lanzarote")) return "Lanzarote";
   if (b.includes("fuerteventura")) return "Fuerteventura";
   if (b.includes("hierro")) return "El Hierro";
   if (b.includes("gomera")) return "La Gomera";
-  if (b.includes("palma") && !b.includes("las palmas") && !b.includes("mallorca")) return "La Palma";
-  if (b.includes("mallorca") || b.includes("calvià") || b.includes("palma de mallorca")) return "Mallorca";
+  // Mallorca MUST be checked BEFORE La Palma to avoid "palmanova".includes("palma") false positive
+  if (b.includes("mallorca") || b.includes("calvià") || b === "palma de mallorca" || b === "palma"
+    || b.includes("palmanova") || b.includes("palma nova")) return "Mallorca";
   if (b.includes("ibiza") || b.includes("eivissa")) return "Ibiza";
   if (b.includes("menorca")) return "Menorca";
   if (b.includes("formentera")) return "Formentera";
+  // La Palma: require exact match or explicit name to avoid false positives
+  if (b === "la palma" || b.includes("santa cruz de la palma") || b.includes("los llanos de aridane") || b.includes("breña")) return "La Palma";
   return null;
 }
 
@@ -136,12 +139,28 @@ const ISLAND_REGIONS = ["Islas Canarias", "Islas Baleares"];
 
 // Municipality -> Region inference (for when user updates municipality)
 const MUNI_REGION_MAP = {
+  // Baleares - Mallorca
   "palma de mallorca": "Islas Baleares", "palma": "Islas Baleares", "calvià": "Islas Baleares",
   "inca": "Islas Baleares", "manacor": "Islas Baleares", "llucmajor": "Islas Baleares",
+  "alcudia": "Islas Baleares", "alcúdia": "Islas Baleares", "sóller": "Islas Baleares", "pollença": "Islas Baleares",
+  "santa ponsa": "Islas Baleares", "cala ratjada": "Islas Baleares",
+  "palmanova": "Islas Baleares", "palma nova": "Islas Baleares",
+  "campos": "Islas Baleares", "felanitx": "Islas Baleares", "santanyí": "Islas Baleares",
+  "cala millor": "Islas Baleares", "cala bona": "Islas Baleares",
+  "port d'alcúdia": "Islas Baleares", "playa de muro": "Islas Baleares", "can picafort": "Islas Baleares",
+  "montuïri": "Islas Baleares", "andratx": "Islas Baleares", "lloseta": "Islas Baleares",
+  "sant llorenç des cardassar": "Islas Baleares", "cala sant vicenç": "Islas Baleares",
+  "torrenova": "Islas Baleares", "puigderrós": "Islas Baleares", "porto colom": "Islas Baleares",
+  "cales de mallorca": "Islas Baleares", "costa de la calma": "Islas Baleares",
+  "cala vinyes": "Islas Baleares", "maria de la salut": "Islas Baleares",
+  "santa margalida": "Islas Baleares", "sa coma": "Islas Baleares",
+  // Baleares - Ibiza / Menorca / Formentera
   "ibiza": "Islas Baleares", "eivissa": "Islas Baleares", "maó": "Islas Baleares", "mahón": "Islas Baleares",
   "ciutadella": "Islas Baleares", "formentera": "Islas Baleares", "santa eulalia": "Islas Baleares",
-  "alcudia": "Islas Baleares", "sóller": "Islas Baleares", "pollença": "Islas Baleares",
-  "sant antoni": "Islas Baleares", "santa ponsa": "Islas Baleares", "cala ratjada": "Islas Baleares",
+  "sant antoni": "Islas Baleares",
+  "santa eulària des riu": "Islas Baleares", "sant jordi de ses salines": "Islas Baleares",
+  "sant antoni de portmany": "Islas Baleares",
+  // Canarias
   "las palmas de gran canaria": "Islas Canarias", "las palmas": "Islas Canarias",
   "santa cruz de tenerife": "Islas Canarias", "arrecife": "Islas Canarias",
   "puerto del rosario": "Islas Canarias", "san bartolomé de tirajana": "Islas Canarias",
@@ -149,6 +168,12 @@ const MUNI_REGION_MAP = {
   "la laguna": "Islas Canarias", "san cristóbal de la laguna": "Islas Canarias",
   "telde": "Islas Canarias", "mogán": "Islas Canarias", "corralejo": "Islas Canarias",
   "costa teguise": "Islas Canarias", "playa blanca": "Islas Canarias",
+  "costa adeje": "Islas Canarias", "playa de la américas": "Islas Canarias", "playa de la américa": "Islas Canarias",
+  "san miguel de abona": "Islas Canarias", "maspalomas": "Islas Canarias",
+  "los cristianos": "Islas Canarias", "puerto de la cruz": "Islas Canarias",
+  "montaña roja": "Islas Canarias", "costa calma": "Islas Canarias",
+  "breña baja": "Islas Canarias",
+  // Península
   "madrid": "Madrid", "barcelona": "Cataluña", "sevilla": "Andalucía",
   "málaga": "Andalucía", "granada": "Andalucía", "córdoba": "Andalucía",
   "cádiz": "Andalucía", "almería": "Andalucía", "huelva": "Andalucía", "jaén": "Andalucía",
@@ -165,23 +190,51 @@ const MUNI_REGION_MAP = {
 
 // Municipality -> Island inference (more precise than inferIsland)
 const MUNI_ISLAND_MAP = {
+  // Mallorca
   "palma de mallorca": "Mallorca", "palma": "Mallorca", "calvià": "Mallorca",
   "inca": "Mallorca", "manacor": "Mallorca", "llucmajor": "Mallorca",
-  "alcudia": "Mallorca", "sóller": "Mallorca", "pollença": "Mallorca",
+  "alcudia": "Mallorca", "alcúdia": "Mallorca", "sóller": "Mallorca", "pollença": "Mallorca",
   "santa ponsa": "Mallorca", "cala ratjada": "Mallorca",
+  "palmanova": "Mallorca", "palma nova": "Mallorca",
+  "campos": "Mallorca", "felanitx": "Mallorca", "santanyí": "Mallorca",
+  "cala millor": "Mallorca", "cala bona": "Mallorca",
+  "port d'alcúdia": "Mallorca", "playa de muro": "Mallorca", "can picafort": "Mallorca",
+  "montuïri": "Mallorca", "andratx": "Mallorca", "lloseta": "Mallorca",
+  "sant llorenç des cardassar": "Mallorca", "cala sant vicenç": "Mallorca",
+  "torrenova": "Mallorca", "puigderrós": "Mallorca", "porto colom": "Mallorca",
+  "cales de mallorca": "Mallorca", "costa de la calma": "Mallorca",
+  "cala vinyes": "Mallorca", "maria de la salut": "Mallorca",
+  "santa margalida": "Mallorca", "sa coma": "Mallorca",
+  // Ibiza
   "ibiza": "Ibiza", "eivissa": "Ibiza", "santa eulalia": "Ibiza", "sant antoni": "Ibiza",
+  "santa eulària des riu": "Ibiza", "sant jordi de ses salines": "Ibiza",
+  "sant antoni de portmany": "Ibiza",
+  // Menorca
   "maó": "Menorca", "mahón": "Menorca", "ciutadella": "Menorca",
+  // Formentera
   "formentera": "Formentera",
+  // Gran Canaria
   "las palmas de gran canaria": "Gran Canaria", "las palmas": "Gran Canaria",
   "telde": "Gran Canaria", "san bartolomé de tirajana": "Gran Canaria",
   "playa del inglés": "Gran Canaria", "mogán": "Gran Canaria", "maspalomas": "Gran Canaria",
+  // Tenerife
   "santa cruz de tenerife": "Tenerife", "adeje": "Tenerife", "arona": "Tenerife",
   "la laguna": "Tenerife", "san cristóbal de la laguna": "Tenerife",
   "puerto de la cruz": "Tenerife", "los cristianos": "Tenerife",
+  "costa adeje": "Tenerife", "playa de la américas": "Tenerife", "playa de la américa": "Tenerife",
+  "san miguel de abona": "Tenerife",
+  // Lanzarote
   "arrecife": "Lanzarote", "costa teguise": "Lanzarote", "playa blanca": "Lanzarote",
+  "montaña roja": "Lanzarote",
+  // Fuerteventura
   "puerto del rosario": "Fuerteventura", "corralejo": "Fuerteventura",
+  "costa calma": "Fuerteventura",
+  // La Gomera
   "san sebastián de la gomera": "La Gomera",
+  // La Palma
   "santa cruz de la palma": "La Palma", "los llanos de aridane": "La Palma",
+  "breña baja": "La Palma",
+  // El Hierro
   "valverde": "El Hierro",
 };
 
@@ -807,7 +860,7 @@ function UploadScreen({ onDataLoaded, onConsultantsLoaded, existingActivities = 
   );
 }
 
-function Dashboard({ stats, summaryByAuditor, onNavigate, onTriggerPlanning, onTriggerConsultants, uploadFlash, onClearData }) {
+function Dashboard({ stats, summaryByAuditor, onNavigate, onTriggerPlanning, onTriggerConsultants, uploadFlash, onClearData, onLogout }) {
   const consultants = Object.entries(summaryByAuditor || {}).sort((a, b) => b[1].total - a[1].total);
 
   return (
@@ -838,6 +891,14 @@ function Dashboard({ stats, summaryByAuditor, onNavigate, onTriggerPlanning, onT
               style={{ background: "#FEF2F2", color: "#B91C1C", border: "1px solid #FCA5A5", padding: "10px 18px", borderRadius: 12, fontSize: 13, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }}
             >
               🗑️ Limpiar
+            </button>
+          )}
+          {onLogout && (
+            <button
+              onClick={onLogout}
+              style={{ background: "white", color: "#666", border: "1px solid #ddd", padding: "10px 18px", borderRadius: 12, fontSize: 13, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }}
+            >
+              🚪 Cerrar Sesión
             </button>
           )}
         </div>
@@ -1834,10 +1895,10 @@ export default function HSConsultingTravelPlanner() {
       const originDisplay = isOriginIsland ? (c.island || originCCAA) : originCCAA;
 
       const destMuni = client.municipality || activity.r;
-      // Use inferred region/island from municipality (handles user corrections)
-      const destCCAA = normalizeRegion(inferRegionFromMuni(destMuni) || client.region || activity.r);
+      // Prioritize data from clientData.json over inference (inference is fallback only)
+      const destCCAA = normalizeRegion(client.region || inferRegionFromMuni(destMuni) || activity.r);
       const isDestIsland = ISLAND_REGIONS.includes(destCCAA);
-      const destIsland = inferIslandFromMuni(destMuni) || client.island;
+      const destIsland = client.island || inferIslandFromMuni(destMuni);
       const destDisplay = isDestIsland ? (destIsland || destCCAA) : destCCAA;
 
       const routeLabel = tType === "local" ? "Transporte Local" : `${originMuni} / ${originDisplay} → ${destMuni} / ${destDisplay}`;
@@ -2264,6 +2325,7 @@ export default function HSConsultingTravelPlanner() {
             onTriggerPlanning={() => planningInputRef.current.click()}
             uploadFlash={uploadFlash}
             onClearData={handleClearData}
+            onLogout={handleLogout}
           />
 
           <input type="file" ref={planningInputRef} style={{ display: "none" }} accept=".csv" onChange={onUploadPlanning} />
