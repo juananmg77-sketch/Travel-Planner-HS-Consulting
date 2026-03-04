@@ -1458,7 +1458,7 @@ function AccommodationHotelsManager({ hotels, onClose, onUpdate, onImportCSV }) 
   );
 }
 
-function BookingPanel({ consultant, activity, transportType, establishments, consultants, onClose, onUpdateClientAddress, bookedLinks = {}, onMarkBooked, groupStartDate, groupEndDate, accommodationHotels = {} }) {
+function BookingPanel({ consultant, activity, transportType, establishments, consultants, onClose, onUpdateClientAddress, bookedLinks = {}, onMarkBooked, groupStartDate, groupEndDate, accommodationHotels = {}, onForceFinalize }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -1796,6 +1796,7 @@ function BookingPanel({ consultant, activity, transportType, establishments, con
                         style={{ fontSize: 11, color: "#0369A1", background: "#E0F2FE", padding: "4px 8px", borderRadius: 6, textDecoration: "none" }}
                       >🗺️ Maps</a>
                     )}
+                    <button onClick={(e) => { e.preventDefault(); if (confirm("¿Eliminar reserva de hotel?")) onMarkBooked("__accom__", null); }} style={{ background: "transparent", border: "none", color: "#EF4444", fontSize: 16, cursor: "pointer", padding: 0, marginLeft: "auto" }} title="Eliminar hotel">🗑️</button>
                   </div>
                 )}
 
@@ -1909,7 +1910,10 @@ function BookingPanel({ consultant, activity, transportType, establishments, con
 
                     {isBooked && (
                       <div style={{ background: "#ECFDF5", borderRadius: 10, padding: "8px 10px", border: "1px solid #A7F3D0" }}>
-                        <div style={{ fontWeight: 800, color: "#065F46", fontSize: 10, marginBottom: 4 }}>✅ RESERVADO</div>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+                          <div style={{ fontWeight: 800, color: "#065F46", fontSize: 10 }}>✅ RESERVADO</div>
+                          <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); if (confirm("¿Eliminar reserva?")) onMarkBooked(l.url, null); }} style={{ background: "transparent", border: "none", color: "#EF4444", fontSize: 14, cursor: "pointer", padding: 0 }} title="Eliminar reserva">🗑️</button>
+                        </div>
                         {(booking.segments || [{ type: booking.type || "ida", locator: booking.locator, date: booking.date }]).map((seg, si) => (
                           <div key={si} style={{ display: "flex", justifyContent: "space-between", color: "#047857", fontSize: 11 }}>
                             <span style={{ textTransform: "capitalize" }}>{seg.type}:</span>
@@ -1947,11 +1951,24 @@ function BookingPanel({ consultant, activity, transportType, establishments, con
               <div style={{ fontSize: 13, color: "#555" }}>
                 <span style={{ fontWeight: 700 }}>{Object.keys(bookedLinks).length}</span> reserva(s) · {hotelLabel}
               </div>
-              <button
-                onClick={handleSendEmail}
-                disabled={Object.keys(bookedLinks).length === 0}
-                style={{ background: Object.keys(bookedLinks).length === 0 ? "#CBD5E0" : "#0060AA", color: "white", border: "none", padding: "10px 20px", borderRadius: 10, fontWeight: 700, fontSize: 13, cursor: Object.keys(bookedLinks).length === 0 ? "default" : "pointer" }}
-              >📩 Notificar al Consultor</button>
+              <div style={{ display: "flex", gap: 10 }}>
+                <button
+                  onClick={() => {
+                    if (onForceFinalize) onForceFinalize();
+                    onClose();
+                  }}
+                  style={{ background: "#10B981", color: "white", border: "none", padding: "10px 20px", borderRadius: 10, fontWeight: 700, fontSize: 13, cursor: "pointer" }}
+                >💾 Guardar Gestión</button>
+                <button
+                  onClick={() => {
+                    if (onForceFinalize) onForceFinalize();
+                    handleSendEmail();
+                    onClose();
+                  }}
+                  disabled={Object.keys(bookedLinks).length === 0}
+                  style={{ background: Object.keys(bookedLinks).length === 0 ? "#CBD5E0" : "#0060AA", color: "white", border: "none", padding: "10px 20px", borderRadius: 10, fontWeight: 700, fontSize: 13, cursor: Object.keys(bookedLinks).length === 0 ? "default" : "pointer", display: "flex", alignItems: "center", gap: 8 }}
+                >📩 Notificar Consultor</button>
+              </div>
             </div>
           </div>
         </div>
@@ -2821,21 +2838,29 @@ export default function HSConsultingTravelPlanner() {
     setBookedLinks(prev => {
       const next = { ...prev };
       idsToUpdate.forEach(id => {
-        const current = next[id] || {};
-        next[id] = { ...current, [url]: bookingData };
+        const current = { ...(next[id] || {}) };
+        if (bookingData === null) {
+          delete current[url];
+        } else {
+          current[url] = bookingData;
+        }
+        next[id] = current;
       });
       return next;
     });
 
-    // Automatically "Finalize" the activities if marked as booked
-    const nextFinalized = new Set(finalizedIds);
-    idsToUpdate.forEach(id => nextFinalized.add(id));
-    setFinalizedIds(nextFinalized);
+    if (bookingData !== null) {
+      // Automatically "Finalize" the activities if marked as booked
+      const nextFinalized = new Set(finalizedIds);
+      idsToUpdate.forEach(id => nextFinalized.add(id));
+      setFinalizedIds(nextFinalized);
 
-    // Optional: set flash message
-    const loc = typeof bookingData === 'object' ? bookingData.locator : bookingData;
-    setUploadFlash(`✅ Reserva confirmada con loc: ${loc}`);
-    setTimeout(() => setUploadFlash(null), 3000);
+      setUploadFlash(`✅ Reserva registrada`);
+      setTimeout(() => setUploadFlash(null), 3000);
+    } else {
+      setUploadFlash(`🗑️ Reserva eliminada`);
+      setTimeout(() => setUploadFlash(null), 3000);
+    }
   }, [bookingTarget, finalizedIds]);
 
   const groupRanges = useMemo(() => {
@@ -3509,6 +3534,14 @@ export default function HSConsultingTravelPlanner() {
           groupStartDate={bookingTarget.groupStartDate}
           groupEndDate={bookingTarget.groupEndDate}
           accommodationHotels={accommodationHotels}
+          onForceFinalize={() => {
+            const idsToUpdate = bookingTarget.selectedIds && bookingTarget.selectedIds.length > 0
+              ? bookingTarget.selectedIds
+              : [bookingTarget.activity.id];
+            const nextFinalized = new Set(finalizedIds);
+            idsToUpdate.forEach(id => nextFinalized.add(id));
+            setFinalizedIds(nextFinalized);
+          }}
         />
       )}
       <AppLayout>
