@@ -1583,30 +1583,44 @@ function BookingPanel({ consultant, activity, transportType, establishments, con
   const modalIcon = modalIsCar ? "🚗" : (activeBookingLabel?.includes("Renfe") || activeBookingLabel?.includes("Iryo") || activeBookingLabel?.includes("Trainline")) ? "🚄" : "✈️";
 
   // Accommodation hotels: find matches for the destination zone
-  const destZone = activity.destMuni || activity.r || "";
   const accomHotels = useMemo(() => {
-    if (!accommodationHotels || Object.keys(accommodationHotels).length === 0) return [];
-    const destNorm = destZone.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-    // Try to find zones that partially match the destination
     const matched = [];
-    Object.entries(accommodationHotels).forEach(([zone, hotels]) => {
-      const zoneNorm = zone.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-      if (destNorm.includes(zoneNorm) || zoneNorm.includes(destNorm) ||
-        activity.r?.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").includes(zoneNorm)) {
-        hotels.forEach(h => matched.push({ ...h, zona: zone }));
-      }
+
+    // Always include the visited establishments first as options!
+    establishments.forEach(e => {
+      matched.push({ hotel: e, zona: destZone || activity.r || "Destino", ubicacion: "" });
     });
-    return matched;
-  }, [accommodationHotels, destZone, activity.r]);
+
+    if (accommodationHotels && Object.keys(accommodationHotels).length > 0) {
+      const destNorm = destZone.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      // Try to find zones that partially match the destination
+      Object.entries(accommodationHotels).forEach(([zone, hotels]) => {
+        const zoneNorm = zone.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        if (destNorm.includes(zoneNorm) || zoneNorm.includes(destNorm) ||
+          activity.r?.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").includes(zoneNorm)) {
+          hotels.forEach(h => matched.push({ ...h, zona: zone }));
+        }
+      });
+    }
+
+    // Unique by name to avoid duplicates
+    return Array.from(new Map(matched.map(item => [item.hotel, item])).values());
+  }, [accommodationHotels, destZone, activity.r, establishments]);
 
   // All zones for manual zone selector
   const allZones = useMemo(() => Object.keys(accommodationHotels || {}).sort(), [accommodationHotels]);
   const [selectedZone, setSelectedZone] = useState("");
 
   const hotelsToShow = useMemo(() => {
-    if (selectedZone) return (accommodationHotels[selectedZone] || []).map(h => ({ ...h, zona: selectedZone }));
+    if (selectedZone) {
+      // If a DB zone is selected, show the establishments + that zone's hotels
+      const baseOptions = establishments.map(e => ({ hotel: e, zona: destZone || activity.r || "Destino", ubicacion: "" }));
+      const dbOptions = (accommodationHotels[selectedZone] || []).map(h => ({ ...h, zona: selectedZone }));
+      const combined = [...baseOptions, ...dbOptions];
+      return Array.from(new Map(combined.map(item => [item.hotel, item])).values());
+    }
     return accomHotels;
-  }, [selectedZone, accommodationHotels, accomHotels]);
+  }, [selectedZone, accommodationHotels, accomHotels, establishments, destZone, activity.r]);
 
   // Single hotel selector + locator (replaces per-hotel list)
   const [selectedHotel, setSelectedHotel] = useState(null); // { hotel, zona, ubicacion }
@@ -1757,129 +1771,127 @@ function BookingPanel({ consultant, activity, transportType, establishments, con
             </p>
 
             {/* ===== ACCOMMODATION HOTELS SECTION ===== */}
-            {Object.keys(accommodationHotels || {}).length > 0 && (
-              <div style={{ marginBottom: 24, background: accomAlreadySaved ? "#F0FDF4" : "#F0F9FF", borderRadius: 16, padding: 20, border: `1px solid ${accomAlreadySaved ? "#4ADE80" : "#BAE6FD"}` }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14, flexWrap: "wrap", gap: 8 }}>
-                  <div style={{ fontWeight: 800, fontSize: 14, color: accomAlreadySaved ? "#15803D" : "#0369A1" }}>
-                    {accomAlreadySaved ? "✅ Hotel Alojamiento Confirmado" : "🏨 Hotel de Alojamiento"}
-                  </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    {accomHotels.length > 0 && !selectedZone && (
-                      <span style={{ fontSize: 11, color: "#0369A1", background: "#E0F2FE", padding: "2px 8px", borderRadius: 99, fontWeight: 600 }}>
-                        {accomHotels.length} opciones para {destZone}
-                      </span>
-                    )}
-                    <select
-                      value={selectedZone}
-                      onChange={e => { setSelectedZone(e.target.value); setSelectedHotel(null); }}
-                      style={{ fontSize: 12, padding: "4px 8px", borderRadius: 8, border: "1px solid #BAE6FD", background: "white", color: "#0369A1", fontWeight: 600, cursor: "pointer" }}
-                    >
-                      <option value="">{accomHotels.length > 0 ? `Auto: ${destZone}` : "Seleccionar zona…"}</option>
-                      {allZones.map(z => <option key={z} value={z}>{z}</option>)}
-                    </select>
-                  </div>
+            <div style={{ marginBottom: 24, background: accomAlreadySaved ? "#F0FDF4" : "#F0F9FF", borderRadius: 16, padding: 20, border: `1px solid ${accomAlreadySaved ? "#4ADE80" : "#BAE6FD"}` }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14, flexWrap: "wrap", gap: 8 }}>
+                <div style={{ fontWeight: 800, fontSize: 14, color: accomAlreadySaved ? "#15803D" : "#0369A1" }}>
+                  {accomAlreadySaved ? "✅ Hotel Alojamiento Confirmado" : "🏨 Hotel de Alojamiento"}
                 </div>
-
-                {/* Already saved - show summary */}
-                {accomAlreadySaved && (
-                  <div style={{ background: "white", borderRadius: 10, padding: "10px 14px", border: "1px solid #BBF7D0", marginBottom: 12, display: "flex", alignItems: "center", gap: 10 }}>
-                    <span style={{ fontSize: 18 }}>🏨</span>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontWeight: 800, fontSize: 13, color: "#15803D" }}>{accomAlreadySaved.hotel}</div>
-                      <div style={{ fontSize: 11, color: "#64748B" }}>{accomAlreadySaved.zona} · {accomAlreadySaved.date}</div>
-                    </div>
-                    {accomAlreadySaved.locator && (
-                      <div style={{ fontWeight: 800, fontSize: 15, color: "#0D4BD9", letterSpacing: 2 }}>{accomAlreadySaved.locator}</div>
-                    )}
-                    {accomAlreadySaved.ubicacion && (
-                      <a href={accomAlreadySaved.ubicacion} target="_blank" rel="noopener noreferrer"
-                        style={{ fontSize: 11, color: "#0369A1", background: "#E0F2FE", padding: "4px 8px", borderRadius: 6, textDecoration: "none" }}
-                      >🗺️ Maps</a>
-                    )}
-                    <button onClick={(e) => { e.preventDefault(); if (confirm("¿Eliminar reserva de hotel?")) onMarkBooked("__accom__", null); }} style={{ background: "transparent", border: "none", color: "#EF4444", fontSize: 16, cursor: "pointer", padding: 0, marginLeft: "auto" }} title="Eliminar hotel">🗑️</button>
-                  </div>
-                )}
-
-                {/* Hotel selector */}
-                {hotelsToShow.length === 0 ? (
-                  <div style={{ fontSize: 12, color: "#64748B", textAlign: "center", padding: "12px 0" }}>
-                    No hay hoteles para esta zona. Usa el selector para buscar por ciudad.
-                  </div>
-                ) : (
-                  <div>
-                    {/* Radio-style hotel picker */}
-                    <div style={{ fontSize: 11, fontWeight: 700, color: "#475569", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>Seleccionar hotel:</div>
-                    <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 14 }}>
-                      {hotelsToShow.map((h, i) => {
-                        const isSelected = selectedHotel?.hotel === h.hotel;
-                        return (
-                          <div
-                            key={i}
-                            onClick={() => setSelectedHotel(h)}
-                            style={{
-                              display: "flex", alignItems: "center", gap: 10, padding: "10px 14px",
-                              background: isSelected ? "#EFF6FF" : "white",
-                              border: `2px solid ${isSelected ? "#3B82F6" : "#E2E8F0"}`,
-                              borderRadius: 10, cursor: "pointer", transition: "all 0.15s"
-                            }}
-                          >
-                            <div style={{
-                              width: 18, height: 18, borderRadius: "50%",
-                              border: `2px solid ${isSelected ? "#3B82F6" : "#CBD5E1"}`,
-                              background: isSelected ? "#3B82F6" : "white",
-                              flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center"
-                            }}>
-                              {isSelected && <div style={{ width: 7, height: 7, borderRadius: "50%", background: "white" }} />}
-                            </div>
-                            <div style={{ flex: 1 }}>
-                              <div style={{ fontWeight: 700, fontSize: 13, color: "#1E293B" }}>{h.hotel}</div>
-                              <div style={{ fontSize: 11, color: "#64748B" }}>📍 {h.zona}</div>
-                            </div>
-                            {h.ubicacion && (
-                              <a href={h.ubicacion} target="_blank" rel="noopener noreferrer"
-                                onClick={e => e.stopPropagation()}
-                                style={{ fontSize: 11, color: "#0369A1", fontWeight: 600, background: "#E0F2FE", padding: "3px 8px", borderRadius: 6, textDecoration: "none", whiteSpace: "nowrap" }}
-                              >🗺️ Maps</a>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-
-                    {/* Locator + date + save */}
-                    {selectedHotel && (
-                      <div style={{ background: "white", borderRadius: 12, padding: "14px", border: "1px solid #DBEAFE", display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-                        <div style={{ flex: 1, minWidth: 140 }}>
-                          <div style={{ fontSize: 10, color: "#94A3B8", marginBottom: 4 }}>Fecha entrada</div>
-                          <input
-                            type="date"
-                            value={accomDate}
-                            onChange={e => setAccomDate(e.target.value)}
-                            style={{ width: "100%", padding: "7px 10px", borderRadius: 8, border: "1.5px solid #CBD5E1", fontSize: 12, fontWeight: 600, boxSizing: "border-box", background: "#111", color: "white" }}
-                          />
-                        </div>
-                        <div style={{ flex: 1, minWidth: 130 }}>
-                          <div style={{ fontSize: 10, color: "#94A3B8", marginBottom: 4 }}>Localizador (opcional)</div>
-                          <input
-                            type="text"
-                            value={accomLocator}
-                            onChange={e => setAccomLocator(e.target.value.toUpperCase())}
-                            placeholder="Nº reserva"
-                            style={{ width: "100%", padding: "7px 10px", borderRadius: 8, border: "1.5px solid #CBD5E1", fontSize: 14, fontWeight: 800, letterSpacing: 2, textAlign: "center", background: "#111", color: "white", boxSizing: "border-box" }}
-                          />
-                        </div>
-                        <button
-                          onClick={handleSaveAccom}
-                          style={{ padding: "9px 18px", background: "linear-gradient(135deg, #0369A1, #0284C7)", color: "white", border: "none", borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0 }}
-                        >
-                          🏨 Guardar Hotel
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                )}
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  {accomHotels.length > 0 && !selectedZone && (
+                    <span style={{ fontSize: 11, color: "#0369A1", background: "#E0F2FE", padding: "2px 8px", borderRadius: 99, fontWeight: 600 }}>
+                      {accomHotels.length} opciones para {destZone}
+                    </span>
+                  )}
+                  <select
+                    value={selectedZone}
+                    onChange={e => { setSelectedZone(e.target.value); setSelectedHotel(null); }}
+                    style={{ fontSize: 12, padding: "4px 8px", borderRadius: 8, border: "1px solid #BAE6FD", background: "white", color: "#0369A1", fontWeight: 600, cursor: "pointer" }}
+                  >
+                    <option value="">{accomHotels.length > 0 ? `Auto: ${destZone}` : "Seleccionar zona…"}</option>
+                    {allZones.map(z => <option key={z} value={z}>{z}</option>)}
+                  </select>
+                </div>
               </div>
-            )}
+
+              {/* Already saved - show summary */}
+              {accomAlreadySaved && (
+                <div style={{ background: "white", borderRadius: 10, padding: "10px 14px", border: "1px solid #BBF7D0", marginBottom: 12, display: "flex", alignItems: "center", gap: 10 }}>
+                  <span style={{ fontSize: 18 }}>🏨</span>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: 800, fontSize: 13, color: "#15803D" }}>{accomAlreadySaved.hotel}</div>
+                    <div style={{ fontSize: 11, color: "#64748B" }}>{accomAlreadySaved.zona} · {accomAlreadySaved.date}</div>
+                  </div>
+                  {accomAlreadySaved.locator && (
+                    <div style={{ fontWeight: 800, fontSize: 15, color: "#0D4BD9", letterSpacing: 2 }}>{accomAlreadySaved.locator}</div>
+                  )}
+                  {accomAlreadySaved.ubicacion && (
+                    <a href={accomAlreadySaved.ubicacion} target="_blank" rel="noopener noreferrer"
+                      style={{ fontSize: 11, color: "#0369A1", background: "#E0F2FE", padding: "4px 8px", borderRadius: 6, textDecoration: "none" }}
+                    >🗺️ Maps</a>
+                  )}
+                  <button onClick={(e) => { e.preventDefault(); if (confirm("¿Eliminar reserva de hotel?")) onMarkBooked("__accom__", null); }} style={{ background: "transparent", border: "none", color: "#EF4444", fontSize: 16, cursor: "pointer", padding: 0, marginLeft: "auto" }} title="Eliminar hotel">🗑️</button>
+                </div>
+              )}
+
+              {/* Hotel selector */}
+              {hotelsToShow.length === 0 ? (
+                <div style={{ fontSize: 12, color: "#64748B", textAlign: "center", padding: "12px 0" }}>
+                  No hay hoteles para esta zona. Usa el selector para buscar por ciudad.
+                </div>
+              ) : (
+                <div>
+                  {/* Radio-style hotel picker */}
+                  <div style={{ fontSize: 11, fontWeight: 700, color: "#475569", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>Seleccionar hotel:</div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 14 }}>
+                    {hotelsToShow.map((h, i) => {
+                      const isSelected = selectedHotel?.hotel === h.hotel;
+                      return (
+                        <div
+                          key={i}
+                          onClick={() => setSelectedHotel(h)}
+                          style={{
+                            display: "flex", alignItems: "center", gap: 10, padding: "10px 14px",
+                            background: isSelected ? "#EFF6FF" : "white",
+                            border: `2px solid ${isSelected ? "#3B82F6" : "#E2E8F0"}`,
+                            borderRadius: 10, cursor: "pointer", transition: "all 0.15s"
+                          }}
+                        >
+                          <div style={{
+                            width: 18, height: 18, borderRadius: "50%",
+                            border: `2px solid ${isSelected ? "#3B82F6" : "#CBD5E1"}`,
+                            background: isSelected ? "#3B82F6" : "white",
+                            flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center"
+                          }}>
+                            {isSelected && <div style={{ width: 7, height: 7, borderRadius: "50%", background: "white" }} />}
+                          </div>
+                          <div style={{ flex: 1 }}>
+                            <div style={{ fontWeight: 700, fontSize: 13, color: "#1E293B" }}>{h.hotel}</div>
+                            <div style={{ fontSize: 11, color: "#64748B" }}>📍 {h.zona}</div>
+                          </div>
+                          {h.ubicacion && (
+                            <a href={h.ubicacion} target="_blank" rel="noopener noreferrer"
+                              onClick={e => e.stopPropagation()}
+                              style={{ fontSize: 11, color: "#0369A1", fontWeight: 600, background: "#E0F2FE", padding: "3px 8px", borderRadius: 6, textDecoration: "none", whiteSpace: "nowrap" }}
+                            >🗺️ Maps</a>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Locator + date + save */}
+                  {selectedHotel && (
+                    <div style={{ background: "white", borderRadius: 12, padding: "14px", border: "1px solid #DBEAFE", display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                      <div style={{ flex: 1, minWidth: 140 }}>
+                        <div style={{ fontSize: 10, color: "#94A3B8", marginBottom: 4 }}>Fecha entrada</div>
+                        <input
+                          type="date"
+                          value={accomDate}
+                          onChange={e => setAccomDate(e.target.value)}
+                          style={{ width: "100%", padding: "7px 10px", borderRadius: 8, border: "1.5px solid #CBD5E1", fontSize: 12, fontWeight: 600, boxSizing: "border-box", background: "#111", color: "white" }}
+                        />
+                      </div>
+                      <div style={{ flex: 1, minWidth: 130 }}>
+                        <div style={{ fontSize: 10, color: "#94A3B8", marginBottom: 4 }}>Localizador (opcional)</div>
+                        <input
+                          type="text"
+                          value={accomLocator}
+                          onChange={e => setAccomLocator(e.target.value.toUpperCase())}
+                          placeholder="Nº reserva"
+                          style={{ width: "100%", padding: "7px 10px", borderRadius: 8, border: "1.5px solid #CBD5E1", fontSize: 14, fontWeight: 800, letterSpacing: 2, textAlign: "center", background: "#111", color: "white", boxSizing: "border-box" }}
+                        />
+                      </div>
+                      <button
+                        onClick={handleSaveAccom}
+                        style={{ padding: "9px 18px", background: "linear-gradient(135deg, #0369A1, #0284C7)", color: "white", border: "none", borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0 }}
+                      >
+                        🏨 Guardar Hotel
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
 
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(185px, 1fr))", gap: 14, marginBottom: 24 }}>
               {directLinks.map((l, i) => {
