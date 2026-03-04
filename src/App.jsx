@@ -1970,17 +1970,7 @@ function BookingPanel({ consultant, activity, transportType, establishments, con
 function CalendarView({ activities, initialConsultant, allConsultants, bookedLinks, onBack }) {
   const [selectedConsultant, setSelectedConsultant] = useState(initialConsultant || "");
 
-  const [currentMonth, setCurrentMonth] = useState(() => {
-    if (activities.length > 0) {
-      // Find the first date to set initial month
-      const dates = activities.map(a => {
-        const [d, m, y] = a.f.split("/");
-        return new Date(y, m - 1, d);
-      }).sort((a, b) => a - b);
-      return dates[0] || new Date();
-    }
-    return new Date();
-  });
+  const [currentMonth, setCurrentMonth] = useState(() => new Date());
 
   const getDaysInMonth = (date) => new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
   const getFirstDayOfMonth = (date) => {
