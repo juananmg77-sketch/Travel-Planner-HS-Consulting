@@ -1,0 +1,72 @@
+[
+  {
+    "id": "HS-001",
+    "name": "100 Montaditos Carlos V Ibiza",
+    "island": "Ibiza",
+    "municipality": "Eivissa",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-002",
+    "name": "100 Montaditos FAN Mallorca",
+    "island": "Mallorca",
+    "municipality": "Palma",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-003",
+    "name": "100 Montaditos Marratxi",
+    "island": "Mallorca",
+    "municipality": "Marratxinet",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-004",
+    "name": "100 Montaditos Plaza Lorca",
+    "island": "Mallorca",
+    "municipality": "Palma",
+    "region": "Balearic Islands"
+  },
+  {
+    "id": "HS-005",
+    "name": "45 Times Barcelona Hotel",
+    "island": "",
+    "municipality": "Barcelona",
+    "region": "Catalonia"
+  },
+  {
+    "id": "HS-006",
+    "name": "Abora Buenaventura",
+    "island": "Gran Canaria",
+    "municipality": "San Bartolomé de Tirajana",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-007",
+    "name": "Abora Catarina",
+    "island": "Gran Canaria",
+    "municipality": "Maspalomas",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-008",
+    "name": "Abora Continental",
+    "island": "Gran Canaria",
+    "municipality": "Maspalomas",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-009",
+    "name": "Abora Interclub",
+    "island": "Gran Canaria",
+    "municipality": "San Bartolomé de Tirajana",
+    "region": "Canary Islands"
+  },
+  {
+    "id": "HS-010",
+    "name": "AC Baqueira Ski Resort",
+    "island": "",
+    "municipality": "Baqueira",
+    "region": "Cataluña"
+  }
+]

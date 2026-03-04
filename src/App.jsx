@@ -1,8 +1,9 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import Papa from "papaparse";
 import CLIENT_DATA from './clientData.json';
+import CLIENT_DATA_raw from './clientData.json';
 import { signIn, signOut, getCurrentSession, getUserProfile, onAuthStateChange } from './supabaseAuth';
-import { upsertEstablishment, updateActivityAddress, updateActivityTransport, logAction, getAllDistances, upsertDistance } from './supabaseService';
+import { upsertEstablishment, updateActivityAddress, updateActivityTransport, logAction, getAllDistances, upsertDistance, getValidatedEstablishments, getAllAccommodationHotels, syncAccommodationHotels } from './supabaseService';
 
 const CLIENT_LOOKUP = CLIENT_DATA.reduce((acc, client) => {
   acc[client.name] = client;
@@ -64,6 +65,18 @@ function inferIsland(base) {
   return null;
 }
 
+const HS_COLORS = {
+  primary: "#0060AA", // Corporate Blue
+  secondary: "#004B8D", // Darker Blue for hover/active
+  sidebar: "#1A1A1A", // Dark sidebar
+  bg: "#EDEEF0", // Light grey background
+  text: "#333333",
+  inputBg: "#E8E8E8", // Input field background from screenshot
+  success: "#10B981",
+  warning: "#F59E0B",
+  danger: "#EF4444"
+};
+
 // ============================================================
 // DATA & CONSTANTS
 // ============================================================
@@ -77,7 +90,7 @@ const CONSULTANTS = {
   "Carmen Barrientos": { base: "Palma de Mallorca", email: "cbarrientos@hsconsulting.es", region: "Islas Baleares", pref: "auto", island: "Mallorca", airport: "PMI", station: null },
   "Damaris Segura Bello": { base: "Calvià, Mallorca", email: "dsegura@hsconsulting.es", region: "Islas Baleares", pref: "auto", island: "Mallorca", airport: "PMI", station: null },
   "Froilán Cortés": { base: "Barcelona", email: "fcortes@hsconsulting.es", region: "Cataluña", pref: "vehiculo", island: null, airport: "BCN", station: "Barcelona-Sants", address: "C/ Horta 223 bajos 2º, 08032 Barcelona" },
-  "Gorka Sanchez Ortega": { base: "Costa Teguise", email: "gsanchezortega@hsconsulting.es", region: "Islas Canarias", pref: "auto", island: "Lanzarote", airport: "ACE", station: null, address: "Costa Teguise, Lanzarote" },
+  "Gorka Sanchez Ortega": { base: "Tenerife", email: "gsanchezortega@hsconsulting.es", region: "Islas Canarias", pref: "vehiculo", island: "Tenerife", airport: "TFN", station: null, address: "Tenerife" },
   "Guillem Exposito Flores": { base: "Mollet del Vallés", email: "gexposito@hsconsulting.es", region: "Cataluña", pref: "vehiculo", island: null, airport: "BCN", station: "Barcelona-Sants", address: "Pablo Picasso 52, 3B, Mollet del Vallés, Barcelona" },
   "Iris Belver Prats": { base: "Porto Colom", email: "", region: "Islas Baleares", pref: "auto", island: "Mallorca", airport: "PMI", station: null, address: "Porto Colom - Felanitx, Mallorca" },
   "Isabella Alejandra Baricot Varas": { base: "Santa Cruz de Tenerife", email: "ibaricot@hsconsulting.es", region: "Islas Canarias", pref: "auto", island: "Tenerife", airport: "TFN", station: null },
@@ -486,8 +499,8 @@ function GeocodingValidationPanel({ proposal, geocodeState, onSearch, onSelectRe
   const p = proposal;
   const gs = geocodeState || {};
 
-  // Already validated (not generic address)
-  if (!p.isGenericAddress) return null;
+  // REMOVED: Always allow editing, not just for generic addresses
+  // if (!p.isGenericAddress) return null;
 
   // Manual editing mode
   if (gs.editing) {
@@ -860,11 +873,201 @@ function UploadScreen({ onDataLoaded, onConsultantsLoaded, existingActivities = 
   );
 }
 
-function Dashboard({ stats, summaryByAuditor, onNavigate, onTriggerPlanning, onTriggerConsultants, uploadFlash, onClearData, onLogout }) {
+// ── BulkGeocodeModal imported CLIENT_DATA_raw at the top of file ──
+
+function BulkGeocodeModal({ onClose, customClientInfo, onValidate }) {
+  const [status, setStatus] = useState('idle'); // idle | running | done
+  const [progress, setProgress] = useState({ current: 0, total: 0, ok: 0, failed: 0, skipped: 0 });
+  const [log, setLog] = useState([]);
+  const [failedList, setFailedList] = useState([]);
+  const abortRef = useRef(false);
+
+  const toProcess = useMemo(() => {
+    return CLIENT_DATA_raw.filter(c => {
+      if (!c.name) return false;
+      const custom = customClientInfo[c.name];
+      if (custom?.address) return false; // already validated
+      if (c.address) return false; // has address in base JSON
+      return true;
+    });
+  }, [customClientInfo]);
+
+  const addLog = (msg, type = 'info') =>
+    setLog(prev => [{ msg, type, ts: Date.now() }, ...prev].slice(0, 80));
+
+  const geocodeSingle = async (hotel) => {
+    const queries = [
+      `${hotel.name}, ${hotel.municipality}, Spain`,
+      hotel.island ? `${hotel.name}, ${hotel.island}, Spain` : null,
+      `${hotel.name}, ${hotel.region || ''}, Spain`,
+    ].filter(Boolean);
+
+    for (const q of queries) {
+      try {
+        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=1&addressdetails=1&accept-language=es`;
+        const res = await fetch(url, { headers: { 'User-Agent': 'HS-TravelPlanner/1.0' } });
+        if (!res.ok) continue;
+        const results = await res.json();
+        if (results.length > 0) {
+          const r = results[0];
+          return {
+            address: r.display_name,
+            municipality: r.address?.city || r.address?.town || r.address?.village || hotel.municipality
+          };
+        }
+      } catch { }
+      await new Promise(r => setTimeout(r, 300));
+    }
+    return null;
+  };
+
+  const runGeocode = async () => {
+    abortRef.current = false;
+    setStatus('running');
+    setLog([]);
+    setFailedList([]);
+    const total = toProcess.length;
+    let ok = 0, failed = 0, skipped = 0;
+    setProgress({ current: 0, total, ok: 0, failed: 0, skipped: 0 });
+
+    for (let i = 0; i < toProcess.length; i++) {
+      if (abortRef.current) { addLog('⛔ Cancelado por el usuario', 'warn'); break; }
+      const hotel = toProcess[i];
+      setProgress(p => ({ ...p, current: i + 1 }));
+
+      const geo = await geocodeSingle(hotel);
+      await new Promise(r => setTimeout(r, 1100)); // Nominatim rate limit 1 req/s
+
+      if (geo) {
+        ok++;
+        addLog(`✅ ${hotel.name.slice(0, 45)} → ${geo.municipality}`, 'ok');
+        await onValidate(hotel.name, geo.address, geo.municipality);
+        setProgress(p => ({ ...p, ok }));
+      } else {
+        failed++;
+        addLog(`❌ ${hotel.name.slice(0, 45)} — no encontrado`, 'err');
+        setFailedList(prev => [...prev, hotel]);
+        setProgress(p => ({ ...p, failed }));
+      }
+    }
+    setStatus('done');
+    addLog(`🏁 Completado: ${ok} validados, ${failed} no encontrados`, 'info');
+  };
+
+  const pct = progress.total > 0 ? Math.round((progress.current / progress.total) * 100) : 0;
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', zIndex: 4000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+      <div style={{ background: 'white', borderRadius: 24, maxWidth: 560, width: '100%', padding: 32, boxShadow: '0 40px 100px rgba(0,0,0,0.5)', maxHeight: '90vh', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+          <div>
+            <h2 style={{ margin: 0, fontSize: 20, fontWeight: 800 }}>🌍 Geocodificación Masiva</h2>
+            <p style={{ margin: '4px 0 0', fontSize: 13, color: '#666' }}>{toProcess.length} establecimientos sin dirección validada</p>
+          </div>
+          {status !== 'running' && (
+            <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', color: '#999' }}>✕</button>
+          )}
+        </div>
+
+        {/* Progress Bar */}
+        {status !== 'idle' && (
+          <div style={{ marginBottom: 16 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: '#666', marginBottom: 6 }}>
+              <span>{progress.current} / {progress.total}</span>
+              <span style={{ color: '#10B981', fontWeight: 700 }}>✅ {progress.ok}</span>
+              <span style={{ color: '#EF4444', fontWeight: 700 }}>❌ {progress.failed}</span>
+              <span>{pct}%</span>
+            </div>
+            <div style={{ height: 10, background: '#F0F4F8', borderRadius: 99, overflow: 'hidden' }}>
+              <div style={{ height: '100%', width: `${pct}%`, background: 'linear-gradient(90deg, #10B981, #059669)', borderRadius: 99, transition: 'width 0.4s ease' }} />
+            </div>
+          </div>
+        )}
+
+        {/* Log */}
+        <div style={{ flex: 1, overflowY: 'auto', background: '#0F172A', borderRadius: 12, padding: 14, fontFamily: 'monospace', fontSize: 11, lineHeight: 1.7, minHeight: 180, maxHeight: 300 }}>
+          {log.length === 0 && status === 'idle' && (
+            <div style={{ color: '#64748B', textAlign: 'center', marginTop: 40 }}>
+              Usa OpenStreetMap (Nominatim) para buscar la dirección exacta de cada hotel.<br />
+              El proceso puede tardar ~{Math.round(toProcess.length * 1.3 / 60)} minutos.
+            </div>
+          )}
+          {log.map((entry, i) => (
+            <div key={i} style={{ color: entry.type === 'ok' ? '#4ADE80' : entry.type === 'err' ? '#F87171' : entry.type === 'warn' ? '#FBBF24' : '#94A3B8' }}>
+              {entry.msg}
+            </div>
+          ))}
+        </div>
+
+        {/* Failed List */}
+        {failedList.length > 0 && status === 'done' && (
+          <div style={{ marginTop: 12, padding: '10px 14px', background: '#FEF2F2', borderRadius: 10, fontSize: 11, color: '#B91C1C', maxHeight: 100, overflowY: 'auto' }}>
+            <strong>No encontrados ({failedList.length}) — puedes editarlos manualmente en Propuestas:</strong>
+            <div>{failedList.map(f => f.name).join(' • ')}</div>
+          </div>
+        )}
+
+        {/* Buttons */}
+        <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
+          {status === 'idle' && (
+            <button onClick={runGeocode} style={{ flex: 1, padding: '14px', background: 'linear-gradient(135deg, #10B981, #059669)', color: 'white', border: 'none', borderRadius: 12, fontSize: 15, fontWeight: 800, cursor: 'pointer' }}>
+              🚀 Iniciar Geocodificación
+            </button>
+          )}
+          {status === 'running' && (
+            <button onClick={() => { abortRef.current = true; }} style={{ flex: 1, padding: '14px', background: '#FEF2F2', color: '#B91C1C', border: '1px solid #FCA5A5', borderRadius: 12, fontSize: 14, fontWeight: 700, cursor: 'pointer' }}>
+              ⛔ Cancelar
+            </button>
+          )}
+          {status === 'done' && (
+            <button onClick={onClose} style={{ flex: 1, padding: '14px', background: '#0D4BD9', color: 'white', border: 'none', borderRadius: 12, fontSize: 14, fontWeight: 700, cursor: 'pointer' }}>
+              ✅ Cerrar
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ConfirmClearModal({ onConfirm, onCancel }) {
+  return (
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', zIndex: 5000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+      <div style={{ background: 'white', borderRadius: 20, maxWidth: 420, width: '100%', padding: 36, boxShadow: '0 30px 80px rgba(0,0,0,0.4)', textAlign: 'center' }}>
+        <div style={{ fontSize: 48, marginBottom: 16 }}>🗑️</div>
+        <h2 style={{ fontSize: 20, fontWeight: 800, color: '#111', margin: '0 0 10px' }}>¿Borrar toda la planificación?</h2>
+        <p style={{ fontSize: 14, color: '#666', margin: '0 0 28px', lineHeight: 1.6 }}>Esta acción eliminará todos los registros de actividades cargados. <strong>No se puede deshacer.</strong></p>
+        <div style={{ display: 'flex', gap: 12 }}>
+          <button
+            onClick={onCancel}
+            style={{ flex: 1, padding: '14px', background: 'white', color: '#374151', border: '2px solid #E5E7EB', borderRadius: 12, fontSize: 15, fontWeight: 600, cursor: 'pointer' }}
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={onConfirm}
+            style={{ flex: 1, padding: '14px', background: 'linear-gradient(135deg, #EF4444, #B91C1C)', color: 'white', border: 'none', borderRadius: 12, fontSize: 15, fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 14px rgba(239,68,68,0.4)' }}
+          >
+            Sí, borrar todo
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Dashboard({ stats, summaryByAuditor, onNavigate, onTriggerPlanning, onTriggerConsultants, uploadFlash, onClearData, onLogout, onBulkGeocode, onTriggerHotels, accommodationHotelsCount }) {
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
   const consultants = Object.entries(summaryByAuditor || {}).sort((a, b) => b[1].total - a[1].total);
 
   return (
     <div>
+      {showClearConfirm && (
+        <ConfirmClearModal
+          onConfirm={() => { setShowClearConfirm(false); onClearData(); }}
+          onCancel={() => setShowClearConfirm(false)}
+        />
+      )}
       <div style={{ marginBottom: 40, display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
         <div>
           <h2 style={{ fontSize: 32, fontWeight: 800, color: "#111", margin: "0 0 8px" }}>Dashboard Logística</h2>
@@ -885,9 +1088,19 @@ function Dashboard({ stats, summaryByAuditor, onNavigate, onTriggerPlanning, onT
           >
             📅 Cargar Agenda (CSV)
           </button>
+
+          {onTriggerHotels && (
+            <button
+              onClick={onTriggerHotels}
+              style={{ background: accommodationHotelsCount > 0 ? "#EFF6FF" : "white", color: accommodationHotelsCount > 0 ? "#1D4ED8" : "#555", border: accommodationHotelsCount > 0 ? "1px solid #93C5FD" : "1px solid #ddd", padding: "10px 18px", borderRadius: 12, fontSize: 13, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }}
+              title={accommodationHotelsCount > 0 ? `${accommodationHotelsCount} zonas cargadas` : "Cargar hoteles de alojamiento"}
+            >
+              🏨 Hoteles Aloj.{accommodationHotelsCount > 0 ? <span style={{ background: "#1D4ED8", color: "white", borderRadius: 99, padding: "1px 7px", fontSize: 11, marginLeft: 4 }}>{accommodationHotelsCount}</span> : ""}
+            </button>
+          )}
           {onClearData && (
             <button
-              onClick={() => { if (confirm("¿Estás seguro de que quieres BORRAR toda la planificación? Esta acción no se puede deshacer.")) onClearData(); }}
+              onClick={() => setShowClearConfirm(true)}
               style={{ background: "#FEF2F2", color: "#B91C1C", border: "1px solid #FCA5A5", padding: "10px 18px", borderRadius: 12, fontSize: 13, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }}
             >
               🗑️ Limpiar
@@ -1019,34 +1232,255 @@ function Dashboard({ stats, summaryByAuditor, onNavigate, onTriggerPlanning, onT
   );
 }
 
-function BookingPanel({ consultant, activity, transportType, establishments, consultants, onClose, onUpdateClientAddress, bookedLinks = {}, onMarkBooked }) {
+// Converts DD/MM/YYYY or YYYY-MM-DD to YYYY-MM-DD (for HTML date inputs)
+function toInputDate(dateStr) {
+  if (!dateStr) return "";
+  // Already YYYY-MM-DD
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
+  // DD/MM/YYYY
+  const parts = dateStr.split("/");
+  if (parts.length === 3) return `${parts[2]}-${parts[1].padStart(2, "0")}-${parts[0].padStart(2, "0")}`;
+  return dateStr;
+}
+// Converts YYYY-MM-DD to DD/MM/YYYY for display / storage consistency
+function toDisplayDate(dateStr) {
+  if (!dateStr) return "";
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+    const [y, m, d] = dateStr.split("-");
+    return `${d}/${m}/${y}`;
+  }
+  return dateStr;
+}
+
+// ====================================================================
+// ACCOMMODATION HOTELS MANAGER MODAL
+// ====================================================================
+function AccommodationHotelsManager({ hotels, onClose, onUpdate, onImportCSV }) {
+  const [newZone, setNewZone] = useState("");
+  const [newHotel, setNewHotel] = useState("");
+  const [newUrl, setNewUrl] = useState("");
+  const [selectedZone, setSelectedZone] = useState("");
+  const [searchQ, setSearchQ] = useState("");
+  const [flash, setFlash] = useState(null);
+  const csvRef = useRef(null);
+
+  const zones = Object.keys(hotels).sort();
+
+  const showFlash = (msg, type = "ok") => {
+    setFlash({ msg, type });
+    setTimeout(() => setFlash(null), 3000);
+  };
+
+  const handleAdd = () => {
+    const zone = (newZone || selectedZone).trim().toUpperCase();
+    const hotel = newHotel.trim();
+    if (!zone || !hotel) { showFlash("Zona y nombre del hotel son obligatorios.", "err"); return; }
+    const updated = { ...hotels };
+    if (!updated[zone]) updated[zone] = [];
+    // Avoid duplicates
+    if (updated[zone].some(h => h.hotel.toLowerCase() === hotel.toLowerCase())) {
+      showFlash("Ese hotel ya existe en esa zona.", "err"); return;
+    }
+    updated[zone] = [...updated[zone], { hotel, ubicacion: newUrl.trim() }];
+    onUpdate(updated);
+    setNewHotel("");
+    setNewUrl("");
+    if (newZone) setNewZone(""); // clear only if it was a new zone
+    showFlash(`✅ Hotel "${hotel}" añadido a ${zone}`);
+  };
+
+  const handleDeleteHotel = (zone, hotelName) => {
+    const updated = { ...hotels };
+    updated[zone] = updated[zone].filter(h => h.hotel !== hotelName);
+    if (updated[zone].length === 0) delete updated[zone];
+    onUpdate(updated);
+  };
+
+  const handleDeleteZone = (zone) => {
+    const updated = { ...hotels };
+    delete updated[zone];
+    onUpdate(updated);
+    if (selectedZone === zone) setSelectedZone("");
+    showFlash(`🗑️ Zona "${zone}" eliminada.`);
+  };
+
+  const filteredZones = zones.filter(z =>
+    !searchQ || z.toLowerCase().includes(searchQ.toLowerCase()) ||
+    (hotels[z] || []).some(h => h.hotel.toLowerCase().includes(searchQ.toLowerCase()))
+  );
+
+  const totalHotels = Object.values(hotels).reduce((a, b) => a + b.length, 0);
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 5000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+      <div style={{ background: 'white', borderRadius: 24, maxWidth: 760, width: '100%', maxHeight: '92vh', display: 'flex', flexDirection: 'column', boxShadow: '0 40px 100px rgba(0,0,0,0.45)' }}>
+
+        {/* HEADER */}
+        <div style={{ padding: '24px 28px 0', borderBottom: '1px solid #F1F5F9', paddingBottom: 18, flexShrink: 0 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <div>
+              <h2 style={{ margin: 0, fontSize: 22, fontWeight: 800, color: '#111' }}>🏨 Gestión de Hoteles de Alojamiento</h2>
+              <p style={{ margin: '4px 0 0', fontSize: 13, color: '#64748B' }}>
+                {zones.length} zonas · {totalHotels} hoteles en base de datos
+              </p>
+            </div>
+            <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', color: '#999', lineHeight: 1 }}>✕</button>
+          </div>
+
+          {flash && (
+            <div style={{ marginTop: 12, padding: '8px 14px', background: flash.type === 'err' ? '#FEF2F2' : '#ECFDF5', color: flash.type === 'err' ? '#991B1B' : '#065F46', borderRadius: 8, fontSize: 13, fontWeight: 600 }}>
+              {flash.msg}
+            </div>
+          )}
+        </div>
+
+        {/* ADD FORM */}
+        <div style={{ padding: '18px 28px', background: '#F8FAFC', borderBottom: '1px solid #E2E8F0', flexShrink: 0 }}>
+          <div style={{ fontSize: 11, fontWeight: 800, color: '#475569', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>➕ Añadir nuevo hotel</div>
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'flex-end' }}>
+            <div style={{ flex: '0 0 180px' }}>
+              <div style={{ fontSize: 11, color: '#64748B', marginBottom: 4 }}>Zona (existente o nueva) *</div>
+              <select
+                value={selectedZone}
+                onChange={e => { setSelectedZone(e.target.value); if (newZone) setNewZone(''); }}
+                style={{ width: '100%', padding: '8px 10px', borderRadius: 8, border: '1.5px solid #CBD5E1', fontSize: 13, background: 'white' }}
+              >
+                <option value="">-- Nueva zona --</option>
+                {zones.map(z => <option key={z} value={z}>{z}</option>)}
+              </select>
+            </div>
+            {!selectedZone && (
+              <div style={{ flex: '0 0 160px' }}>
+                <div style={{ fontSize: 11, color: '#64748B', marginBottom: 4 }}>Nombre de nueva zona *</div>
+                <input
+                  value={newZone}
+                  onChange={e => setNewZone(e.target.value.toUpperCase())}
+                  placeholder="Ej: MÁLAGA"
+                  style={{ width: '100%', padding: '8px 10px', borderRadius: 8, border: '1.5px solid #CBD5E1', fontSize: 13, boxSizing: 'border-box', fontWeight: 700, letterSpacing: 1 }}
+                />
+              </div>
+            )}
+            <div style={{ flex: 1, minWidth: 160 }}>
+              <div style={{ fontSize: 11, color: '#64748B', marginBottom: 4 }}>Nombre del hotel *</div>
+              <input
+                value={newHotel}
+                onChange={e => setNewHotel(e.target.value)}
+                placeholder="Ej: Hotel Reina Victoria"
+                onKeyDown={e => e.key === 'Enter' && handleAdd()}
+                style={{ width: '100%', padding: '8px 10px', borderRadius: 8, border: '1.5px solid #CBD5E1', fontSize: 13, boxSizing: 'border-box' }}
+              />
+            </div>
+            <div style={{ flex: 1, minWidth: 180 }}>
+              <div style={{ fontSize: 11, color: '#64748B', marginBottom: 4 }}>URL Google Maps (opcional)</div>
+              <input
+                value={newUrl}
+                onChange={e => setNewUrl(e.target.value)}
+                placeholder="https://maps.google.com/..."
+                style={{ width: '100%', padding: '8px 10px', borderRadius: 8, border: '1.5px solid #CBD5E1', fontSize: 13, boxSizing: 'border-box' }}
+              />
+            </div>
+            <button
+              onClick={handleAdd}
+              style={{ padding: '9px 20px', background: 'linear-gradient(135deg, #1D4ED8, #2563EB)', color: 'white', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}
+            >
+              ➕ Añadir
+            </button>
+            <div style={{ flexShrink: 0 }}>
+              <input type="file" accept=".csv" ref={csvRef} style={{ display: 'none' }} onChange={e => { onImportCSV(e, 'append'); }} />
+              <button
+                onClick={() => csvRef.current.click()}
+                style={{ padding: '9px 16px', background: 'white', color: '#475569', border: '1.5px solid #CBD5E1', borderRadius: 10, fontSize: 12, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}
+                title="Importar CSV y añadir a los existentes (no sobreescribe)"
+              >
+                📥 Importar CSV
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* SEARCH + LIST */}
+        <div style={{ padding: '14px 28px 6px', flexShrink: 0 }}>
+          <input
+            value={searchQ}
+            onChange={e => setSearchQ(e.target.value)}
+            placeholder="🔍 Buscar por zona o nombre de hotel…"
+            style={{ width: '100%', padding: '8px 14px', borderRadius: 10, border: '1.5px solid #E2E8F0', fontSize: 13, boxSizing: 'border-box' }}
+          />
+        </div>
+
+        <div style={{ flex: 1, overflowY: 'auto', padding: '8px 28px 24px' }}>
+          {filteredZones.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '48px 0', color: '#94A3B8', fontSize: 14 }}>
+              {searchQ ? `Sin resultados para "${searchQ}"` : 'No hay hoteles cargados. Añade uno o importa un CSV.'}
+            </div>
+          ) : (
+            filteredZones.map(zone => (
+              <div key={zone} style={{ marginBottom: 20 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                  <div style={{ fontWeight: 800, fontSize: 13, color: '#1D4ED8', textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                    📍 {zone} <span style={{ fontWeight: 400, color: '#94A3B8', fontSize: 11 }}>({(hotels[zone] || []).length} hoteles)</span>
+                  </div>
+                  <button
+                    onClick={() => handleDeleteZone(zone)}
+                    style={{ background: 'transparent', border: 'none', color: '#CBD5E1', fontSize: 16, cursor: 'pointer', padding: '2px 6px', borderRadius: 6, transition: 'color 0.2s' }}
+                    onMouseEnter={e => e.currentTarget.style.color = '#EF4444'}
+                    onMouseLeave={e => e.currentTarget.style.color = '#CBD5E1'}
+                    title={`Eliminar zona ${zone} completa`}
+                  >🗑️</button>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  {(hotels[zone] || []).filter(h => !searchQ || h.hotel.toLowerCase().includes(searchQ.toLowerCase()) || zone.toLowerCase().includes(searchQ.toLowerCase())).map((h, i) => (
+                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', background: '#F8FAFC', borderRadius: 10, border: '1px solid #E2E8F0' }}>
+                      <div style={{ flex: 1, fontWeight: 600, fontSize: 13, color: '#1E293B' }}>{h.hotel}</div>
+                      {h.ubicacion && (
+                        <a href={h.ubicacion} target="_blank" rel="noopener noreferrer"
+                          style={{ fontSize: 11, color: '#0369A1', fontWeight: 600, background: '#E0F2FE', padding: '3px 8px', borderRadius: 6, textDecoration: 'none', whiteSpace: 'nowrap' }}
+                        >
+                          🗺️ Maps
+                        </a>
+                      )}
+                      <button
+                        onClick={() => handleDeleteHotel(zone, h.hotel)}
+                        style={{ background: 'transparent', border: 'none', color: '#CBD5E1', fontSize: 15, cursor: 'pointer', padding: '2px 4px', flexShrink: 0, transition: 'color 0.2s' }}
+                        onMouseEnter={e => e.currentTarget.style.color = '#EF4444'}
+                        onMouseLeave={e => e.currentTarget.style.color = '#CBD5E1'}
+                        title="Eliminar hotel"
+                      >✕</button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function BookingPanel({ consultant, activity, transportType, establishments, consultants, onClose, onUpdateClientAddress, bookedLinks = {}, onMarkBooked, groupStartDate, groupEndDate, accommodationHotels = {} }) {
   const [loading, setLoading] = useState(false);
-  const [aiResult, setAiResult] = useState(null);
   const [error, setError] = useState(null);
-  const [editAddress, setEditAddress] = useState(activity.destAddress || "");
-  const [editMuni, setEditMuni] = useState(activity.destMuni || "");
-  const [isUpdatingAddr, setIsUpdatingAddr] = useState(false);
 
-  // Suggested Dates state
-  const [panelStartDate, setPanelStartDate] = useState(activity.startDate || activity.f);
-  const [panelEndDate, setPanelEndDate] = useState(activity.endDate || activity.f);
+  // Dates: prefer group range > activity explicit > activity date field
+  const [panelStartDate] = useState(groupStartDate || activity.startDate || activity.f);
+  const [panelEndDate] = useState(groupEndDate || activity.endDate || activity.startDate || activity.f);
 
+  // Locator modal state
   const [activeBookingUrl, setActiveBookingUrl] = useState(null);
   const [activeBookingLabel, setActiveBookingLabel] = useState("");
-
-  // Segment 1
-  const [locatorCode, setLocatorCode] = useState("");
-  const [bookingDate, setBookingDate] = useState("");
-  const [bookingType, setBookingType] = useState("ida");
-
-  // Segment 2 (Dual mode)
-  const [locatorCode2, setLocatorCode2] = useState("");
-  const [bookingDate2, setBookingDate2] = useState("");
-  const [bookingType2, setBookingType2] = useState("vuelta");
+  const [locatorIda, setLocatorIda] = useState("");
+  const [locatorVuelta, setLocatorVuelta] = useState("");
+  const [dateIda, setDateIda] = useState("");
+  const [dateVuelta, setDateVuelta] = useState("");
   const [isDualMode, setIsDualMode] = useState(false);
+  const [submitAttempted, setSubmitAttempted] = useState(false);
 
   const c = (consultants || CONSULTANTS)[consultant] || {};
   const dest = REGION_DEST[activity.r] || {};
+
+  const isCarProvider = (label) => ["CICAR", "OK Mobility", "Goldcar", "Europcar"].includes(label);
+  const isSingleProvider = (label) => ["Google Flights", "Skyscanner", "Google Maps"].includes(label);
 
   const directLinks = useMemo(() => {
     const links = [];
@@ -1057,30 +1491,30 @@ function BookingPanel({ consultant, activity, transportType, establishments, con
       const originRegion = normalizeRegion(c.region);
       const destRegion = normalizeRegion(activity.r);
       const isCanaryFlight = originRegion === "Islas Canarias" || destRegion === "Islas Canarias";
-
       if (isCanaryFlight) {
-        links.push({ label: "Binter Canarias", url: buildBinterUrl(c.airport, dest.airport, activity.startDate, activity.endDate), icon: "🇮🇨", desc: isCanaryFlight && originRegion === destRegion ? "Inter-islas" : "Vuelos Binter" });
+        links.push({ label: "Binter Canarias", url: buildBinterUrl(c.airport, dest.airport, activity.startDate, activity.endDate), icon: "🇮🇨", desc: originRegion === destRegion ? "Inter-islas" : "Vuelos Binter" });
       }
-
       links.push({ label: "Google Flights", url: buildGoogleFlightsUrl(originCity, destCity, activity.startDate, activity.endDate), icon: "🔍", desc: "Comparador" });
       links.push({ label: "Skyscanner", url: buildSkyscannerUrl(c.airport || "", dest.airport || "", activity.startDate, activity.endDate), icon: "🔎", desc: "Comparador" });
-      links.push({ label: "Vueling", url: buildVuelingUrl(c.airport || "", dest.airport || "", activity.startDate, activity.endDate), icon: "✈️", desc: "Directo" });
-      links.push({ label: "Iberia", url: buildIberiaUrl(c.airport || "", dest.airport || "", activity.startDate, activity.endDate), icon: "🇪🇸", desc: "Directo" });
 
-      if (destRegion === "Islas Canarias") {
+      // Only add mainland airlines if neither origin nor destination is Canary Islands
+      if (!isCanaryFlight) {
+        links.push({ label: "Vueling", url: buildVuelingUrl(c.airport || "", dest.airport || "", activity.startDate, activity.endDate), icon: "✈️", desc: "Directo" });
+        links.push({ label: "Iberia", url: buildIberiaUrl(c.airport || "", dest.airport || "", activity.startDate, activity.endDate), icon: "🇪🇸", desc: "Directo" });
+      }
+      if (normalizeRegion(activity.r) === "Islas Canarias") {
         links.push({ label: "CICAR", url: buildRentACarUrl("cicar", destCity, activity.startDate, activity.endDate), icon: "🚗", desc: `Coche en ${destCity}` });
       } else {
         links.push({ label: "OK Mobility", url: buildRentACarUrl("okmobility", destCity, activity.startDate, activity.endDate), icon: "🚗", desc: `Coche en ${destCity}` });
       }
     } else if (transportType === "tren") {
-      links.push({ label: "Trainline", url: buildTrainlineUrl(originCity, destCity, activity.startDate || activity.f), icon: "🔍", desc: "Comparador (Renfe, Iryo...)" });
+      links.push({ label: "Trainline", url: buildTrainlineUrl(originCity, destCity, activity.startDate || activity.f), icon: "🔍", desc: "Comparador" });
       links.push({ label: "Renfe", url: buildRenfeUrl(c.station, dest.station, activity.startDate || activity.f), icon: "🚄", desc: "AVE / Avlo" });
       links.push({ label: "Iryo", url: buildIryoUrl(originCity, destCity, activity.startDate || activity.f), icon: "🟣", desc: "Alta Velocidad" });
       links.push({ label: "OK Mobility", url: buildRentACarUrl("okmobility", destCity, activity.startDate, activity.endDate), icon: "🚗", desc: `Coche en ${destCity}` });
     } else {
       links.push({ label: "Google Maps", url: buildGMapsUrl(originCity, `${activity.e} ${destCity}`), icon: "🗺️", desc: "Ruta" });
-      const destRegion = normalizeRegion(activity.r);
-      if (destRegion === "Islas Canarias") {
+      if (normalizeRegion(activity.r) === "Islas Canarias") {
         links.push({ label: "CICAR", url: buildRentACarUrl("cicar", destCity, activity.startDate, activity.endDate), icon: "🚗", desc: `Coche en ${destCity}` });
       } else {
         links.push({ label: "OK Mobility", url: buildRentACarUrl("okmobility", destCity, activity.startDate, activity.endDate), icon: "🚗", desc: `Coche en ${destCity}` });
@@ -1089,237 +1523,440 @@ function BookingPanel({ consultant, activity, transportType, establishments, con
     return links;
   }, [transportType, c, dest, activity]);
 
-
-  const handleLinkClick = (e, link) => {
+  const openModal = (e, link) => {
     e.preventDefault();
-    window.open(link.url, '_blank');
+    window.open(link.url, "_blank", "noopener,noreferrer");
+    const dual = !isSingleProvider(link.label);
     setActiveBookingUrl(link.url);
     setActiveBookingLabel(link.label);
+    setIsDualMode(dual);
+    setLocatorIda("");
+    setLocatorVuelta("");
+    // Convert to YYYY-MM-DD for the HTML date input
+    setDateIda(toInputDate(panelStartDate));
+    setDateVuelta(toInputDate(panelEndDate));
+    setSubmitAttempted(false);
+  };
 
-    const dualProviders = ["Vueling", "Iberia", "Binter Canarias", "Renfe", "Iryo", "CICAR", "OK Mobility", "Trainline"];
-    const isDual = dualProviders.includes(link.label);
-    setIsDualMode(isDual);
-
-    if (link.label.toLowerCase().includes("regreso") || link.label.toLowerCase().includes("vuelta")) {
-      setBookingType("vuelta");
-      setBookingDate(panelEndDate);
-      setIsDualMode(false);
-    } else if (isDual) {
-      if (transportType === "auto") {
-        setBookingType("recogida");
-        setBookingType2("devolución");
-      } else {
-        setBookingType("ida");
-        setBookingType2("vuelta");
-      }
-      setBookingDate(panelStartDate);
-      setBookingDate2(panelEndDate);
-      setLocatorCode("");
-      setLocatorCode2("");
-    } else {
-      setBookingType("ida");
-      setBookingDate(panelStartDate);
-      setIsDualMode(false);
-    }
+  const closeModal = () => {
+    setActiveBookingUrl(null);
+    setSubmitAttempted(false);
   };
 
   const confirmBooking = () => {
-    if (!locatorCode.trim() && !locatorCode2.trim()) {
-      alert("Es obligatorio incluir al menos un número de localizador.");
-      return;
-    }
+    setSubmitAttempted(true);
+    if (!locatorIda.trim()) return;
+    if (isDualMode && !locatorVuelta.trim()) return;
 
+    const isCar = isCarProvider(activeBookingLabel);
     const segments = [];
-    if (locatorCode.trim()) {
-      segments.push({ type: bookingType, date: bookingDate || panelStartDate, locator: locatorCode.trim() });
-    }
-    if (isDualMode && locatorCode2.trim()) {
-      segments.push({ type: bookingType2, date: bookingDate2 || panelEndDate, locator: locatorCode2.trim() });
+    // Store display date (DD/MM/YYYY) for consistency with the rest of the app
+    segments.push({ type: isCar ? "recogida" : "ida", date: toDisplayDate(dateIda) || panelStartDate, locator: locatorIda.trim() });
+    if (isDualMode && locatorVuelta.trim()) {
+      segments.push({ type: isCar ? "devolución" : "vuelta", date: toDisplayDate(dateVuelta) || panelEndDate, locator: locatorVuelta.trim() });
     }
 
-    const data = {
-      locator: segments[0]?.locator || "", // for backward compatibility
-      segments: segments
-    };
-
-    if (onMarkBooked) onMarkBooked(activeBookingUrl, data);
-    setLocatorCode("");
-    setLocatorCode2("");
-    setActiveBookingUrl(null);
+    if (onMarkBooked) onMarkBooked(activeBookingUrl, { locator: segments[0].locator, segments });
+    closeModal();
   };
 
   const handleSendEmail = () => {
     const email = c.email || "";
-    const name = consultant;
     const hotelsList = (establishments || [activity.e]).join(" / ");
     const date = activity.startDate || activity.f;
     const entries = Object.entries(bookedLinks);
-
-    if (entries.length === 0) {
-      alert("No hay reservas confirmadas para enviar.");
-      return;
-    }
-
+    if (entries.length === 0) { alert("No hay reservas confirmadas para enviar."); return; }
     const subject = `Reserva Logística: ${hotelsList} - ${date}`;
-    let body = `Hola ${name},\n\nAquí tienes los detalles de tus reservas para el viaje a: ${hotelsList} (${date}):\n\n`;
-
+    let body = `Hola ${consultant},\n\nReservas para: ${hotelsList} (${date}):\n\n`;
     entries.forEach(([url, data]) => {
       const label = directLinks.find(l => l.url === url)?.label || "Proveedor";
-      if (data && typeof data === 'object' && data.segments) {
-        data.segments.forEach(seg => {
-          const typeLabel = seg.type === "ida" ? " (Ida)" : seg.type === "vuelta" ? " (Vuelta)" : seg.type === "recogida" ? " (Recogida)" : seg.type === "devolución" ? " (Devolución)" : ` (${seg.type})`;
-          body += `• ${label}${typeLabel}: Localizador ${seg.locator} - Fecha: ${seg.date}\n`;
-        });
-      } else {
-        const code = typeof data === 'object' ? data.locator : data;
-        const dateStr = typeof data === 'object' ? data.date : "";
-        const typeStr = typeof data === 'object' ? (data.type === "ida" ? " (Ida)" : data.type === "vuelta" ? " (Vuelta)" : "") : "";
-        body += `• ${label}${typeStr}: Localizador ${code}${dateStr ? ` - Fecha: ${dateStr}` : ""}\n`;
-      }
+      (data?.segments || [{ type: data?.type || "ida", locator: data?.locator || data, date: data?.date || "" }]).forEach(seg => {
+        body += `• ${label} (${seg.type}): Loc. ${seg.locator} - ${seg.date}\n`;
+      });
     });
-
-    body += `\nBuen viaje!`;
+    body += `\n¡Buen viaje!`;
     window.location.href = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   };
 
-  const handleAISearch = async () => {
-    setLoading(true);
-    setAiResult(null);
-    setError(null);
-    try {
-      const resp = await fetch('/api/travel-ai', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ transportType, origin: c.base, destination: activity.destMuni, date: activity.startDate || activity.f })
-      });
-      const data = await resp.json();
-      if (data.error) setError(data.error);
-      else setAiResult(data);
-    } catch (err) {
-      setError("Error al conectar con la IA de viajes.");
-    } finally {
-      setLoading(false);
+  const hotelLabel = useMemo(() => establishments.length === 1 ? "1 hotel" : `${establishments.length} hoteles`, [establishments]);
+  const modalIsCar = isCarProvider(activeBookingLabel);
+  const modalIcon = modalIsCar ? "🚗" : (activeBookingLabel?.includes("Renfe") || activeBookingLabel?.includes("Iryo") || activeBookingLabel?.includes("Trainline")) ? "🚄" : "✈️";
+
+  // Accommodation hotels: find matches for the destination zone
+  const destZone = activity.destMuni || activity.r || "";
+  const accomHotels = useMemo(() => {
+    if (!accommodationHotels || Object.keys(accommodationHotels).length === 0) return [];
+    const destNorm = destZone.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    // Try to find zones that partially match the destination
+    const matched = [];
+    Object.entries(accommodationHotels).forEach(([zone, hotels]) => {
+      const zoneNorm = zone.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      if (destNorm.includes(zoneNorm) || zoneNorm.includes(destNorm) ||
+        activity.r?.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").includes(zoneNorm)) {
+        hotels.forEach(h => matched.push({ ...h, zona: zone }));
+      }
+    });
+    return matched;
+  }, [accommodationHotels, destZone, activity.r]);
+
+  // All zones for manual zone selector
+  const allZones = useMemo(() => Object.keys(accommodationHotels || {}).sort(), [accommodationHotels]);
+  const [selectedZone, setSelectedZone] = useState("");
+
+  const hotelsToShow = useMemo(() => {
+    if (selectedZone) return (accommodationHotels[selectedZone] || []).map(h => ({ ...h, zona: selectedZone }));
+    return accomHotels;
+  }, [selectedZone, accommodationHotels, accomHotels]);
+
+  // Single hotel selector + locator (replaces per-hotel list)
+  const [selectedHotel, setSelectedHotel] = useState(null); // { hotel, zona, ubicacion }
+  const [accomLocator, setAccomLocator] = useState("");
+  const [accomDate, setAccomDate] = useState(() => toInputDate(groupStartDate || activity.startDate || activity.f) || "");
+
+  // Auto-select first hotel when zone matches change
+  useEffect(() => {
+    if (hotelsToShow.length > 0 && !selectedHotel) {
+      setSelectedHotel(hotelsToShow[0]);
+    } else if (hotelsToShow.length > 0 && selectedHotel && !hotelsToShow.some(h => h.hotel === selectedHotel.hotel)) {
+      setSelectedHotel(hotelsToShow[0]);
     }
+  }, [hotelsToShow]);
+
+  const accomAlreadySaved = bookedLinks["__accom__"];
+
+  const handleSaveAccom = () => {
+    if (!selectedHotel) return;
+    const data = {
+      hotel: selectedHotel.hotel,
+      zona: selectedHotel.zona,
+      ubicacion: selectedHotel.ubicacion || "",
+      locator: accomLocator.trim(),
+      date: toDisplayDate(accomDate) || panelStartDate,
+      type: "alojamiento"
+    };
+    if (onMarkBooked) onMarkBooked("__accom__", data);
   };
 
-  // Calculate actual number of hotels/establishments
-  const hotelLabel = useMemo(() => {
-    const count = establishments.length;
-    if (count === 1) return "1 hotel seleccionado";
-    return "Múltiples hoteles seleccionados";
-  }, [establishments]);
-
-  if (activeBookingUrl) {
-    return (
-      <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.8)", zIndex: 2000, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
-        <div style={{ background: "white", padding: 32, borderRadius: 24, maxWidth: 500, width: "100%", textAlign: "center", boxShadow: "0 25px 50px -12px rgba(0,0,0,0.5)" }}>
-          <div style={{ width: 64, height: 64, background: "#EEF2FF", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32, margin: "0 auto 20px" }}>✈️</div>
-          <h2 style={{ fontSize: 22, fontWeight: 800, color: "#111", marginBottom: 12 }}>Confirmar Reserva en {activeBookingLabel}</h2>
-          <p style={{ color: "#666", fontSize: 13, lineHeight: 1.5, marginBottom: 20 }}>Introduce los detalles de la reserva realizada.</p>
-
-          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            {/* Segment 1 */}
-            <div style={{ background: "#F8FAFC", padding: 16, borderRadius: 16, border: "1px solid #E2E8F0" }}>
-              <div style={{ display: "flex", gap: 10, marginBottom: 10 }}>
-                <div style={{ flex: 1 }}>
-                  <label style={{ display: "block", textAlign: "left", fontSize: 9, fontWeight: 800, color: "#64748B", textTransform: "uppercase", marginBottom: 4 }}>
-                    {transportType === "auto" ? "🏁 Recogida" : "✈️ Ida / Trayecto"}
-                  </label>
-                  <input type="text" value={bookingDate} onChange={e => setBookingDate(e.target.value)} placeholder="Fecha" style={{ width: "100%", padding: "8px 12px", borderRadius: 8, border: "2px solid #E2E8F0", fontSize: 13, fontWeight: 600 }} />
-                </div>
-                <div style={{ flex: 2 }}>
-                  <label style={{ display: "block", textAlign: "left", fontSize: 9, fontWeight: 800, color: "#64748B", textTransform: "uppercase", marginBottom: 4 }}>Localizador</label>
-                  <input type="text" value={locatorCode} onChange={e => setLocatorCode(e.target.value)} placeholder="Código" style={{ width: "100%", padding: "8px 12px", borderRadius: 8, border: "2px solid #E2E8F0", fontSize: 13, fontWeight: 700, textAlign: "center", color: "#0F172A" }} />
-                </div>
-              </div>
+  return (
+    <>
+      {/* ========== LOCATOR ENTRY MODAL (z-index 3000, on top of everything) ========== */}
+      {activeBookingUrl && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.82)", zIndex: 3000, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+          <div style={{ background: "white", borderRadius: 28, maxWidth: 460, width: "100%", padding: 36, boxShadow: "0 40px 100px rgba(0,0,0,0.6)", textAlign: "center" }}>
+            <div style={{ width: 76, height: 76, background: "#EEF2FF", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 40, margin: "0 auto 20px" }}>
+              {modalIcon}
             </div>
+            <h2 style={{ fontSize: 22, fontWeight: 800, color: "#111", margin: "0 0 4px" }}>Confirmar Reserva</h2>
+            <p style={{ fontSize: 15, color: "#0060AA", fontWeight: 700, margin: "0 0 6px" }}>{activeBookingLabel}</p>
+            <p style={{ color: "#888", fontSize: 13, margin: "0 0 24px" }}>
+              Introduce los detalles de la reserva realizada.
+            </p>
 
-            {/* Segment 2 (Dual Mode Only) */}
-            {isDualMode && (
-              <div style={{ background: "#F8FAFC", padding: 16, borderRadius: 16, border: "1px solid #E2E8F0" }}>
-                <div style={{ display: "flex", gap: 10, marginBottom: 10 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 14, textAlign: "left" }}>
+              {/* IDA */}
+              <div style={{ background: "#F8FAFC", padding: 18, borderRadius: 16, border: `2px solid ${submitAttempted && !locatorIda.trim() ? "#EF4444" : "#E2E8F0"}` }}>
+                <div style={{ fontSize: 10, fontWeight: 800, color: "#64748B", textTransform: "uppercase", letterSpacing: 1, marginBottom: 12 }}>
+                  {modalIsCar ? "🏁 Recogida" : "✈️ Ida / Trayecto"} <span style={{ color: "#EF4444" }}>*</span>
+                </div>
+                <div style={{ display: "flex", gap: 10 }}>
                   <div style={{ flex: 1 }}>
-                    <label style={{ display: "block", textAlign: "left", fontSize: 9, fontWeight: 800, color: "#64748B", textTransform: "uppercase", marginBottom: 4 }}>
-                      {transportType === "auto" ? "🔄 Devolución" : "✈️ Vuelta / Regreso"}
-                    </label>
-                    <input type="text" value={bookingDate2} onChange={e => setBookingDate2(e.target.value)} placeholder="Fecha" style={{ width: "100%", padding: "8px 12px", borderRadius: 8, border: "2px solid #E2E8F0", fontSize: 13, fontWeight: 600 }} />
+                    <div style={{ fontSize: 10, color: "#94A3B8", marginBottom: 4 }}>Fecha</div>
+                    <input
+                      type="date"
+                      value={dateIda}
+                      onChange={e => setDateIda(e.target.value)}
+                      style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "2px solid #E2E8F0", fontSize: 13, fontWeight: 600, boxSizing: "border-box", background: "#111", color: "white" }}
+                    />
                   </div>
                   <div style={{ flex: 2 }}>
-                    <label style={{ display: "block", textAlign: "left", fontSize: 9, fontWeight: 800, color: "#64748B", textTransform: "uppercase", marginBottom: 4 }}>Localizador</label>
-                    <input type="text" value={locatorCode2} onChange={e => setLocatorCode2(e.target.value)} placeholder="Código" style={{ width: "100%", padding: "8px 12px", borderRadius: 8, border: "2px solid #E2E8F0", fontSize: 13, fontWeight: 700, textAlign: "center", color: "#0F172A" }} />
+                    <div style={{ fontSize: 10, color: "#94A3B8", marginBottom: 4 }}>Localizador <span style={{ color: "#EF4444" }}>*</span></div>
+                    <input
+                      type="text"
+                      value={locatorIda}
+                      onChange={e => setLocatorIda(e.target.value.toUpperCase())}
+                      placeholder="Código"
+                      autoFocus
+                      style={{ width: "100%", padding: "12px 14px", borderRadius: 10, border: `2px solid ${submitAttempted && !locatorIda.trim() ? "#EF4444" : "#E2E8F0"}`, fontSize: 18, fontWeight: 800, textAlign: "center", color: "white", background: "#111", boxSizing: "border-box", letterSpacing: 4 }}
+                    />
+                    {submitAttempted && !locatorIda.trim() && <div style={{ color: "#EF4444", fontSize: 10, marginTop: 3 }}>Campo obligatorio</div>}
                   </div>
                 </div>
               </div>
-            )}
-          </div>
 
-          <button onClick={confirmBooking} disabled={!locatorCode.trim() && !locatorCode2.trim()} style={{ width: "100%", background: (!locatorCode.trim() && !locatorCode2.trim()) ? "#CBD5E0" : "#10B981", color: "white", border: "none", padding: "16px", borderRadius: 12, fontSize: 15, fontWeight: 700, cursor: "pointer", marginTop: 20 }}>
-            ✅ Confirmar y Guardar
-          </button>
-          <button onClick={() => setActiveBookingUrl(null)} style={{ width: "100%", background: "white", color: "#6B7280", border: "2px solid #E5E7EB", padding: "12px", borderRadius: 12, fontSize: 14, fontWeight: 600, cursor: "pointer", marginTop: 12 }}>Cancelar</button>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 16, backdropFilter: "blur(5px)" }} onClick={onClose}>
-      <div onClick={e => e.stopPropagation()} style={{ background: "white", borderRadius: 20, width: "100%", maxWidth: 700, maxHeight: "90vh", overflow: "auto", boxShadow: "0 20px 50px rgba(0,0,0,0.2)" }}>
-        <div style={{ background: TRANSPORT_META[transportType]?.bg, padding: "24px", borderBottom: `1px solid ${TRANSPORT_META[transportType]?.color}20` }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start" }}>
-            <div style={{ flex: 1 }}>
-              <h3 style={{ margin: 0, color: TRANSPORT_META[transportType]?.color, fontSize: 22, fontWeight: 700 }}>{TRANSPORT_META[transportType]?.icon} Gestión de {TRANSPORT_META[transportType]?.label}</h3>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 12, flexWrap: "wrap" }}>
-                <div style={{ background: "rgba(255,255,255,0.7)", padding: "4px 10px", borderRadius: 8, fontSize: 13, fontWeight: 600, color: "#111" }}>👤 {consultant}</div>
-                <div style={{ color: TRANSPORT_META[transportType]?.color, fontWeight: 900 }}>→</div>
-                {(establishments || [activity.e]).map((h, i) => (
-                  <div key={i} style={{ background: "rgba(255,255,255,0.7)", padding: "4px 10px", borderRadius: 8, fontSize: 13, fontWeight: 800, color: "#111" }}>
-                    🏨 {h}
+              {/* VUELTA */}
+              {isDualMode && (
+                <div style={{ background: "#F8FAFC", padding: 18, borderRadius: 16, border: `2px solid ${submitAttempted && !locatorVuelta.trim() ? "#EF4444" : "#E2E8F0"}` }}>
+                  <div style={{ fontSize: 10, fontWeight: 800, color: "#64748B", textTransform: "uppercase", letterSpacing: 1, marginBottom: 12 }}>
+                    {modalIsCar ? "🔄 Devolución" : "✈️ Vuelta / Regreso"} <span style={{ color: "#EF4444" }}>*</span>
                   </div>
-                ))}
-                <div style={{ background: "rgba(255,255,255,0.7)", padding: "4px 10px", borderRadius: 8, fontSize: 13, fontWeight: 700, color: "#4F46E5" }}>📅 {panelStartDate} - {panelEndDate}</div>
-              </div>
+                  <div style={{ display: "flex", gap: 10 }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 10, color: "#94A3B8", marginBottom: 4 }}>Fecha</div>
+                      <input
+                        type="date"
+                        value={dateVuelta}
+                        onChange={e => setDateVuelta(e.target.value)}
+                        style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "2px solid #E2E8F0", fontSize: 13, fontWeight: 600, boxSizing: "border-box", background: "#111", color: "white" }}
+                      />
+                    </div>
+                    <div style={{ flex: 2 }}>
+                      <div style={{ fontSize: 10, color: "#94A3B8", marginBottom: 4 }}>Localizador <span style={{ color: "#EF4444" }}>*</span></div>
+                      <input
+                        type="text"
+                        value={locatorVuelta}
+                        onChange={e => setLocatorVuelta(e.target.value.toUpperCase())}
+                        placeholder="Código"
+                        style={{ width: "100%", padding: "12px 14px", borderRadius: 10, border: `2px solid ${submitAttempted && !locatorVuelta.trim() ? "#EF4444" : "#E2E8F0"}`, fontSize: 18, fontWeight: 800, textAlign: "center", color: "white", background: "#111", boxSizing: "border-box", letterSpacing: 4 }}
+                      />
+                      {submitAttempted && !locatorVuelta.trim() && <div style={{ color: "#EF4444", fontSize: 10, marginTop: 3 }}>Campo obligatorio</div>}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
-            <button onClick={onClose} style={{ background: "transparent", border: "none", fontSize: 24, cursor: "pointer", padding: 5, color: "#666" }}>&times;</button>
+
+            <button
+              onClick={confirmBooking}
+              style={{ width: "100%", padding: "16px", background: "linear-gradient(135deg, #10B981, #059669)", color: "white", border: "none", borderRadius: 14, fontSize: 16, fontWeight: 800, cursor: "pointer", marginTop: 24, boxShadow: "0 4px 20px rgba(16,185,129,0.4)", display: "flex", alignItems: "center", justifyContent: "center", gap: 10 }}
+            >
+              ✅ Confirmar y Guardar
+            </button>
+            <button
+              onClick={closeModal}
+              style={{ width: "100%", padding: "14px", background: "white", color: "#6B7280", border: "2px solid #E5E7EB", borderRadius: 14, fontSize: 14, fontWeight: 600, cursor: "pointer", marginTop: 10 }}
+            >
+              Cancelar
+            </button>
           </div>
         </div>
-        <div style={{ padding: 24 }}>
-          {transportType !== "local" && (
-            <button onClick={handleAISearch} disabled={loading} style={{ width: "100%", padding: 14, background: loading ? "#eee" : "#111", color: "white", border: "none", borderRadius: 10, fontWeight: 600, cursor: "pointer", marginBottom: 24 }}>
-              {loading ? "Analizando..." : "✨ Buscar con IA"}
-            </button>
-          )}
-          {error && <div style={{ background: "#FEF2F2", color: "#991B1B", padding: 12, borderRadius: 8, marginBottom: 20 }}>{error}</div>}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 12, marginBottom: 24 }}>
-            {directLinks.map((l, i) => {
-              const isBooked = bookedLinks[l.url];
-              return (
-                <a key={i} href={l.url} onClick={(e) => handleLinkClick(e, l)} style={{ display: "flex", flexDirection: "column", gap: 4, padding: "16px", background: isBooked ? "#F0FDF4" : "#f8fafc", border: `2px solid ${isBooked ? "#BBF7D0" : "#e2e8f0"}`, borderRadius: 12, textDecoration: "none" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between" }}><span>{l.icon}</span> {isBooked && <span>✅</span>}</div>
-                  <div style={{ fontWeight: 700, color: "#1e293b", fontSize: 14 }}>{l.label}</div>
-                  <div style={{ fontSize: 11, color: "#64748b" }}>
-                    {l.desc}
-                    {isBooked && (
-                      <div style={{ marginTop: 4, display: "flex", flexDirection: "column", gap: 2 }}>
-                        {(isBooked.segments || [{ type: isBooked.type, locator: isBooked.locator, date: isBooked.date }]).map((seg, si) => (
-                          <div key={si} style={{ padding: "4px 8px", background: "white", borderRadius: 6, border: "1px solid #BBF7D0", color: "#059669", fontSize: 9, fontWeight: 700 }}>
-                            {seg.type.toUpperCase()}: {seg.locator} ({seg.date})
+      )}
+
+      {/* ========== MAIN BOOKING PANEL ========== */}
+      <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 16, backdropFilter: "blur(5px)" }} onClick={onClose}>
+        <div onClick={e => e.stopPropagation()} style={{ background: "white", borderRadius: 20, width: "100%", maxWidth: 700, maxHeight: "90vh", overflow: "auto", boxShadow: "0 20px 50px rgba(0,0,0,0.2)" }}>
+          <div style={{ background: TRANSPORT_META[transportType]?.bg, padding: "24px", borderBottom: `1px solid ${TRANSPORT_META[transportType]?.color}20` }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start" }}>
+              <div style={{ flex: 1 }}>
+                <h3 style={{ margin: 0, color: TRANSPORT_META[transportType]?.color, fontSize: 22, fontWeight: 700 }}>{TRANSPORT_META[transportType]?.icon} Gestión de {TRANSPORT_META[transportType]?.label}</h3>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 12, flexWrap: "wrap" }}>
+                  <div style={{ background: "rgba(255,255,255,0.7)", padding: "4px 10px", borderRadius: 8, fontSize: 13, fontWeight: 600, color: "#111" }}>👤 {consultant}</div>
+                  <div style={{ color: TRANSPORT_META[transportType]?.color, fontWeight: 900 }}>→</div>
+                  {(establishments || [activity.e]).map((h, i) => (
+                    <div key={i} style={{ background: "rgba(255,255,255,0.7)", padding: "4px 10px", borderRadius: 8, fontSize: 13, fontWeight: 800, color: "#111" }}>🏨 {h}</div>
+                  ))}
+                  <div style={{ background: "rgba(255,255,255,0.7)", padding: "4px 10px", borderRadius: 8, fontSize: 13, fontWeight: 700, color: "#4F46E5" }}>📅 {panelStartDate} → {panelEndDate}</div>
+                </div>
+              </div>
+              <button onClick={onClose} style={{ background: "transparent", border: "none", fontSize: 24, cursor: "pointer", padding: 5, color: "#666" }}>&times;</button>
+            </div>
+          </div>
+
+          <div style={{ padding: 24 }}>
+            <p style={{ fontSize: 13, color: "#666", marginBottom: 20, lineHeight: 1.6 }}>
+              Pulsa un proveedor para <strong>abrir su web y registrar el localizador</strong>. Puedes confirmar varios (vuelo + coche + hotel) de forma independiente.
+            </p>
+
+            {/* ===== ACCOMMODATION HOTELS SECTION ===== */}
+            {Object.keys(accommodationHotels || {}).length > 0 && (
+              <div style={{ marginBottom: 24, background: accomAlreadySaved ? "#F0FDF4" : "#F0F9FF", borderRadius: 16, padding: 20, border: `1px solid ${accomAlreadySaved ? "#4ADE80" : "#BAE6FD"}` }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14, flexWrap: "wrap", gap: 8 }}>
+                  <div style={{ fontWeight: 800, fontSize: 14, color: accomAlreadySaved ? "#15803D" : "#0369A1" }}>
+                    {accomAlreadySaved ? "✅ Hotel Alojamiento Confirmado" : "🏨 Hotel de Alojamiento"}
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    {accomHotels.length > 0 && !selectedZone && (
+                      <span style={{ fontSize: 11, color: "#0369A1", background: "#E0F2FE", padding: "2px 8px", borderRadius: 99, fontWeight: 600 }}>
+                        {accomHotels.length} opciones para {destZone}
+                      </span>
+                    )}
+                    <select
+                      value={selectedZone}
+                      onChange={e => { setSelectedZone(e.target.value); setSelectedHotel(null); }}
+                      style={{ fontSize: 12, padding: "4px 8px", borderRadius: 8, border: "1px solid #BAE6FD", background: "white", color: "#0369A1", fontWeight: 600, cursor: "pointer" }}
+                    >
+                      <option value="">{accomHotels.length > 0 ? `Auto: ${destZone}` : "Seleccionar zona…"}</option>
+                      {allZones.map(z => <option key={z} value={z}>{z}</option>)}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Already saved - show summary */}
+                {accomAlreadySaved && (
+                  <div style={{ background: "white", borderRadius: 10, padding: "10px 14px", border: "1px solid #BBF7D0", marginBottom: 12, display: "flex", alignItems: "center", gap: 10 }}>
+                    <span style={{ fontSize: 18 }}>🏨</span>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: 800, fontSize: 13, color: "#15803D" }}>{accomAlreadySaved.hotel}</div>
+                      <div style={{ fontSize: 11, color: "#64748B" }}>{accomAlreadySaved.zona} · {accomAlreadySaved.date}</div>
+                    </div>
+                    {accomAlreadySaved.locator && (
+                      <div style={{ fontWeight: 800, fontSize: 15, color: "#0D4BD9", letterSpacing: 2 }}>{accomAlreadySaved.locator}</div>
+                    )}
+                    {accomAlreadySaved.ubicacion && (
+                      <a href={accomAlreadySaved.ubicacion} target="_blank" rel="noopener noreferrer"
+                        style={{ fontSize: 11, color: "#0369A1", background: "#E0F2FE", padding: "4px 8px", borderRadius: 6, textDecoration: "none" }}
+                      >🗺️ Maps</a>
+                    )}
+                  </div>
+                )}
+
+                {/* Hotel selector */}
+                {hotelsToShow.length === 0 ? (
+                  <div style={{ fontSize: 12, color: "#64748B", textAlign: "center", padding: "12px 0" }}>
+                    No hay hoteles para esta zona. Usa el selector para buscar por ciudad.
+                  </div>
+                ) : (
+                  <div>
+                    {/* Radio-style hotel picker */}
+                    <div style={{ fontSize: 11, fontWeight: 700, color: "#475569", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>Seleccionar hotel:</div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 14 }}>
+                      {hotelsToShow.map((h, i) => {
+                        const isSelected = selectedHotel?.hotel === h.hotel;
+                        return (
+                          <div
+                            key={i}
+                            onClick={() => setSelectedHotel(h)}
+                            style={{
+                              display: "flex", alignItems: "center", gap: 10, padding: "10px 14px",
+                              background: isSelected ? "#EFF6FF" : "white",
+                              border: `2px solid ${isSelected ? "#3B82F6" : "#E2E8F0"}`,
+                              borderRadius: 10, cursor: "pointer", transition: "all 0.15s"
+                            }}
+                          >
+                            <div style={{
+                              width: 18, height: 18, borderRadius: "50%",
+                              border: `2px solid ${isSelected ? "#3B82F6" : "#CBD5E1"}`,
+                              background: isSelected ? "#3B82F6" : "white",
+                              flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center"
+                            }}>
+                              {isSelected && <div style={{ width: 7, height: 7, borderRadius: "50%", background: "white" }} />}
+                            </div>
+                            <div style={{ flex: 1 }}>
+                              <div style={{ fontWeight: 700, fontSize: 13, color: "#1E293B" }}>{h.hotel}</div>
+                              <div style={{ fontSize: 11, color: "#64748B" }}>📍 {h.zona}</div>
+                            </div>
+                            {h.ubicacion && (
+                              <a href={h.ubicacion} target="_blank" rel="noopener noreferrer"
+                                onClick={e => e.stopPropagation()}
+                                style={{ fontSize: 11, color: "#0369A1", fontWeight: 600, background: "#E0F2FE", padding: "3px 8px", borderRadius: 6, textDecoration: "none", whiteSpace: "nowrap" }}
+                              >🗺️ Maps</a>
+                            )}
                           </div>
-                        ))}
+                        );
+                      })}
+                    </div>
+
+                    {/* Locator + date + save */}
+                    {selectedHotel && (
+                      <div style={{ background: "white", borderRadius: 12, padding: "14px", border: "1px solid #DBEAFE", display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                        <div style={{ flex: 1, minWidth: 140 }}>
+                          <div style={{ fontSize: 10, color: "#94A3B8", marginBottom: 4 }}>Fecha entrada</div>
+                          <input
+                            type="date"
+                            value={accomDate}
+                            onChange={e => setAccomDate(e.target.value)}
+                            style={{ width: "100%", padding: "7px 10px", borderRadius: 8, border: "1.5px solid #CBD5E1", fontSize: 12, fontWeight: 600, boxSizing: "border-box", background: "#111", color: "white" }}
+                          />
+                        </div>
+                        <div style={{ flex: 1, minWidth: 130 }}>
+                          <div style={{ fontSize: 10, color: "#94A3B8", marginBottom: 4 }}>Localizador (opcional)</div>
+                          <input
+                            type="text"
+                            value={accomLocator}
+                            onChange={e => setAccomLocator(e.target.value.toUpperCase())}
+                            placeholder="Nº reserva"
+                            style={{ width: "100%", padding: "7px 10px", borderRadius: 8, border: "1.5px solid #CBD5E1", fontSize: 14, fontWeight: 800, letterSpacing: 2, textAlign: "center", background: "#111", color: "white", boxSizing: "border-box" }}
+                          />
+                        </div>
+                        <button
+                          onClick={handleSaveAccom}
+                          style={{ padding: "9px 18px", background: "linear-gradient(135deg, #0369A1, #0284C7)", color: "white", border: "none", borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0 }}
+                        >
+                          🏨 Guardar Hotel
+                        </button>
                       </div>
                     )}
                   </div>
-                </a>
-              );
-            })}
-          </div>
-          <div style={{ background: "#f8fafc", padding: 20, borderRadius: 16, display: "flex", justifyContent: "space-between", alignItems: "center", border: "1px solid #e2e8f0", marginTop: 32 }}>
-            <div><div style={{ fontSize: 13, fontWeight: 700 }}>{hotelLabel}</div></div>
-            <button onClick={handleSendEmail} disabled={Object.keys(bookedLinks).length === 0} style={{ background: Object.keys(bookedLinks).length === 0 ? "#CBD5E0" : "#111", color: "white", border: "none", padding: "12px 24px", borderRadius: 12, fontWeight: 700 }}>📩 Notificar al Consultor</button>
+                )}
+              </div>
+            )}
+
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(185px, 1fr))", gap: 14, marginBottom: 24 }}>
+              {directLinks.map((l, i) => {
+                const booking = bookedLinks[l.url];
+                const isBooked = !!booking;
+                return (
+                  <div key={i} style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                    <a
+                      href={l.url}
+                      onClick={(e) => openModal(e, l)}
+                      style={{
+                        display: "flex", flexDirection: "column", gap: 6, padding: "16px 14px",
+                        background: isBooked ? "#F0FDF4" : "white",
+                        border: `2px solid ${isBooked ? "#4ADE80" : "#E2E8F0"}`,
+                        borderRadius: 14, textDecoration: "none", cursor: "pointer",
+                        position: "relative",
+                        boxShadow: isBooked ? "0 0 0 4px rgba(74,222,128,0.15)" : "0 2px 6px rgba(0,0,0,0.05)"
+                      }}
+                    >
+                      {isBooked && (
+                        <div style={{ position: "absolute", top: -10, right: -10, background: "#10B981", color: "white", borderRadius: "50%", width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, fontWeight: 900, boxShadow: "0 2px 8px rgba(16,185,129,0.5)" }}>✓</div>
+                      )}
+                      <div style={{ fontSize: 28 }}>{l.icon}</div>
+                      <div style={{ fontWeight: 700, color: "#1e293b", fontSize: 14 }}>{l.label}</div>
+                      <div style={{ fontSize: 11, color: "#64748b" }}>{l.desc}</div>
+                      {!isBooked && <div style={{ marginTop: 4, fontSize: 11, color: "#3B82F6", fontWeight: 600 }}>👉 Pulsar para reservar</div>}
+                    </a>
+
+                    {isBooked && (
+                      <div style={{ background: "#ECFDF5", borderRadius: 10, padding: "8px 10px", border: "1px solid #A7F3D0" }}>
+                        <div style={{ fontWeight: 800, color: "#065F46", fontSize: 10, marginBottom: 4 }}>✅ RESERVADO</div>
+                        {(booking.segments || [{ type: booking.type || "ida", locator: booking.locator, date: booking.date }]).map((seg, si) => (
+                          <div key={si} style={{ display: "flex", justifyContent: "space-between", color: "#047857", fontSize: 11 }}>
+                            <span style={{ textTransform: "capitalize" }}>{seg.type}:</span>
+                            <span style={{ fontWeight: 800, letterSpacing: 1 }}>{seg.locator}</span>
+                          </div>
+                        ))}
+                        <button
+                          onClick={(e) => { e.preventDefault(); openModal({ preventDefault: () => { } }, l); }}
+                          style={{ marginTop: 6, background: "white", border: "1px solid #A7F3D0", borderRadius: 6, padding: "3px 8px", fontSize: 10, cursor: "pointer", color: "#065F46", width: "100%" }}
+                        >✏️ Modificar</button>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+
+              <button
+                onClick={() => {
+                  setActiveBookingUrl("manual_" + Date.now());
+                  setActiveBookingLabel("Entrada Manual");
+                  setIsDualMode(true);
+                  setLocatorIda(""); setLocatorVuelta("");
+                  setDateIda(panelStartDate); setDateVuelta(panelEndDate);
+                  setSubmitAttempted(false);
+                }}
+                style={{ display: "flex", flexDirection: "column", gap: 8, padding: "20px 14px", background: "#F8FAFC", border: "2px dashed #CBD5E1", borderRadius: 14, cursor: "pointer", alignItems: "center", justifyContent: "center", color: "#64748B", minHeight: 130 }}
+              >
+                <span style={{ fontSize: 28 }}>✍️</span>
+                <div style={{ fontWeight: 700, fontSize: 13 }}>Otra Reserva</div>
+                <div style={{ fontSize: 10, textAlign: "center", lineHeight: 1.4 }}>Proveedor externo / manual</div>
+              </button>
+            </div>
+
+            <div style={{ background: "#F8FAFC", padding: "16px 20px", borderRadius: 14, display: "flex", justifyContent: "space-between", alignItems: "center", border: "1px solid #E2E8F0" }}>
+              <div style={{ fontSize: 13, color: "#555" }}>
+                <span style={{ fontWeight: 700 }}>{Object.keys(bookedLinks).length}</span> reserva(s) · {hotelLabel}
+              </div>
+              <button
+                onClick={handleSendEmail}
+                disabled={Object.keys(bookedLinks).length === 0}
+                style={{ background: Object.keys(bookedLinks).length === 0 ? "#CBD5E0" : "#0060AA", color: "white", border: "none", padding: "10px 20px", borderRadius: 10, fontWeight: 700, fontSize: 13, cursor: Object.keys(bookedLinks).length === 0 ? "default" : "pointer" }}
+              >📩 Notificar al Consultor</button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
 
@@ -1327,10 +1964,216 @@ function BookingPanel({ consultant, activity, transportType, establishments, con
 // AUXILIARY COMPONENTS
 // ============================================================
 
+// ============================================================
+// CALENDAR VIEW COMPONENT
+// ============================================================
+function CalendarView({ activities, initialConsultant, allConsultants, bookedLinks, onBack }) {
+  const [selectedConsultant, setSelectedConsultant] = useState(initialConsultant || "");
+
+  const [currentMonth, setCurrentMonth] = useState(() => {
+    if (activities.length > 0) {
+      // Find the first date to set initial month
+      const dates = activities.map(a => {
+        const [d, m, y] = a.f.split("/");
+        return new Date(y, m - 1, d);
+      }).sort((a, b) => a - b);
+      return dates[0] || new Date();
+    }
+    return new Date();
+  });
+
+  const getDaysInMonth = (date) => new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+  const getFirstDayOfMonth = (date) => {
+    const day = new Date(date.getFullYear(), date.getMonth(), 1).getDay();
+    return day === 0 ? 6 : day - 1; // Mon=0, Sun=6
+  };
+
+  const dayCount = getDaysInMonth(currentMonth);
+  const startOffset = getFirstDayOfMonth(currentMonth);
+  const days = Array.from({ length: dayCount }, (_, i) => i + 1);
+  const blanks = Array.from({ length: startOffset }, (_, i) => i);
+
+  const prevMonth = () => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1));
+  const nextMonth = () => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1));
+
+  const monthLabel = currentMonth.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
+  const monthName = monthLabel.charAt(0).toUpperCase() + monthLabel.slice(1);
+
+  // Helper to extract company from URL
+  const getCompanyName = (url) => {
+    if (!url) return "Proveedor";
+    const lower = url.toLowerCase();
+    if (lower.includes("binter")) return "Binter";
+    if (lower.includes("vueling")) return "Vueling";
+    if (lower.includes("iberia")) return "Iberia";
+    if (lower.includes("renfe")) return "Renfe";
+    if (lower.includes("iryo")) return "Iryo";
+    if (lower.includes("trainline")) return "Trainline";
+    if (lower.includes("cicar")) return "Cicar";
+    if (lower.includes("goldcar")) return "Goldcar";
+    if (lower.includes("okmobility")) return "OK Mobility";
+    if (lower.includes("europcar")) return "Europcar";
+    if (lower.includes("skyscanner")) return "Skyscanner";
+    if (lower.includes("google")) return "Google";
+    return "Compañía";
+  };
+
+  // FILTERING LOGIC
+  const filteredActivities = useMemo(() => {
+    if (!selectedConsultant) return activities;
+    return activities.filter(a => (a.a || "").trim() === selectedConsultant);
+  }, [activities, selectedConsultant]);
+
+  const eventsByDay = useMemo(() => {
+    const map = {};
+    filteredActivities.forEach(act => {
+      const [d, m, y] = act.f.split("/");
+      const actDate = new Date(y, m - 1, d);
+
+      if (actDate.getMonth() === currentMonth.getMonth() && actDate.getFullYear() === currentMonth.getFullYear()) {
+        const day = parseInt(d, 10);
+        if (!map[day]) map[day] = [];
+
+        const links = bookedLinks[act.id] || {};
+        const linkEntries = Object.entries(links);
+
+        if (linkEntries.length > 0) {
+          // Add booked trips
+          linkEntries.forEach(([url, data]) => {
+            const company = getCompanyName(url);
+            let segments = [];
+
+            if (data && data.segments) segments = data.segments;
+            else if (typeof data === 'object') segments = [{ type: data.type || 'ida', locator: data.locator, date: data.date }];
+            else segments = [{ type: act.tType === 'auto' ? 'recogida' : 'ida', locator: data, date: act.f }];
+
+            segments.forEach(seg => {
+              const icon = (act.tType === "tren") ? "🚄" : (act.tType === "auto" ? "🚗" : "✈️");
+              map[day].push({
+                isBooking: true,
+                consultant: act.a, // Consultant Name
+                region: act.r || act.island || "General", // Expedition/Region
+                hotel: act.e, // Hotel to visit
+                icon,
+                company,
+                type: seg.type,
+                locator: seg.locator,
+                date: seg.date,
+                color: TRANSPORT_META[act.tType]?.color || "#333",
+                bg: TRANSPORT_META[act.tType]?.bg || "#eee"
+              });
+            });
+          });
+        } else if (["vuelo", "tren", "auto"].includes(act.tType)) {
+          // Add unbooked plan (pending)
+          map[day].push({
+            isBooking: false,
+            consultant: act.a, // Consultant Name
+            region: act.r || act.island || "General", // Expedition/Region
+            hotel: act.e, // Hotel to visit
+            icon: TRANSPORT_META[act.tType]?.icon,
+            title: act.e,
+            desc: "Pendiente Reserva",
+            color: "#999",
+            bg: "#f3f4f6"
+          });
+        }
+      }
+    });
+    return map;
+  }, [filteredActivities, currentMonth, bookedLinks]);
+
+  return (
+    <div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          {onBack && <button onClick={onBack} style={{ background: "white", border: "1px solid #ddd", width: 40, height: 40, borderRadius: 12, cursor: "pointer", fontSize: 18 }}>←</button>}
+          <div>
+            <h2 style={{ fontSize: 24, fontWeight: 800, margin: 0, color: "#111" }}>Calendario de Viajes</h2>
+            <div style={{ marginTop: 8 }}>
+              <select
+                value={selectedConsultant}
+                onChange={(e) => setSelectedConsultant(e.target.value)}
+                style={{ padding: "6px 12px", borderRadius: 6, border: "1px solid #ccc", fontSize: 13, minWidth: 200 }}
+              >
+                <option value="">TODOS LOS CONSULTORES</option>
+                {allConsultants.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </div>
+          </div>
+        </div>
+        <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+          <button onClick={prevMonth} style={{ background: "white", border: "1px solid #ddd", padding: "8px 16px", borderRadius: 8, cursor: "pointer", fontWeight: 700 }}>&lt;</button>
+          <div style={{ fontSize: 18, fontWeight: 800, minWidth: 160, textAlign: "center" }}>{monthName}</div>
+          <button onClick={nextMonth} style={{ background: "white", border: "1px solid #ddd", padding: "8px 16px", borderRadius: 8, cursor: "pointer", fontWeight: 700 }}>&gt;</button>
+        </div>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 12 }}>
+        {["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"].map(d => (
+          <div key={d} style={{ textAlign: "center", fontWeight: 700, color: "#94A3B8", fontSize: 11, textTransform: "uppercase", paddingBottom: 8 }}>{d}</div>
+        ))}
+
+        {blanks.map(i => <div key={`blank-${i}`} style={{ minHeight: 120 }}></div>)}
+
+        {days.map(day => {
+          const events = eventsByDay[day] || [];
+          return (
+            <div key={day} style={{ background: "white", borderRadius: 12, minHeight: 140, border: "1px solid #E2E8F0", padding: 8, display: "flex", flexDirection: "column", gap: 4 }}>
+              <div style={{ fontSize: 14, fontWeight: 700, color: events.length > 0 ? "#111" : "#cbd5e1", marginBottom: 4 }}>{day}</div>
+              {events.map((ev, idx) => (
+                <div key={idx} style={{ background: ev.bg, borderRadius: 6, padding: "6px 8px", fontSize: 11, borderLeft: `3px solid ${ev.color}` }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                    <span style={{ fontWeight: 700, color: "#111", fontSize: 10 }}>👤 {ev.consultant}</span>
+                  </div>
+
+                  {ev.isBooking ? (
+                    <>
+                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 2 }}>
+                        <span style={{ fontWeight: 700, color: ev.color }}>{ev.icon} {ev.company}</span>
+                      </div>
+                      <div style={{ color: "#333", fontSize: 10, marginBottom: 2 }}>Loc: <strong>{ev.locator}</strong></div>
+
+                      {/* Destination/Hotel Context */}
+                      <div style={{ marginTop: 4, paddingTop: 4, borderTop: "1px dashed rgba(0,0,0,0.1)", fontSize: 10, color: "#555" }}>
+                        <div>📍 {ev.region}</div>
+                        <div style={{ fontStyle: "italic", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>🏨 {ev.hotel}</div>
+                      </div>
+
+                      <div style={{ color: "#666", fontSize: 9, marginTop: 4 }}>
+                        {ev.type === 'ida' ? '🛫 Ida' : ev.type === 'vuelta' ? '🛬 Vuelta' : ev.type === 'recogida' ? '🏁 Recogida' : '🔄 Devolución'}
+                        {ev.date && <span style={{ float: 'right' }}>{ev.date.split(" ")[1]}</span>}
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div style={{ color: "#555", fontStyle: "italic", fontWeight: 600 }}>
+                        {ev.icon} {ev.title}
+                      </div>
+                      <div style={{ marginTop: 4, paddingTop: 4, borderTop: "1px dashed rgba(0,0,0,0.1)", fontSize: 10, color: "#555" }}>
+                        <div>📍 {ev.region}</div>
+                        <div style={{ fontStyle: "italic", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>🏨 {ev.hotel}</div>
+                      </div>
+                      <div style={{ fontSize: 9, color: "#999", marginTop: 2 }}>Pendiente Reserva</div>
+                    </>
+                  )}
+                </div>
+              ))}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function ConsultantList({ consultants, onUpdate, onDelete }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState({});
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [addForm, setAddForm] = useState({ name: "", base: "Madrid", region: "Madrid", pref: "vehiculo", email: "", address: "", island: "" });
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
   const filtered = useMemo(() => {
     return Object.entries(consultants).filter(([name, data]) => {
@@ -1358,14 +2201,132 @@ function ConsultantList({ consultants, onUpdate, onDelete }) {
 
   return (
     <div style={{ background: "white", borderRadius: 16, overflow: "hidden", border: "1px solid #eee", boxShadow: "0 4px 6px rgba(0,0,0,0.02)" }}>
+      {deleteTarget && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 3000, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+          <div style={{ background: "white", borderRadius: 20, maxWidth: 400, width: "100%", padding: 24, boxShadow: "0 20px 50px rgba(0,0,0,0.2)", textAlign: "center" }}>
+            <div style={{ fontSize: 48, marginBottom: 16 }}>🗑️</div>
+            <h2 style={{ fontSize: 20, fontWeight: 800, color: "#111", margin: "0 0 12px" }}>¿Eliminar Consultor?</h2>
+            <p style={{ fontSize: 14, color: "#4B5563", margin: "0 0 24px", lineHeight: 1.5 }}>
+              Estás a punto de eliminar a <strong>{deleteTarget}</strong>. Esta acción no se puede deshacer.
+            </p>
+            <div style={{ display: "flex", gap: 12 }}>
+              <button
+                onClick={() => setDeleteTarget(null)}
+                style={{ flex: 1, padding: "10px", background: "#F3F4F6", color: "#4B5563", border: "none", borderRadius: 10, fontWeight: 600, cursor: "pointer" }}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => {
+                  onDelete(deleteTarget);
+                  setDeleteTarget(null);
+                }}
+                style={{ flex: 1, padding: "10px", background: "#EF4444", color: "white", border: "none", borderRadius: 10, fontWeight: 600, cursor: "pointer" }}
+              >
+                Sí, Eliminar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {showAddModal && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 3000, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+          <div style={{ background: "white", borderRadius: 20, maxWidth: 500, width: "100%", padding: 30, boxShadow: "0 20px 50px rgba(0,0,0,0.2)" }}>
+            <h2 style={{ fontSize: 20, fontWeight: 800, color: "#111", margin: "0 0 20px" }}>➕ Añadir Nuevo Consultor</h2>
+            <div style={{ display: "grid", gap: 14 }}>
+              <div>
+                <div style={{ fontSize: 12, fontWeight: 600, color: "#4B5563", marginBottom: 6 }}>Nombre Completo *</div>
+                <input
+                  type="text"
+                  value={addForm.name}
+                  onChange={e => setAddForm({ ...addForm, name: e.target.value })}
+                  style={{ width: "100%", padding: "10px 12px", borderRadius: 8, border: "1px solid #D1D5DB", boxSizing: "border-box" }}
+                  placeholder="Ej: Juan Pérez"
+                />
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+                <div style={{ gridColumn: "span 2" }}>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: "#4B5563", marginBottom: 6 }}>Dirección Completa</div>
+                  <input
+                    type="text"
+                    value={addForm.address}
+                    onChange={e => setAddForm({ ...addForm, address: e.target.value })}
+                    style={{ width: "100%", padding: "10px 12px", borderRadius: 8, border: "1px solid #D1D5DB", boxSizing: "border-box" }}
+                    placeholder="Ej: Calle Falsa 123, Madrid"
+                  />
+                </div>
+                <div>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: "#4B5563", marginBottom: 6 }}>Región</div>
+                  <select
+                    value={addForm.region}
+                    onChange={e => setAddForm({ ...addForm, region: e.target.value })}
+                    style={{ width: "100%", padding: "10px 12px", borderRadius: 8, border: "1px solid #D1D5DB", boxSizing: "border-box" }}
+                  >
+                    <option value="Madrid">Madrid</option>
+                    <option value="Islas Canarias">Islas Canarias</option>
+                    <option value="Islas Baleares">Islas Baleares</option>
+                    <option value="Cataluña">Cataluña</option>
+                    <option value="Andalucía">Andalucía</option>
+                    <option value="Valencia">Valencia</option>
+                    <option value="Murcia">Murcia</option>
+                    <option value="País Vasco">País Vasco</option>
+                    <option value="Galicia">Galicia</option>
+                    <option value="Asturias">Asturias</option>
+                    <option value="Castilla y León">Castilla y León</option>
+                    <option value="Desconocido">Otro</option>
+                  </select>
+                </div>
+                <div>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: "#4B5563", marginBottom: 6 }}>Isla (si aplica)</div>
+                  <input
+                    type="text"
+                    value={addForm.island}
+                    onChange={e => setAddForm({ ...addForm, island: e.target.value })}
+                    style={{ width: "100%", padding: "10px 12px", borderRadius: 8, border: "1px solid #D1D5DB", boxSizing: "border-box" }}
+                    placeholder="Ej: Tenerife"
+                  />
+                </div>
+                <div>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: "#4B5563", marginBottom: 6 }}>Mail</div>
+                  <input
+                    type="email"
+                    value={addForm.email}
+                    onChange={e => setAddForm({ ...addForm, email: e.target.value })}
+                    style={{ width: "100%", padding: "10px 12px", borderRadius: 8, border: "1px solid #D1D5DB", boxSizing: "border-box" }}
+                  />
+                </div>
+              </div>
+            </div>
+            <div style={{ display: "flex", gap: 12, marginTop: 24 }}>
+              <button
+                onClick={() => setShowAddModal(false)}
+                style={{ flex: 1, padding: "12px", background: "#F3F4F6", color: "#4B5563", border: "none", borderRadius: 10, fontWeight: 600, cursor: "pointer" }}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => {
+                  if (addForm.name.trim()) {
+                    onUpdate(addForm.name.trim(), { base: "", region: addForm.region, pref: addForm.pref, email: addForm.email, address: addForm.address, island: addForm.island });
+                    setShowAddModal(false);
+                    setAddForm({ name: "", base: "Madrid", region: "Madrid", pref: "vehiculo", email: "", address: "", island: "" });
+                  } else {
+                    alert("El nombre del consultor es obligatorio.");
+                  }
+                }}
+                style={{ flex: 1, padding: "12px", background: "#10B981", color: "white", border: "none", borderRadius: 10, fontWeight: 600, cursor: "pointer" }}
+              >
+                Validar y Añadir
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <div style={{ padding: 20, borderBottom: "1px solid #eee", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 20 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 15 }}>
           <h3 style={{ margin: 0, fontSize: 18 }}>Gestión de Consultores ({filtered.length})</h3>
           <button
-            onClick={() => {
-              const name = prompt("Nombre completo del nuevo consultor:");
-              if (name) onUpdate(name, { base: "Madrid", region: "Madrid", pref: "vehiculo", email: "", address: "" });
-            }}
+            onClick={() => setShowAddModal(true)}
             style={{ background: "#EEF2FF", color: "#4F46E5", border: "none", padding: "6px 12px", borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: "pointer" }}
           >
             + Añadir Consultor
@@ -1383,13 +2344,11 @@ function ConsultantList({ consultants, onUpdate, onDelete }) {
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
           <thead style={{ background: "#f8f9fa", borderBottom: "1px solid #eee" }}>
             <tr>
-              <th style={{ padding: "12px 16px", textAlign: "left", color: "#666" }}>Nombre</th>
-              <th style={{ padding: "12px 16px", textAlign: "left", color: "#666" }}>Base / Ubicación</th>
-              <th style={{ padding: "12px 16px", textAlign: "left", color: "#666" }}>Dirección</th>
-              <th style={{ padding: "12px 16px", textAlign: "left", color: "#666" }}>Región</th>
-
-              <th style={{ padding: "12px 16px", textAlign: "left", color: "#666" }}>Contacto</th>
-              <th style={{ padding: "12px 16px", textAlign: "center", color: "#666" }}>Acciones</th>
+              <th style={{ padding: "12px 16px", textAlign: "left", color: "#666", width: "20%" }}>Nombre</th>
+              <th style={{ padding: "12px 16px", textAlign: "left", color: "#666", width: "25%" }}>Dirección</th>
+              <th style={{ padding: "12px 16px", textAlign: "left", color: "#666", width: "25%" }}>Región / Isla</th>
+              <th style={{ padding: "12px 16px", textAlign: "left", color: "#666", width: "20%" }}>Mail</th>
+              <th style={{ padding: "12px 16px", textAlign: "center", color: "#666", width: "10%" }}>Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -1399,8 +2358,9 @@ function ConsultantList({ consultants, onUpdate, onDelete }) {
 
                 {editingId === name ? (
                   <>
-                    <td style={{ padding: 8 }}><input style={{ width: "100%", padding: 6, borderRadius: 4, border: "1px solid #ddd" }} value={editForm.base || ""} onChange={e => setEditForm({ ...editForm, base: e.target.value })} /></td>
-                    <td style={{ padding: 8 }}><input style={{ width: "100%", padding: 6, borderRadius: 4, border: "1px solid #ddd" }} value={editForm.address || ""} onChange={e => setEditForm({ ...editForm, address: e.target.value })} /></td>
+                    <td style={{ padding: 8 }}>
+                      <input style={{ width: "100%", padding: 6, borderRadius: 4, border: "1px solid #ddd" }} value={editForm.address || ""} onChange={e => setEditForm({ ...editForm, address: e.target.value })} placeholder="Dirección completa..." />
+                    </td>
                     <td style={{ padding: 8 }}>
                       <select style={{ padding: 6, borderRadius: 4, border: "1px solid #ddd" }} value={editForm.region || ""} onChange={e => setEditForm({ ...editForm, region: e.target.value })}>
                         <option value="Madrid">Madrid</option>
@@ -1436,26 +2396,19 @@ function ConsultantList({ consultants, onUpdate, onDelete }) {
                   </>
                 ) : (
                   <>
-                    <td style={{ padding: "12px 16px" }}>{data.base || "-"}</td>
-                    <td style={{ padding: "12px 16px", fontSize: 11, color: "#555" }}>{data.address || "-"}</td>
+                    <td style={{ padding: "12px 16px", fontSize: 12, color: "#374151" }}>{data.address || "-"}</td>
                     <td style={{ padding: "12px 16px" }}>
                       <div style={{ padding: "2px 8px", borderRadius: 12, background: "#f3f4f6", fontSize: 11, fontWeight: 500, display: "inline-block" }}>{data.region || "-"}</div>
-                      {data.island && <div style={{ fontSize: 10, color: "#666", marginTop: 4 }}>🏝️ {data.island}</div>}
+                      {data.island && <div style={{ fontSize: 10, color: "#6B7280", marginTop: 4 }}>🏝️ {data.island}</div>}
                     </td>
 
-                    <td style={{ padding: "12px 16px", color: "#666", fontSize: 12 }}>
-                      <div>{data.email || "-"}</div>
-                      <div style={{ fontSize: 10, color: "#999" }}>{data.phone || ""}</div>
+                    <td style={{ padding: "12px 16px", color: "#374151", fontSize: 12 }}>
+                      {data.email || "-"}
                     </td>
                     <td style={{ padding: "12px 16px", textAlign: "center" }}>
-                      <div style={{ display: "flex", gap: 5, justifyContent: "center" }}>
-                        <button onClick={() => startEdit(name, data)} style={{ background: "white", color: "#4B5563", border: "1px solid #D1D5DB", padding: "4px 8px", borderRadius: 6, cursor: "pointer", fontSize: 12 }}>✏️</button>
-                        <button
-                          onClick={() => { if (confirm(`¿Borrar a ${name}?`)) onDelete(name); }}
-                          style={{ background: "white", color: "#EF4444", border: "1px solid #FEE2E2", padding: "4px 8px", borderRadius: 6, cursor: "pointer", fontSize: 12 }}
-                        >
-                          🗑️
-                        </button>
+                      <div style={{ display: "flex", gap: 6, justifyContent: "center" }}>
+                        <button onClick={() => startEdit(name, data)} style={{ background: "white", color: "#4B5563", border: "1px solid #D1D5DB", padding: "6px 12px", borderRadius: 6, cursor: "pointer", fontSize: 12 }}>✏️ Editar</button>
+                        <button onClick={() => setDeleteTarget(name)} style={{ background: "white", color: "#EF4444", border: "1px solid #FEE2E2", padding: "6px 12px", borderRadius: 6, cursor: "pointer", fontSize: 12, fontWeight: 600 }}>🗑️ Eliminar</button>
                       </div>
                     </td>
                   </>
@@ -1536,6 +2489,7 @@ export default function HSConsultingTravelPlanner() {
   const [uploadFlash, setUploadFlash] = useState(null);
   const planningInputRef = useRef(null);
   const consultantInputRef = useRef(null);
+  const hotelsInputRef = useRef(null);
 
   const [activities, setActivities] = useState(() => {
     const saved = localStorage.getItem("hs_travel_activities");
@@ -1562,28 +2516,7 @@ export default function HSConsultingTravelPlanner() {
     return saved ? JSON.parse(saved) : {};
   });
 
-  // Sync hardcoded CONSULTANTS into customConsultants (Authoritative Update)
-  useEffect(() => {
-    if (!customConsultants) return;
 
-    let hasChanges = false;
-    const next = { ...customConsultants };
-
-    // For every system consultant, ensure state aligns with the new hardcoded 'Database'
-    Object.entries(CONSULTANTS).forEach(([name, data]) => {
-      // If consultant is missing OR the data is different (e.g. address updated)
-      // referencing JSON.stringify is a cheap way to check for deep changes
-      if (!next[name] || JSON.stringify(next[name]) !== JSON.stringify(data)) {
-        next[name] = data;
-        hasChanges = true;
-      }
-    });
-
-    if (hasChanges) {
-      setCustomConsultants(next);
-      console.log("✅ Base de datos de consultores sincronizada con el código.");
-    }
-  }, []); // Run once on mount to sync
 
   const [bookingConfirmations, setBookingConfirmations] = useState(() => {
     const saved = localStorage.getItem("hs_travel_bookings");
@@ -1591,6 +2524,28 @@ export default function HSConsultingTravelPlanner() {
   });
   const [expandedId, setExpandedId] = useState(null);
   const [bookingTarget, setBookingTarget] = useState(null);
+  const [showBulkGeocode, setShowBulkGeocode] = useState(false);
+  const [showHotelsManager, setShowHotelsManager] = useState(false);
+  const [accommodationHotels, setAccommodationHotels] = useState(() => {
+    const saved = localStorage.getItem("hs_travel_accom_hotels");
+    return saved ? JSON.parse(saved) : {};
+  });
+
+  const handleUpdateAccommodationHotels = useCallback(async (newHotels) => {
+    setAccommodationHotels(newHotels);
+    await syncAccommodationHotels(newHotels);
+  }, []);
+
+  // Load accommodation hotels from db on mount
+  useEffect(() => {
+    async function loadRemoteAccommodationHotels() {
+      const remote = await getAllAccommodationHotels();
+      if (remote && Object.keys(remote).length > 0) {
+        setAccommodationHotels(remote);
+      }
+    }
+    loadRemoteAccommodationHotels();
+  }, []);
   const [filterAuditor, setFilterAuditor] = useState("");
   const [filterRegion, setFilterRegion] = useState("");
   const [filterTransport, setFilterTransport] = useState("viaje");
@@ -1649,6 +2604,25 @@ export default function HSConsultingTravelPlanner() {
   useEffect(() => {
     localStorage.setItem("hs_travel_client_info", JSON.stringify(customClientInfo));
   }, [customClientInfo]);
+
+  // On mount: load validated establishments from Supabase and merge into customClientInfo
+  // (Supabase is the source of truth — overrides localStorage for any establishment
+  //  that has been validated by any user on any device)
+  useEffect(() => {
+    getValidatedEstablishments().then(supabaseData => {
+      if (Object.keys(supabaseData).length === 0) return;
+      setCustomClientInfo(prev => {
+        // Supabase data wins over stale localStorage data
+        const merged = { ...prev };
+        Object.entries(supabaseData).forEach(([name, data]) => {
+          merged[name] = { ...(prev[name] || {}), ...data };
+        });
+        return merged;
+      });
+      console.log(`✅ Supabase: ${Object.keys(supabaseData).length} ubicaciones de establecimientos cargadas`);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Run once on mount
   useEffect(() => {
     localStorage.setItem("hs_travel_bookings", JSON.stringify(bookingConfirmations));
   }, [bookingConfirmations]);
@@ -1728,6 +2702,60 @@ export default function HSConsultingTravelPlanner() {
     setActivities([]);
     setUploadFlash("🗑️ Planificación borrada correctamente.");
     setTimeout(() => setUploadFlash(null), 3000);
+  };
+
+  // Persist accommodation hotels
+  useEffect(() => {
+    localStorage.setItem("hs_travel_accom_hotels", JSON.stringify(accommodationHotels));
+  }, [accommodationHotels]);
+
+  // handleHotelsCSV: mode = 'replace' | 'append'
+  const handleHotelsCSV = (e, mode = 'replace') => {
+    const file = e.target.files[0];
+    if (!file) return;
+    parseCSV(file, (results) => {
+      const map = {};
+      let lastZona = "";
+      results.data.forEach(row => {
+        const zona = (row["ZONA"] || row["Zona"] || row["zona"] || "").trim().toUpperCase();
+        const hotel = (row["HOTEL"] || row["Hotel"] || row["hotel"] || row["NOMBRE"] || "").trim();
+        const ubicacion = (row["UBICACIÓN"] || row["Ubicación"] || row["UBICACION"] || row["url"] || row["URL"] || row["Link"] || row["LINK"] || "").trim();
+        if (!hotel) return;
+        const effectiveZona = zona || lastZona || "Sin zona";
+        if (zona) lastZona = zona;
+        if (!map[effectiveZona]) map[effectiveZona] = [];
+        map[effectiveZona].push({ hotel, ubicacion });
+      });
+      const numZonas = Object.keys(map).length;
+      const numHoteles = Object.values(map).reduce((a, b) => a + b.length, 0);
+      if (numHoteles === 0) {
+        alert("No se encontraron hoteles. Asegúrate que las columnas se llaman ZONA, HOTEL y UBICACIÓN.");
+        return;
+      }
+      setAccommodationHotels(prev => {
+        let newHotels;
+        if (mode === 'append') {
+          // Merge: add new hotels without removing existing ones
+          const merged = { ...prev };
+          Object.entries(map).forEach(([zone, newHotels]) => {
+            if (!merged[zone]) merged[zone] = [];
+            const existingNames = new Set(merged[zone].map(h => h.hotel.toLowerCase()));
+            newHotels.forEach(h => {
+              if (!existingNames.has(h.hotel.toLowerCase())) merged[zone].push(h);
+            });
+          });
+          newHotels = merged;
+        } else {
+          newHotels = map;
+        }
+        syncAccommodationHotels(newHotels);
+        return newHotels;
+      });
+      const added = mode === 'append' ? 'añadidos' : 'cargados';
+      setUploadFlash(`🏨 ${numHoteles} hoteles ${added} en ${numZonas} zonas.`);
+      setTimeout(() => setUploadFlash(null), 4000);
+    });
+    e.target.value = "";
   };
 
   // No longer using CSV upload for consultants. Substituted by database management.
@@ -2049,7 +3077,9 @@ export default function HSConsultingTravelPlanner() {
       },
       transportType: firstHotel.tType,
       establishments: Array.from(new Set(selected.map(s => s.e))),
-      selectedIds: Array.from(selectedIds)
+      selectedIds: Array.from(selectedIds),
+      groupStartDate: firstHotel.f,
+      groupEndDate: lastHotel.f
     });
   };
 
@@ -2170,12 +3200,15 @@ export default function HSConsultingTravelPlanner() {
       if (COORDINATE_CACHE[key]) return COORDINATE_CACHE[key];
 
       // Fetch
-      await new Promise(r => setTimeout(r, 800)); // Respect Rate Limits (slightly faster)
+      await new Promise(r => setTimeout(r, 600)); // Respect Rate Limits
       try {
-        const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address)}&format=json&limit=1`);
+        const res = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(address)}&limit=1`);
         const data = await res.json();
-        if (data && data[0]) {
-          const coords = { lat: data[0].lat, lon: data[0].lon };
+        if (data && data.features && data.features.length > 0) {
+          const coords = {
+            lat: data.features[0].geometry.coordinates[1],
+            lon: data.features[0].geometry.coordinates[0]
+          };
           COORDINATE_CACHE[key] = coords;
           return coords;
         }
@@ -2241,40 +3274,52 @@ export default function HSConsultingTravelPlanner() {
   // LOGIN SCREEN
   if (!authUser) {
     return (
-      <div style={{ fontFamily: "Inter, sans-serif", background: "linear-gradient(135deg, #0D1B3E 0%, #1a365d 50%, #0D4BD9 100%)", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
-        <div style={{ background: "rgba(255,255,255,0.07)", backdropFilter: "blur(30px)", borderRadius: 28, padding: 48, maxWidth: 420, width: "100%", boxShadow: "0 30px 80px rgba(0,0,0,0.4)", border: "1px solid rgba(255,255,255,0.1)" }}>
-          <div style={{ textAlign: "center", marginBottom: 36 }}>
-            <div style={{ width: 64, height: 64, background: "linear-gradient(135deg, #3B82F6, #0D4BD9)", borderRadius: 18, display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontSize: 26, fontWeight: 800, margin: "0 auto 20px", boxShadow: "0 8px 24px rgba(13,75,217,0.4)" }}>HS</div>
-            <h1 style={{ color: "white", fontSize: 24, fontWeight: 800, margin: "0 0 6px" }}>Travel Planner</h1>
-            <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 13, margin: 0 }}>Acceso exclusivo para el equipo de Logística</p>
+      <div style={{ fontFamily: "Arial, sans-serif", background: "#f0f2f5", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", backgroundImage: "radial-gradient(#cfd8dc 1px, transparent 1px)", backgroundSize: "20px 20px" }}>
+
+        {/* LOGO AREA */}
+        <div style={{ textAlign: "center", marginBottom: 30 }}>
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: 10 }}>
+            <div style={{ width: 80, height: 80, background: HS_COLORS.primary, borderRadius: "50% 50% 50% 0", transform: "rotate(-45deg)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 10px rgba(0,0,0,0.2)" }}>
+              <span style={{ transform: "rotate(45deg)", color: "white", fontSize: 28, fontWeight: "900", fontFamily: "Arial Black, sans-serif" }}>HS</span>
+            </div>
+          </div>
+          <h1 style={{ color: HS_COLORS.primary, fontSize: 36, fontWeight: "800", margin: "0", letterSpacing: "-1px", fontFamily: "Arial, sans-serif" }}>CONSULTING</h1>
+          <p style={{ color: "#999", fontSize: 16, margin: "0", textTransform: "uppercase", letterSpacing: "2px", fontWeight: "300" }}>Health & Safety</p>
+        </div>
+
+        {/* LOGIN CARD */}
+        <div style={{ background: "white", padding: 40, borderRadius: 6, width: "100%", maxWidth: 400, boxShadow: "0 2px 10px rgba(0,0,0,0.05)", border: "1px solid #ddd" }}>
+
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20, borderBottom: "1px solid #eee", paddingBottom: 15 }}>
+            <svg viewBox="0 0 24 24" width="30" height="30" fill="#333"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" /></svg>
+            <h2 style={{ fontSize: 24, fontWeight: "bold", margin: 0, color: "#222" }}>Inicio de sesión</h2>
           </div>
 
           <form onSubmit={handleLogin}>
-            <div style={{ marginBottom: 16 }}>
-              <label style={{ display: "block", color: "rgba(255,255,255,0.6)", fontSize: 12, fontWeight: 600, marginBottom: 6, textTransform: "uppercase", letterSpacing: 1 }}>Email</label>
+            <div style={{ marginBottom: 15 }}>
+              <label style={{ display: "block", color: "#333", fontSize: 13, fontWeight: "bold", marginBottom: 5 }}>Datos de acceso de auditor</label>
               <input
                 type="email"
                 value={loginEmail}
                 onChange={e => setLoginEmail(e.target.value)}
-                placeholder="tu@hsconsulting.es"
+                placeholder="su correo electrónico"
                 required
-                style={{ width: "100%", padding: "14px 16px", borderRadius: 12, border: "1px solid rgba(255,255,255,0.15)", background: "rgba(255,255,255,0.08)", color: "white", fontSize: 15, outline: "none", boxSizing: "border-box", transition: "border-color 0.2s" }}
+                style={{ width: "100%", padding: "12px", borderRadius: 4, border: "1px solid #ccc", background: HS_COLORS.inputBg, fontSize: 14, outline: "none", boxSizing: "border-box" }}
               />
             </div>
-            <div style={{ marginBottom: 24 }}>
-              <label style={{ display: "block", color: "rgba(255,255,255,0.6)", fontSize: 12, fontWeight: 600, marginBottom: 6, textTransform: "uppercase", letterSpacing: 1 }}>Contraseña</label>
+            <div style={{ marginBottom: 20 }}>
               <input
                 type="password"
                 value={loginPassword}
                 onChange={e => setLoginPassword(e.target.value)}
-                placeholder="••••••••"
+                placeholder="contraseña"
                 required
-                style={{ width: "100%", padding: "14px 16px", borderRadius: 12, border: "1px solid rgba(255,255,255,0.15)", background: "rgba(255,255,255,0.08)", color: "white", fontSize: 15, outline: "none", boxSizing: "border-box", transition: "border-color 0.2s" }}
+                style={{ width: "100%", padding: "12px", borderRadius: 4, border: "1px solid #ccc", background: HS_COLORS.inputBg, fontSize: 14, outline: "none", boxSizing: "border-box" }}
               />
             </div>
 
             {loginError && (
-              <div style={{ background: "rgba(239,68,68,0.15)", border: "1px solid rgba(239,68,68,0.3)", padding: "10px 14px", borderRadius: 10, marginBottom: 16, color: "#FCA5A5", fontSize: 13 }}>
+              <div style={{ background: "#FEE2E2", color: "#991B1B", padding: "10px", borderRadius: 4, marginBottom: 15, fontSize: 13 }}>
                 ⚠️ {loginError}
               </div>
             )}
@@ -2282,42 +3327,122 @@ export default function HSConsultingTravelPlanner() {
             <button
               type="submit"
               disabled={loginLoading}
-              style={{ width: "100%", padding: 16, borderRadius: 12, border: "none", background: "linear-gradient(135deg, #3B82F6, #0D4BD9)", color: "white", fontSize: 15, fontWeight: 700, cursor: loginLoading ? "wait" : "pointer", transition: "all 0.2s", opacity: loginLoading ? 0.7 : 1, boxShadow: "0 4px 16px rgba(13,75,217,0.4)" }}
+              style={{ width: "100%", padding: "12px", borderRadius: 4, border: "none", background: HS_COLORS.primary, color: "white", fontSize: 16, fontWeight: "bold", cursor: loginLoading ? "wait" : "pointer", transition: "opacity 0.2s", boxShadow: "0 2px 4px rgba(0,0,0,0.2)" }}
             >
               {loginLoading ? "Accediendo..." : "Acceder"}
             </button>
-          </form>
 
-          <p style={{ textAlign: "center", color: "rgba(255,255,255,0.3)", fontSize: 11, marginTop: 24 }}>HS Consulting © 2026 · Área restringida</p>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 15, fontSize: 13 }}>
+              <label style={{ display: "flex", alignItems: "center", gap: 6, color: "#333", cursor: "pointer" }}>
+                <input type="checkbox" /> Recordarme
+              </label>
+              <a href="#" style={{ color: HS_COLORS.primary, textDecoration: "none" }}>¿No recuerda su contraseña?</a>
+            </div>
+          </form>
+        </div>
+
+        <div style={{ textAlign: "center", marginTop: 30, color: "#999", fontSize: 12 }}>
+          <div style={{ fontWeight: "bold", marginBottom: 4 }}>Copyright © 2026 hsconsulting.es</div>
+          <div>Asesoramiento Integral en Higiene y Seguridad</div>
+          <div>Todos los derechos reservados.</div>
         </div>
       </div>
     );
   }
 
+  // SIDEBAR + LAYOUT WRAPPER
+  const AppLayout = ({ children }) => (
+    <div style={{ display: "flex", minHeight: "100vh", fontFamily: "Arial, sans-serif" }}>
+      {/* SIDEBAR */}
+      <div style={{ width: 250, background: HS_COLORS.sidebar, color: "#ccc", display: "flex", flexDirection: "column" }}>
+        <div style={{ padding: "20px", borderBottom: "1px solid #333", display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ width: 30, height: 30, background: HS_COLORS.primary, borderRadius: "50% 50% 50% 0", transform: "rotate(-45deg)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <span style={{ transform: "rotate(45deg)", color: "white", fontSize: 10, fontWeight: "900" }}>HS</span>
+          </div>
+          <div style={{ lineHeight: 1 }}>
+            <div style={{ color: "white", fontWeight: "bold", fontSize: 14 }}>HS CONSULTING</div>
+            <div style={{ fontSize: 10, color: "#999" }}>Health & Safey</div>
+          </div>
+        </div>
+
+        <div style={{ flex: 1, padding: "10px 0" }}>
+          {[
+            { id: "dashboard", label: "Dashboard", icon: "📊" },
+            { id: "proposals", label: "Propuestas", icon: "📁" },
+            { id: "managed", label: "Gestionados", icon: "✅" },
+            { id: "calendar", label: "Calendario", icon: "📅" },
+            { id: "consultants", label: "Consultores", icon: "👥" },
+          ].map(item => (
+            <div
+              key={item.id}
+              onClick={() => setView(item.id)}
+              style={{
+                padding: "12px 20px",
+                cursor: "pointer",
+                background: view === item.id ? "#000" : "transparent",
+                color: view === item.id ? "white" : "#ccc",
+                borderLeft: view === item.id ? `4px solid ${HS_COLORS.primary}` : "4px solid transparent",
+                display: "flex", alignItems: "center", gap: 12, fontSize: 14, fontWeight: view === item.id ? "bold" : "normal"
+              }}
+            >
+              <span>{item.icon}</span> {item.label}
+            </div>
+          ))}
+        </div>
+
+        <div style={{ padding: 20, borderTop: "1px solid #333", fontSize: 12, color: "#666" }}>
+          {userProfile?.full_name || authUser?.email}
+          <div onClick={handleLogout} style={{ color: "#999", cursor: "pointer", marginTop: 4 }}>Cerrar Sesión</div>
+        </div>
+      </div>
+
+      {/* MAIN CONTENT */}
+      <div style={{ flex: 1, background: HS_COLORS.bg, display: "flex", flexDirection: "column" }}>
+        {/* TOP BAR */}
+        <div style={{ background: HS_COLORS.primary, padding: "10px 20px", color: "white", display: "flex", justifyContent: "space-between", alignItems: "center", boxShadow: "0 2px 4px rgba(0,0,0,0.1)" }}>
+          <div style={{ fontSize: 18, fontWeight: "bold" }}>Portal de Logística</div>
+          <div style={{ fontSize: 13, opacity: 0.8 }}>Español ▼</div>
+        </div>
+
+        {/* CONTENT */}
+        <div style={{ flex: 1, overflow: "auto", padding: 20 }}>
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+
   if (view === "upload") {
     return (
-      <div style={{ fontFamily: "Inter, sans-serif", background: "#f8f9fa", minHeight: "100vh" }}>
-        <div style={{ padding: 24, display: "flex", gap: 12, alignItems: "center" }}>
-          <div style={{ width: 32, height: 32, background: "#0D4BD9", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: 700 }}>HS</div>
-          <h1 style={{ fontSize: 18, margin: 0 }}>Travel Planner</h1>
-        </div>
+      <AppLayout>
         <UploadScreen
           onDataLoaded={handleDataLoaded}
           onConsultantsLoaded={setCustomConsultants}
           existingActivities={activities}
         />
-      </div>
+      </AppLayout>
     );
   }
 
   if (view === "dashboard") {
     return (
-      <div style={{ fontFamily: "Inter, sans-serif", background: "#f8f9fa", minHeight: "100vh" }}>
-        <div style={{ padding: 24, display: "flex", gap: 12, alignItems: "center" }}>
-          <div style={{ width: 32, height: 32, background: "#0D4BD9", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: 700 }}>HS</div>
-          <h1 style={{ fontSize: 18, margin: 0 }}>Travel Planner</h1>
-        </div>
-        <div style={{ padding: "40px 24px", maxWidth: 1000, margin: "0 auto" }}>
+      <>
+        {showBulkGeocode && (
+          <BulkGeocodeModal
+            onClose={() => setShowBulkGeocode(false)}
+            customClientInfo={customClientInfo}
+            onValidate={updateEstablishmentAddress}
+          />
+        )}
+        {showHotelsManager && (
+          <AccommodationHotelsManager
+            hotels={accommodationHotels}
+            onClose={() => setShowHotelsManager(false)}
+            onUpdate={handleUpdateAccommodationHotels}
+            onImportCSV={handleHotelsCSV}
+          />
+        )}
+        <AppLayout>
           <Dashboard
             stats={stats}
             summaryByAuditor={summaryByAuditor}
@@ -2326,13 +3451,28 @@ export default function HSConsultingTravelPlanner() {
             uploadFlash={uploadFlash}
             onClearData={handleClearData}
             onLogout={handleLogout}
+
+            onTriggerHotels={() => setShowHotelsManager(true)}
+            accommodationHotelsCount={Object.keys(accommodationHotels).length}
           />
-
           <input type="file" ref={planningInputRef} style={{ display: "none" }} accept=".csv" onChange={onUploadPlanning} />
+          <input type="file" ref={hotelsInputRef} style={{ display: "none" }} accept=".csv" onChange={e => handleHotelsCSV(e, 'replace')} />
+        </AppLayout>
+      </>
+    );
+  }
 
-
-        </div>
-      </div>
+  if (view === "calendar") {
+    return (
+      <AppLayout>
+        <CalendarView
+          activities={proposals} // Pass ALL proposals
+          initialConsultant={filterAuditor} // Pass current filter as initial state
+          allConsultants={uniqueAuditors} // Pass list for dropdown
+          bookedLinks={bookedLinks}
+          onBack={() => setView("proposals")} // Optional, logic handles internal switching now
+        />
+      </AppLayout>
     );
   }
 
@@ -2363,9 +3503,8 @@ export default function HSConsultingTravelPlanner() {
   );
 
   return (
-    <div style={{ fontFamily: "Inter, sans-serif", background: "#F4F6F9", minHeight: "100vh", color: "#1a1a2e" }}>
-      {renderHeader()}
-
+    <>
+      {/* BookingPanel MUST be outside AppLayout so position:fixed works correctly */}
       {bookingTarget && (
         <BookingPanel
           consultant={bookingTarget.consultant}
@@ -2376,166 +3515,293 @@ export default function HSConsultingTravelPlanner() {
           bookedLinks={bookedLinks[bookingTarget.activity.id] || {}}
           onMarkBooked={handleMarkBooked}
           onClose={() => setBookingTarget(null)}
-          onUpdateClientAddress={updateEstablishmentAddress} // Pass the missing prop here
+          onUpdateClientAddress={updateEstablishmentAddress}
+          groupStartDate={bookingTarget.groupStartDate}
+          groupEndDate={bookingTarget.groupEndDate}
+          accommodationHotels={accommodationHotels}
         />
       )}
+      <AppLayout>
 
-      <div style={{ padding: 24, maxWidth: 1200, margin: "0 auto" }}>
-        {/* VIEW: PROPOSALS / MANAGED */}
-        {(view === "proposals" || view === "managed") && (
-          <div>
-            <div style={{ marginBottom: 24, display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
-              <div>
-                <h2 style={{ fontSize: 24, fontWeight: 800, color: "#111", margin: 0 }}>
+        <div style={{ padding: 24, maxWidth: 1200, margin: "0 auto" }}>
+          {/* VIEW: PROPOSALS / MANAGED */}
+          {(view === "proposals" || view === "managed") && (
+            <div>
+              <div style={{ marginBottom: 20, background: "white", padding: 20, borderRadius: 8, boxShadow: "0 2px 4px rgba(0,0,0,0.05)" }}>
+                <h2 style={{ fontSize: 22, fontWeight: "bold", color: "#333", margin: "0 0 5px" }}>
                   {view === "managed" ? "Trayectos Gestionados" : "Propuestas de Logística"}
                 </h2>
-                <p style={{ fontSize: 13, color: "#666", margin: "4px 0 0" }}>
+                <p style={{ fontSize: 13, color: "#666", margin: 0 }}>
                   {view === "managed" ? "Historial de viajes con logística completada" : "Viajes pendientes de reserva y organización"}
                 </p>
               </div>
-            </div>
 
-            {/* Filters */}
-            <div style={{ display: "flex", gap: 10, marginBottom: 20, flexWrap: "wrap", alignItems: "center" }}>
-              <select value={filterAuditor} onChange={e => setFilterAuditor(e.target.value)} style={{ padding: "8px 12px", borderRadius: 8, border: "1px solid #ddd", fontSize: 13 }}><option value="">Todos los consultores</option>{uniqueAuditors.map(a => <option key={a} value={a}>{a}</option>)}</select>
-              <select value={filterRegion} onChange={e => setFilterRegion(e.target.value)} style={{ padding: "8px 12px", borderRadius: 8, border: "1px solid #ddd", fontSize: 13 }}><option value="">Todas las regiones</option>{uniqueRegions.map(r => <option key={r} value={r}>{r}</option>)}</select>
+              {/* Filters */}
+              <div style={{ display: "flex", gap: 10, marginBottom: 20, flexWrap: "wrap", alignItems: "center" }}>
+                <select value={filterAuditor} onChange={e => setFilterAuditor(e.target.value)} style={{ padding: "8px 12px", borderRadius: 8, border: "1px solid #ddd", fontSize: 13 }}><option value="">Todos los consultores</option>{uniqueAuditors.map(a => <option key={a} value={a}>{a}</option>)}</select>
+                <select value={filterRegion} onChange={e => setFilterRegion(e.target.value)} style={{ padding: "8px 12px", borderRadius: 8, border: "1px solid #ddd", fontSize: 13 }}><option value="">Todas las regiones</option>{uniqueRegions.map(r => <option key={r} value={r}>{r}</option>)}</select>
 
-              <div style={{ display: "flex", alignItems: "center", gap: 8, background: "white", padding: "4px 12px", borderRadius: 8, border: "1px solid #ddd" }}>
-                <span style={{ fontSize: 12, color: "#666", fontWeight: 600 }}>Desde:</span>
-                <input type="date" value={filterDateStart} onChange={e => setFilterDateStart(e.target.value)} style={{ border: "none", outline: "none", fontSize: 13 }} />
-                <span style={{ fontSize: 12, color: "#666", fontWeight: 600 }}>Hasta:</span>
-                <input type="date" value={filterDateEnd} onChange={e => setFilterDateEnd(e.target.value)} style={{ border: "none", outline: "none", fontSize: 13 }} />
-                {(filterDateStart || filterDateEnd) && (
-                  <button onClick={() => { setFilterDateStart(""); setFilterDateEnd(""); }} style={{ border: "none", background: "transparent", color: "#666", cursor: "pointer", padding: "0 4px", fontSize: 16 }}>&times;</button>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, background: "white", padding: "4px 12px", borderRadius: 8, border: "1px solid #ddd" }}>
+                  <span style={{ fontSize: 12, color: "#666", fontWeight: 600 }}>Desde:</span>
+                  <input type="date" value={filterDateStart} onChange={e => setFilterDateStart(e.target.value)} style={{ border: "none", outline: "none", fontSize: 13 }} />
+                  <span style={{ fontSize: 12, color: "#666", fontWeight: 600 }}>Hasta:</span>
+                  <input type="date" value={filterDateEnd} onChange={e => setFilterDateEnd(e.target.value)} style={{ border: "none", outline: "none", fontSize: 13 }} />
+                  {(filterDateStart || filterDateEnd) && (
+                    <button onClick={() => { setFilterDateStart(""); setFilterDateEnd(""); }} style={{ border: "none", background: "transparent", color: "#666", cursor: "pointer", padding: "0 4px", fontSize: 16 }}>&times;</button>
+                  )}
+                </div>
+
+                <select
+                  value={filterTransport}
+                  onChange={e => setFilterTransport(e.target.value)}
+                  style={{ padding: "8px 12px", borderRadius: 8, border: "1px solid #ddd", fontSize: 13, background: filterTransport === "viaje" ? "#EEF2FF" : "white", color: filterTransport === "viaje" ? "#4F46E5" : "#111", fontWeight: filterTransport === "viaje" ? 600 : 400 }}
+                >
+                  <option value="">Ver Todo</option>
+                  <option value="viaje">✈️ Solo Viajes (Reservas)</option>
+                  <option value="vehiculo">🚗 Vehículo Propio</option>
+                </select>
+
+                <button
+                  onClick={exportFilteredToCSV}
+                  style={{ marginLeft: "auto", background: "white", color: "#0D4BD9", border: "1px solid #0D4BD9", padding: "8px 16px", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }}
+                >
+                  📊 Exportar Reporte (CSV)
+                </button>
+                {filterAuditor && (
+                  <button
+                    onClick={() => setView("calendar")}
+                    style={{ background: "#4F46E5", color: "white", border: "none", padding: "8px 16px", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }}
+                  >
+                    📅 Ver Calendario Global
+                  </button>
                 )}
+
+                <button
+                  onClick={calculateDistances}
+                  disabled={calculatingDistances}
+                  style={{ background: calculatingDistances ? "#eee" : "#111", color: calculatingDistances ? "#999" : "white", border: "none", padding: "8px 16px", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: calculatingDistances ? "wait" : "pointer", display: "flex", alignItems: "center", gap: 8 }}
+                >
+                  {calculatingDistances ? "⏳ Calculando..." : "🔄 Calcular Km Reales"}
+                </button>
               </div>
 
-              <select
-                value={filterTransport}
-                onChange={e => setFilterTransport(e.target.value)}
-                style={{ padding: "8px 12px", borderRadius: 8, border: "1px solid #ddd", fontSize: 13, background: filterTransport === "viaje" ? "#EEF2FF" : "white", color: filterTransport === "viaje" ? "#4F46E5" : "#111", fontWeight: filterTransport === "viaje" ? 600 : 400 }}
-              >
-                <option value="">Ver Todo</option>
-                <option value="viaje">✈️ Solo Viajes (Reservas)</option>
-                <option value="vehiculo">🚗 Vehículo Propio</option>
-              </select>
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                {(() => {
+                  const elements = [];
+                  if (view === "managed") {
+                    // Grouping Strategy:
+                    // PRIMARY KEY: consultant + expedition ID (p.g) — this is the definitive trip identifier.
+                    // If no expedition ID exists, fall back to consultant + region + date clustering.
+                    const expeditions = [];
+                    const expMap = {};
 
-              <button
-                onClick={exportFilteredToCSV}
-                style={{ marginLeft: "auto", background: "white", color: "#0D4BD9", border: "1px solid #0D4BD9", padding: "8px 16px", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }}
-              >
-                📊 Exportar Reporte (CSV)
-              </button>
-              <button
-                onClick={calculateDistances}
-                disabled={calculatingDistances}
-                style={{ background: calculatingDistances ? "#eee" : "#111", color: calculatingDistances ? "#999" : "white", border: "none", padding: "8px 16px", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: calculatingDistances ? "wait" : "pointer", display: "flex", alignItems: "center", gap: 8 }}
-              >
-                {calculatingDistances ? "⏳ Calculando..." : "🔄 Calcular Km Reales"}
-              </button>
-            </div>
+                    filtered.forEach(p => {
+                      const pDate = new Date(p.f.split('/').reverse().join('-'));
 
-            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              {(() => {
-                const elements = [];
-                if (view === "managed") {
-                  // Group by Expedition (Consultant + Group)
-                  const expeditions = {};
-                  filtered.forEach(p => {
-                    const key = `${p.cName}-${p.g || "individual"}`;
-                    if (!expeditions[key]) {
-                      expeditions[key] = {
-                        consultant: p.a,
-                        group: p.g,
-                        allIds: [],
-                        hotels: [],
-                        transportTypes: new Set(),
-                        allDates: [],
-                        bookings: {}
-                      };
-                    }
+                      if (p.g) {
+                        // USE EXPEDITION ID — each (consultant, expedition) = one trip
+                        const key = `${p.cName}|g:${p.g}`;
+                        if (!expMap[key]) {
+                          const expObj = {
+                            id: `exp-${key}`,
+                            consultant: p.a,
+                            region: p.island || p.r || "General",
+                            proposals: [p],
+                            firstDate: pDate,
+                            lastDate: pDate,
+                            firstDateStr: p.f,
+                            lastDateStr: p.f
+                          };
+                          expMap[key] = expObj;
+                          expeditions.push(expObj);
+                        } else {
+                          expMap[key].proposals.push(p);
+                          if (pDate < expMap[key].firstDate) { expMap[key].firstDate = pDate; expMap[key].firstDateStr = p.f; }
+                          if (pDate > expMap[key].lastDate) { expMap[key].lastDate = pDate; expMap[key].lastDateStr = p.f; }
+                        }
+                      } else {
+                        // FALLBACK: group by consultant+region and split on gaps > 14 days (not 4)
+                        const regionKey = p.island || p.r || "General";
+                        const bucketKey = `${p.cName}|${regionKey}`;
+                        // Find the most recent open expedition for this bucket
+                        let found = null;
+                        for (let i = expeditions.length - 1; i >= 0; i--) {
+                          const ex = expeditions[i];
+                          if (ex._bucketKey === bucketKey) {
+                            const diffDays = (pDate - ex.lastDate) / (1000 * 60 * 60 * 24);
+                            if (diffDays <= 14) { found = ex; break; }
+                          }
+                        }
+                        if (found) {
+                          found.proposals.push(p);
+                          if (pDate > found.lastDate) { found.lastDate = pDate; found.lastDateStr = p.f; }
+                        } else {
+                          const expObj = {
+                            id: `exp-${bucketKey}-${expeditions.length}`,
+                            consultant: p.a,
+                            region: regionKey,
+                            proposals: [p],
+                            firstDate: pDate,
+                            lastDate: pDate,
+                            firstDateStr: p.f,
+                            lastDateStr: p.f,
+                            _bucketKey: bucketKey
+                          };
+                          expeditions.push(expObj);
+                        }
+                      }
+                    });
 
-                    const ex = expeditions[key];
-                    ex.allIds.push(p.id);
-                    ex.transportTypes.add(p.tType);
-                    if (!ex.allDates.includes(p.f)) ex.allDates.push(p.f);
+                    // Sort expeditions by first date
+                    expeditions.sort((a, b) => a.firstDate - b.firstDate);
 
-                    // Unique hotels with their dates
-                    let h = ex.hotels.find(x => x.name === p.e);
-                    if (!h) {
-                      h = { name: p.e, dates: [] };
-                      ex.hotels.push(h);
-                    }
-                    if (!h.dates.includes(p.f)) h.dates.push(p.f);
 
-                    // Collect bookings
-                    const links = bookedLinks[p.id] || {};
-                    Object.assign(ex.bookings, links);
-                  });
+                    // 3. Render Expeditions
+                    expeditions.forEach(ex => {
+                      // Aggregate Data
+                      const hotelNames = [...new Set(ex.proposals.map(p => p.e))];
 
-                  // Render integrated Expedition Cards
-                  Object.entries(expeditions).forEach(([exKey, exData]) => {
-                    elements.push(
-                      <div key={exKey} style={{ background: "white", borderRadius: 16, border: "1px solid #CBD5E0", overflow: "hidden", marginBottom: 20, boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}>
-                        {/* Summary Header */}
-                        <div style={{ background: "#F8FAFC", padding: "16px 20px", borderBottom: "1px solid #E2E8F0" }}>
-                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start", marginBottom: 12 }}>
-                            <div>
-                              <div style={{ fontSize: 10, fontWeight: 800, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.05em" }}>Expedición / Itinerario</div>
-                              <div style={{ fontSize: 18, fontWeight: 800, color: "#1E293B" }}>{exData.group || "Viaje Individual"}</div>
-                            </div>
-                            <div style={{ textAlign: "right", display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
-                              <div style={{ background: "#EEF2FF", color: "#4F46E5", padding: "4px 12px", borderRadius: 8, fontSize: 12, fontWeight: 700 }}>👤 {exData.consultant}</div>
-                              <button
-                                onClick={(e) => { e.stopPropagation(); exData.allIds.forEach(id => toggleFinalize(id)); }}
-                                style={{ background: "#fff", color: "#6B7280", border: "1px solid #E2E8F0", padding: "4px 12px", borderRadius: 8, fontSize: 11, fontWeight: 600, cursor: "pointer" }}
-                              >
-                                Reabrir Todo (Undo)
-                              </button>
-                            </div>
-                          </div>
+                      // Calculate detailed location string
+                      const uniqueRegions = [...new Set(ex.proposals.map(p => p.r).filter(Boolean))];
+                      const uniqueIslands = [...new Set(ex.proposals.map(p => p.island).filter(Boolean))];
+                      const uniqueMunis = [...new Set(ex.proposals.map(p => p.destMuni).filter(Boolean))];
 
-                          {/* Hotels and Visit Dates List */}
-                          <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
-                            {exData.hotels.map((h, i) => (
-                              <div key={i} style={{ background: "white", padding: "10px 14px", borderRadius: 12, border: "1px solid #E2E8F0", display: "flex", flexDirection: "column", gap: 4 }}>
-                                <div style={{ fontSize: 13, fontWeight: 800, color: "#1E293B" }}>🏨 {h.name}</div>
-                                <div style={{ fontSize: 11, color: "#6366F1", fontWeight: 700 }}>{h.dates.join(" • ")}</div>
+                      let locationStr = "";
+                      if (uniqueRegions.length > 0) locationStr += uniqueRegions.join(", ");
+                      if (uniqueIslands.length > 0) locationStr += (locationStr ? " • " : "") + uniqueIslands.join(", ");
+                      if (uniqueMunis.length > 0) locationStr += (locationStr ? " • " : "") + uniqueMunis.join(", ");
+
+                      if (!locationStr) locationStr = ex.region; // Fallback
+
+                      const title = `${hotelNames.join(" + ")}`;
+                      const allIds = ex.proposals.map(p => p.id);
+
+                      // Collect Bookings (deduplicated by Locator), separated from accommodation
+                      const uniqueBookings = {};
+                      let accomBooking = null; // __accom__ stored separately
+                      ex.proposals.forEach(p => {
+                        const links = bookedLinks[p.id] || {};
+                        Object.entries(links).forEach(([url, data]) => {
+                          if (url === "__accom__") { accomBooking = data; return; }
+                          let groupKey = url;
+                          if (data && typeof data === 'object') {
+                            if (data.segments) {
+                              const locs = data.segments.map(s => s.locator).sort().join('_');
+                              if (locs) groupKey = locs;
+                            } else if (data.locator) groupKey = data.locator;
+                          } else if (typeof data === 'string') groupKey = data;
+
+                          uniqueBookings[groupKey] = { url, data };
+                        });
+                      });
+
+                      elements.push(
+                        <div key={ex.id} style={{ background: "white", borderRadius: 16, border: "1px solid #CBD5E0", overflow: "hidden", marginBottom: 20, boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}>
+                          {/* Summary Header */}
+                          <div style={{ background: "#F8FAFC", padding: "16px 20px", borderBottom: "1px solid #E2E8F0" }}>
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start", marginBottom: 12 }}>
+                              <div style={{ flex: 1, paddingRight: 20 }}>
+                                <div style={{ fontSize: 10, fontWeight: 800, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.05em" }}>Expedición / Viaje Agrupado</div>
+                                <div style={{ fontSize: 18, fontWeight: 800, color: "#1E293B", lineHeight: 1.3, marginBottom: 4 }}>{title}</div>
+                                <div style={{ fontSize: 12, color: "#475569", fontWeight: 600 }}>📍 {locationStr}</div>
+                                <div style={{ fontSize: 11, color: "#6366F1", fontWeight: 700, marginTop: 4 }}>
+                                  📅 {ex.firstDateStr} → {ex.lastDateStr}
+                                  {ex.proposals[0]?.g && <span style={{ marginLeft: 8, background: "#EEF2FF", padding: "1px 6px", borderRadius: 4, fontSize: 10 }}>Exp: {ex.proposals[0].g}</span>}
+                                </div>
                               </div>
-                            ))}
+                              <div style={{ textAlign: "right", display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
+                                <div style={{ background: "#EEF2FF", color: "#4F46E5", padding: "4px 12px", borderRadius: 8, fontSize: 12, fontWeight: 700 }}>👤 {ex.consultant}</div>
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); allIds.forEach(id => toggleFinalize(id)); }}
+                                  style={{ background: "#fff", color: "#6B7280", border: "1px solid #E2E8F0", padding: "4px 12px", borderRadius: 8, fontSize: 11, fontWeight: 600, cursor: "pointer" }}
+                                >
+                                  Reabrir Todo
+                                </button>
+                              </div>
+                            </div>
+
+                            {/* Visits Timeline */}
+                            <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+                              {/* Group by Hotel for the timeline display */}
+                              {Object.entries(ex.proposals.reduce((acc, p) => {
+                                if (!acc[p.e]) acc[p.e] = [];
+                                acc[p.e].push(p.f);
+                                return acc;
+                              }, {})).map(([hName, dates], i) => (
+                                <div key={i} style={{ background: "white", padding: "8px 12px", borderRadius: 8, border: "1px solid #E2E8F0", display: "flex", alignItems: "center", gap: 8 }}>
+                                  <span style={{ fontSize: 13, fontWeight: 700, color: "#1E293B" }}>🏨 {hName}</span>
+                                  <span style={{ fontSize: 11, color: "#6366F1", fontWeight: 600, background: "#EEF2FF", padding: "2px 6px", borderRadius: 4 }}>{dates.length} jornadas</span>
+                                  <span style={{ fontSize: 10, color: "#94A3B8" }}>({dates.join(", ")})</span>
+                                </div>
+                              ))}
+                            </div>
                           </div>
-                        </div>
 
-                        {/* Integrated Bookings Section */}
-                        <div style={{ padding: 20 }}>
-                          <div style={{ fontSize: 11, fontWeight: 800, color: "#64748B", textTransform: "uppercase", marginBottom: 14, display: "flex", alignItems: "center", gap: 8 }}>
-                            <span>🎫</span> Reservas y Logística de la Expedición
-                          </div>
+                          {/* Integrated Bookings Section */}
+                          <div style={{ padding: 20 }}>
+                            {/* === ACCOMMODATION HOTEL CARD === */}
+                            {accomBooking && (
+                              <div style={{ marginBottom: 18 }}>
+                                <div style={{ fontSize: 11, fontWeight: 800, color: "#64748B", textTransform: "uppercase", marginBottom: 10, display: "flex", alignItems: "center", gap: 8 }}>
+                                  <span>🛏️</span> Hotel de Alojamiento del Consultor
+                                </div>
+                                <div style={{ background: "#F0FDF4", border: "1px solid #86EFAC", borderRadius: 12, padding: "14px 16px", display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+                                  <div style={{ width: 42, height: 42, background: "#DCFCE7", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, flexShrink: 0 }}>🏨</div>
+                                  <div style={{ flex: 1, minWidth: 140 }}>
+                                    <div style={{ fontWeight: 800, fontSize: 14, color: "#15803D" }}>{accomBooking.hotel}</div>
+                                    <div style={{ fontSize: 11, color: "#16A34A", fontWeight: 600 }}>📍 {accomBooking.zona}</div>
+                                    {accomBooking.date && <div style={{ fontSize: 11, color: "#64748B", marginTop: 2 }}>📅 {accomBooking.date}</div>}
+                                  </div>
+                                  {accomBooking.locator && (
+                                    <div style={{ background: "white", padding: "8px 14px", borderRadius: 8, border: "1px solid #BBF7D0" }}>
+                                      <div style={{ fontSize: 9, color: "#64748B", textTransform: "uppercase", letterSpacing: 1, marginBottom: 2 }}>Localizador</div>
+                                      <div style={{ fontWeight: 900, fontSize: 16, color: "#0D4BD9", letterSpacing: 3 }}>{accomBooking.locator}</div>
+                                    </div>
+                                  )}
+                                  {accomBooking.ubicacion && (
+                                    <a href={accomBooking.ubicacion} target="_blank" rel="noopener noreferrer"
+                                      style={{ fontSize: 12, color: "#0369A1", fontWeight: 700, background: "#E0F2FE", padding: "6px 12px", borderRadius: 8, textDecoration: "none", whiteSpace: "nowrap" }}
+                                    >🗺️ Ver en Maps</a>
+                                  )}
+                                </div>
+                              </div>
+                            )}
 
-                          {Object.keys(exData.bookings).length > 0 ? (
-                            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 12 }}>
-                              {Object.entries(exData.bookings).map(([url, data], idx) => {
-                                const label = url.includes("vueling") ? "Vueling" :
-                                  url.includes("iberia") ? "Iberia" :
-                                    url.includes("renfe") ? "Renfe" :
-                                      url.includes("iryo") ? "Iryo" :
-                                        url.includes("binter") ? "Binter" :
-                                          url.includes("cicar") ? "CICAR" :
-                                            url.includes("okmobility") ? "OK Mobility" : "Reserva";
-
-                                const icon = (url.includes("cicar") || url.includes("mobility")) ? "🚗" : "✈️";
-
-                                if (data && typeof data === 'object' && data.segments) {
+                            <div style={{ fontSize: 11, fontWeight: 800, color: "#64748B", textTransform: "uppercase", marginBottom: 14, display: "flex", alignItems: "center", gap: 8 }}>
+                              <span>🎫</span> Reservas y Logística de la Expedición (Común)
+                            </div>
+                            {Object.keys(uniqueBookings).length > 0 ? (
+                              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 12 }}>
+                                {Object.values(uniqueBookings).map(({ url, data }, idx) => {
+                                  const icon = (url.includes("cicar") || url.includes("mobility") || url.includes("rent") || url.includes("goldcar")) ? "🚗" : "✈️";
+                                  const u = url.toLowerCase();
+                                  const companyName =
+                                    u.includes("binter") ? "Binter Canarias" :
+                                      u.includes("vueling") ? "Vueling" :
+                                        u.includes("iberia") ? "Iberia" :
+                                          u.includes("renfe") ? "Renfe" :
+                                            u.includes("iryo") ? "Iryo" :
+                                              u.includes("trainline") ? "Trainline" :
+                                                u.includes("cicar") ? "CICAR" :
+                                                  u.includes("goldcar") ? "Goldcar" :
+                                                    (u.includes("okmobility") || u.includes("mobility")) ? "OK Mobility" :
+                                                      u.includes("europcar") ? "Europcar" :
+                                                        u.includes("skyscanner") ? "Skyscanner" :
+                                                          u.includes("google") ? "Google Flights" :
+                                                            (u === "manual_entry" || u.startsWith("manual_")) ? "Entrada Manual" :
+                                                              "Reserva";
+                                  const segments = data?.segments || [{ type: data?.type || "ida", locator: data?.locator || data, date: data?.date || "" }];
                                   return (
                                     <div key={idx} style={{ background: "#F0F9FF", border: "1px solid #BAE6FD", borderRadius: 12, padding: 14 }}>
-                                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-                                        <div style={{ fontWeight: 800, fontSize: 13, color: "#0369A1" }}>{icon} {label}</div>
+                                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+                                        <span style={{ fontSize: 16 }}>{icon}</span>
+                                        <div style={{ fontWeight: 800, fontSize: 13, color: "#0369A1" }}>{companyName}</div>
                                       </div>
                                       <div style={{ display: "grid", gap: 8 }}>
-                                        {data.segments.map((seg, si) => (
+                                        {segments.map((seg, si) => (
                                           <div key={si} style={{ display: "flex", justifyContent: "space-between", background: "white", padding: "8px 12px", borderRadius: 8, fontSize: 12 }}>
                                             <span style={{ fontWeight: 700, color: "#1E293B" }}>
-                                              {seg.type === "ida" ? "🛫 Ida" : seg.type === "vuelta" ? "🛬 Vuelta" : seg.type === "recogida" ? "🏁 Recogida" : "🔄 Devolución"}
+                                              {seg.type === "ida" ? "🛫 Ida" : seg.type === "vuelta" ? "🛬 Vuelta" : seg.type === "recogida" ? "🏁 Recogida" : seg.type === "devolución" ? "🔄 Devolución" : seg.type}
                                             </span>
                                             <div style={{ textAlign: "right" }}>
                                               <div style={{ fontWeight: 800, color: "#0D4BD9" }}>{seg.locator}</div>
@@ -2546,230 +3812,234 @@ export default function HSConsultingTravelPlanner() {
                                       </div>
                                     </div>
                                   );
-                                } else {
-                                  const code = typeof data === 'object' ? data.locator : data;
-                                  const dateStr = typeof data === 'object' ? data.date : "";
-                                  const typeStr = typeof data === 'object' ? (data.type === "ida" ? "Ida" : data.type === "vuelta" ? "Vuelta" : data.type) : "Confirmación";
-                                  return (
-                                    <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#F0F9FF", border: "1px solid #BAE6FD", padding: "14px", borderRadius: 12, fontSize: 13 }}>
-                                      <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-                                        <span style={{ fontSize: 16 }}>{icon}</span>
-                                        <div>
-                                          <div style={{ fontWeight: 800, color: "#0369A1" }}>{label}</div>
-                                          <div style={{ fontSize: 10, color: "#64748B", textTransform: "uppercase", fontWeight: 700 }}>{typeStr}</div>
-                                        </div>
-                                      </div>
-                                      <div style={{ textAlign: "right" }}>
-                                        <div style={{ fontWeight: 900, color: "#0D4BD9", letterSpacing: "0.02em" }}>{code}</div>
-                                        <div style={{ fontSize: 11, color: "#64748B", fontWeight: 600 }}>{dateStr}</div>
-                                      </div>
-                                    </div>
-                                  );
-                                }
-                              })}
-                            </div>
-                          ) : (
-                            <div style={{ padding: "16px", background: "#F8FAFC", borderRadius: 12, border: "1px dashed #CBD5E0", textAlign: "center", color: "#64748B", fontSize: 12 }}>
-                              No hay registros de reservas externas para esta expedición.
-                            </div>
-                          )}
+                                })}
+                              </div>
+                            ) : (
+                              <div style={{ padding: "16px", background: "#F8FAFC", borderRadius: 12, border: "1px dashed #CBD5E0", textAlign: "center", color: "#64748B", fontSize: 12 }}>
+                                No hay registros de reservas de transporte para esta expedición.
+                              </div>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    );
-                  });
-                } else {
-                  // Standard proposals view
-                  filtered.forEach(p => {
-                    elements.push(
-                      <div key={p.id} style={{ background: "white", borderRadius: 12, border: selectedIds.has(p.id) ? "2px solid #0D4BD9" : (approvedIds.has(p.id) ? "1px solid #10B981" : "1px solid #eee"), overflow: "hidden", position: "relative" }}>
-                        <div style={{ padding: "14px 16px", display: "flex", alignItems: "center", gap: 16 }}>
-                          <div
-                            onClick={() => toggleSelect(p.id)}
-                            style={{
-                              width: 22, height: 22, borderRadius: 6, border: `2px solid ${selectedIds.has(p.id) ? "#0D4BD9" : "#CBD5E0"}`,
-                              background: selectedIds.has(p.id) ? "#0D4BD9" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer"
-                            }}
-                          >
-                            {selectedIds.has(p.id) && <span style={{ color: "white", fontSize: 12 }}>✓</span>}
-                          </div>
+                      );
+                    });
+                  } else {
+                    // Standard proposals view
+                    filtered.forEach(p => {
+                      elements.push(
+                        <div key={p.id} style={{ background: "white", borderRadius: 12, border: selectedIds.has(p.id) ? "2px solid #0D4BD9" : (approvedIds.has(p.id) ? "1px solid #10B981" : "1px solid #eee"), overflow: "hidden", position: "relative" }}>
+                          <div style={{ padding: "14px 16px", display: "flex", alignItems: "center", gap: 16 }}>
+                            <div
+                              onClick={() => toggleSelect(p.id)}
+                              style={{
+                                width: 22, height: 22, borderRadius: 6, border: `2px solid ${selectedIds.has(p.id) ? "#0D4BD9" : "#CBD5E0"}`,
+                                background: selectedIds.has(p.id) ? "#0D4BD9" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer"
+                              }}
+                            >
+                              {selectedIds.has(p.id) && <span style={{ color: "white", fontSize: 12 }}>✓</span>}
+                            </div>
 
-                          <div onClick={() => setExpandedId(expandedId === p.id ? null : p.id)} style={{ flex: 1, display: "flex", alignItems: "center", gap: 16, cursor: "pointer" }}>
-                            <div style={{ width: 40, height: 40, borderRadius: 10, background: TRANSPORT_META[p.tType]?.bg, display: "flex", alignItems: "center", justifyContent: "center" }}>{TRANSPORT_META[p.tType]?.icon}</div>
-                            <div style={{ flex: 1 }}>
-                              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}>
-                                <div style={{ fontSize: 13, fontWeight: 700, color: "#111" }}>{p.e}</div>
-                                <div style={{ fontSize: 10, background: "#EEF2FF", color: "#4F46E5", padding: "2px 8px", borderRadius: 4, fontWeight: 600 }}>👤 {p.a}</div>
-                                {p.g ? <span style={{ fontSize: 10, color: "#7C3AED", background: "#F3E8FF", padding: "2px 6px", borderRadius: 4 }}>{p.g}</span> : ""}
-                              </div>
-                              <div style={{ fontSize: 11, color: "#666" }}>
-                                {p.routeLabel}
-                                {p.km > 0 && <span style={{ fontWeight: 700, color: "#111", marginLeft: 8 }}>📍 {p.km} km</span>}
-                              </div>
-                              <div style={{ fontSize: 11, color: "#999", marginTop: 2 }}>
-                                {p.d} • {p.f}
-                                {p.isGenericAddress && <span style={{ marginLeft: 10, color: "#EAB308", fontWeight: 700, fontSize: 10 }}>⚠️ VALIDAR UBICACIÓN</span>}
+                            <div onClick={() => setExpandedId(expandedId === p.id ? null : p.id)} style={{ flex: 1, display: "flex", alignItems: "center", gap: 16, cursor: "pointer" }}>
+                              <div style={{ width: 40, height: 40, borderRadius: 10, background: TRANSPORT_META[p.tType]?.bg, display: "flex", alignItems: "center", justifyContent: "center" }}>{TRANSPORT_META[p.tType]?.icon}</div>
+                              <div style={{ flex: 1 }}>
+                                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}>
+                                  <div style={{ fontSize: 13, fontWeight: 700, color: "#111" }}>{p.e}</div>
+                                  <div style={{ fontSize: 10, background: "#EEF2FF", color: "#4F46E5", padding: "2px 8px", borderRadius: 4, fontWeight: 600 }}>👤 {p.a}</div>
+                                  {p.g ? <span style={{ fontSize: 10, color: "#7C3AED", background: "#F3E8FF", padding: "2px 6px", borderRadius: 4 }}>{p.g}</span> : ""}
+                                </div>
+                                <div style={{ fontSize: 11, color: "#666" }}>
+                                  {p.routeLabel}
+                                  {p.km > 0 && <span style={{ fontWeight: 700, color: "#111", marginLeft: 8 }}>📍 {p.km} km</span>}
+                                </div>
+                                <div style={{ fontSize: 11, color: "#999", marginTop: 2 }}>
+                                  {p.d} • {p.f}
+                                  {p.isGenericAddress && <span style={{ marginLeft: 10, color: "#EAB308", fontWeight: 700, fontSize: 10 }}>⚠️ VALIDAR UBICACIÓN</span>}
+                                </div>
                               </div>
                             </div>
-                          </div>
-                          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                            <TransportBadge type={p.tType} />
-                            {view !== "managed" && ["vuelo", "tren", "auto"].includes(p.tType) && (
+                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                              <TransportBadge type={p.tType} />
+                              {view !== "managed" && ["vuelo", "tren", "auto"].includes(p.tType) && (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (selectedIds.has(p.id)) {
+                                      handleBookSelection();
+                                    } else {
+                                      setBookingTarget({
+                                        consultant: p.a,
+                                        activity: { ...p, startDate: p.f, endDate: p.f },
+                                        transportType: p.tType,
+                                        establishments: [p.e],
+                                        groupStartDate: p.f,
+                                        groupEndDate: p.groupEndDate || p.endDate || p.f
+                                      });
+                                    }
+                                  }}
+                                  style={{ background: "#0D4BD9", color: "white", border: "none", padding: "6px 14px", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer" }}
+                                >
+                                  {selectedIds.has(p.id) ? "Reservar (Multiple)" : "Reservar"}
+                                </button>
+                              )}
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   if (selectedIds.has(p.id)) {
-                                    handleBookSelection();
+                                    handleBulkFinalize();
                                   } else {
-                                    setBookingTarget({
-                                      consultant: p.a,
-                                      activity: { ...p, startDate: p.f, endDate: p.f },
-                                      transportType: p.tType,
-                                      establishments: [p.e]
-                                    });
+                                    toggleFinalize(p.id);
                                   }
                                 }}
-                                style={{ background: "#0D4BD9", color: "white", border: "none", padding: "6px 14px", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer" }}
+                                style={{ background: finalizedIds.has(p.id) ? "#6B7280" : "#10B981", color: "white", border: "none", padding: "6px 14px", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer" }}
                               >
-                                {selectedIds.has(p.id) ? "Reservar (Multiple)" : "Reservar"}
+                                {selectedIds.has(p.id) ? (view === "managed" ? "Reabrir (Multiple)" : "Finalizar (Multiple)") : (finalizedIds.has(p.id) ? "Undo" : "Finalizar")}
                               </button>
-                            )}
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                if (selectedIds.has(p.id)) {
-                                  handleBulkFinalize();
-                                } else {
-                                  toggleFinalize(p.id);
-                                }
-                              }}
-                              style={{ background: finalizedIds.has(p.id) ? "#6B7280" : "#10B981", color: "white", border: "none", padding: "6px 14px", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer" }}
-                            >
-                              {selectedIds.has(p.id) ? (view === "managed" ? "Reabrir (Multiple)" : "Finalizar (Multiple)") : (finalizedIds.has(p.id) ? "Undo" : "Finalizar")}
-                            </button>
+                            </div>
                           </div>
-                        </div>
 
-                        {expandedId === p.id && (
-                          <div style={{ padding: "0 16px 16px", background: "#fafafa", borderTop: "1px solid #eee" }}>
-                            <div style={{ paddingTop: 16, display: "flex", flexDirection: "column", gap: 12, borderBottom: "1px solid #eee", paddingBottom: 16 }}>
-                              <div style={{ display: "flex", gap: 12 }}>
-                                <span style={{ fontSize: 18 }}>🏠</span>
-                                <div>
-                                  <div style={{ fontSize: 11, color: "#999", fontWeight: 700, textTransform: "uppercase" }}>Origen</div>
-                                  <div style={{ fontSize: 13, color: "#111", fontWeight: 600 }}>{p.originMuni} / {p.originDisplay}</div>
-                                  <div style={{ fontSize: 12, color: "#666" }}>{p.originAddress}</div>
+                          {expandedId === p.id && (
+                            <div style={{ padding: "0 16px 16px", background: "#fafafa", borderTop: "1px solid #eee" }}>
+                              <div style={{ paddingTop: 16, display: "flex", flexDirection: "column", gap: 12, borderBottom: "1px solid #eee", paddingBottom: 16 }}>
+                                <div style={{ display: "flex", gap: 12 }}>
+                                  <span style={{ fontSize: 18 }}>🏠</span>
+                                  <div>
+                                    <div style={{ fontSize: 11, color: "#999", fontWeight: 700, textTransform: "uppercase" }}>Origen</div>
+                                    <div style={{ fontSize: 13, color: "#111", fontWeight: 600 }}>{p.originMuni} / {p.originDisplay}</div>
+                                    <div style={{ fontSize: 12, color: "#666" }}>{p.originAddress}</div>
+                                  </div>
                                 </div>
-                              </div>
-                              <div style={{ display: "flex", gap: 12 }}>
-                                <span style={{ fontSize: 18 }}>📍</span>
-                                <div style={{ flex: 1 }}>
-                                  <div style={{ fontSize: 11, color: "#999", fontWeight: 700, textTransform: "uppercase" }}>Destino</div>
-                                  <div style={{ fontSize: 13, color: "#111", fontWeight: 600 }}>{p.destMuni} / {p.destDisplay}</div>
-                                  <div style={{ fontSize: 12, color: "#666", marginBottom: 8 }}>{p.destAddress}</div>
-                                  <GeocodingValidationPanel
-                                    proposal={p}
-                                    geocodeState={geocodeResults[p.id]}
-                                    onSearch={async () => {
-                                      // Set loading
-                                      setGeocodeResults(prev => ({ ...prev, [p.id]: { loading: true, results: null, error: null, selected: null, editing: false } }));
-                                      try {
-                                        const query = `${p.e}${p.g ? " " + p.g : ""}, España`;
-                                        const resp = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&addressdetails=1&limit=5&countrycodes=es`);
-                                        const data = await resp.json();
-                                        if (data.length > 0) {
-                                          setGeocodeResults(prev => ({ ...prev, [p.id]: { loading: false, results: data, error: null, selected: 0, editing: false } }));
-                                        } else {
-                                          // Retry with just establishment name
-                                          const resp2 = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(p.e + ", España")}&format=json&addressdetails=1&limit=5&countrycodes=es`);
-                                          const data2 = await resp2.json();
-                                          setGeocodeResults(prev => ({ ...prev, [p.id]: { loading: false, results: data2.length > 0 ? data2 : null, error: data2.length === 0 ? "no_results" : null, selected: data2.length > 0 ? 0 : null, editing: data2.length === 0 } }));
+                                <div style={{ display: "flex", gap: 12 }}>
+                                  <span style={{ fontSize: 18 }}>📍</span>
+                                  <div style={{ flex: 1 }}>
+                                    <div style={{ fontSize: 11, color: "#999", fontWeight: 700, textTransform: "uppercase", marginBottom: 4 }}>Destino</div>
+                                    <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 8 }}>
+                                      <div style={{ flex: 1 }}>
+                                        <div style={{ fontSize: 13, color: "#111", fontWeight: 600, marginBottom: 2 }}>{p.destMuni} / {p.destDisplay}</div>
+                                        <div style={{ fontSize: 12, color: "#666" }}>{p.destAddress}</div>
+                                      </div>
+                                      <a
+                                        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${p.e}${p.g ? ' ' + p.g : ''}, España`)}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        style={{ background: "#0D4BD9", color: "white", border: "none", padding: "6px 12px", borderRadius: 6, fontSize: 11, fontWeight: 600, textDecoration: "none", whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: 4 }}
+                                      >
+                                        🗺️ Maps
+                                      </a>
+                                    </div>
+                                    <GeocodingValidationPanel
+                                      proposal={p}
+                                      geocodeState={geocodeResults[p.id]}
+                                      onSearch={async () => {
+                                        // Set loading
+                                        setGeocodeResults(prev => ({ ...prev, [p.id]: { loading: true, results: null, error: null, selected: null, editing: false } }));
+                                        try {
+                                          const query = `${p.e}${p.g ? " " + p.g : ""}, España`;
+                                          const resp = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&addressdetails=1&limit=5&countrycodes=es`);
+                                          const data = await resp.json();
+                                          if (data.length > 0) {
+                                            setGeocodeResults(prev => ({ ...prev, [p.id]: { loading: false, results: data, error: null, selected: 0, editing: false } }));
+                                          } else {
+                                            // Retry with just establishment name
+                                            const resp2 = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(p.e + ", España")}&format=json&addressdetails=1&limit=5&countrycodes=es`);
+                                            const data2 = await resp2.json();
+                                            setGeocodeResults(prev => ({ ...prev, [p.id]: { loading: false, results: data2.length > 0 ? data2 : null, error: data2.length === 0 ? "no_results" : null, selected: data2.length > 0 ? 0 : null, editing: data2.length === 0 } }));
+                                          }
+                                        } catch (e) {
+                                          setGeocodeResults(prev => ({ ...prev, [p.id]: { loading: false, results: null, error: "network", selected: null, editing: true } }));
                                         }
-                                      } catch (e) {
-                                        setGeocodeResults(prev => ({ ...prev, [p.id]: { loading: false, results: null, error: "network", selected: null, editing: true } }));
-                                      }
-                                    }}
-                                    onSelectResult={(idx) => {
-                                      setGeocodeResults(prev => ({ ...prev, [p.id]: { ...prev[p.id], selected: idx } }));
-                                    }}
-                                    onConfirm={(address, municipality) => {
-                                      updateEstablishmentAddress(p.e, address, municipality);
-                                      setGeocodeResults(prev => ({ ...prev, [p.id]: undefined }));
-                                    }}
-                                    onEditManually={() => {
-                                      setGeocodeResults(prev => ({ ...prev, [p.id]: { ...(prev[p.id] || {}), editing: true } }));
-                                    }}
-                                    onUpdateAddress={updateEstablishmentAddress}
-                                  />
+                                      }}
+                                      onSelectResult={(idx) => {
+                                        setGeocodeResults(prev => ({ ...prev, [p.id]: { ...prev[p.id], selected: idx } }));
+                                      }}
+                                      onConfirm={(address, municipality) => {
+                                        updateEstablishmentAddress(p.e, address, municipality);
+                                        setGeocodeResults(prev => ({ ...prev, [p.id]: undefined }));
+                                        setExpandedId(null); // Collapse the card
+                                        setUploadFlash(`✅ Dirección actualizada: ${p.e}`);
+                                        setTimeout(() => setUploadFlash(null), 3000);
+                                      }}
+                                      onEditManually={() => {
+                                        setGeocodeResults(prev => ({ ...prev, [p.id]: { ...(prev[p.id] || {}), editing: true } }));
+                                      }}
+                                      onUpdateAddress={updateEstablishmentAddress}
+                                    />
+                                    {!geocodeResults[p.id] && (
+                                      <button
+                                        onClick={() => setGeocodeResults(prev => ({ ...prev, [p.id]: { editing: true } }))}
+                                        style={{ marginTop: 8, background: "#F3F4F6", color: "#374151", border: "1px solid #D1D5DB", padding: "6px 12px", borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}
+                                      >
+                                        ✏️ Editar Dirección
+                                      </button>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                              <div style={{ paddingTop: 16, display: "flex", flexWrap: "wrap", gap: 16, fontSize: 13, color: "#444", alignItems: "center" }}>
+                                <div style={{ display: "flex", alignItems: "center", gap: 6, background: "#f8f9fa", padding: "6px 12px", borderRadius: 20, border: "1px solid #eee" }}>
+                                  <span style={{ fontSize: 14 }}>🏷️</span>
+                                  <div>
+                                    <span style={{ fontSize: 10, textTransform: "uppercase", color: "#999", fontWeight: 700, marginRight: 4 }}>Grupo</span>
+                                    <span style={{ fontWeight: 600 }}>{p.g || "-"}</span>
+                                  </div>
+                                </div>
+                                <div style={{ display: "flex", alignItems: "center", gap: 6, background: "#f8f9fa", padding: "6px 12px", borderRadius: 20, border: "1px solid #eee" }}>
+                                  <span style={{ fontSize: 14 }}>📋</span>
+                                  <div>
+                                    <span style={{ fontSize: 10, textTransform: "uppercase", color: "#999", fontWeight: 700, marginRight: 4 }}>Actividad</span>
+                                    <span style={{ fontWeight: 600 }}>{p.d || "-"}</span>
+                                  </div>
                                 </div>
                               </div>
                             </div>
-                            <div style={{ paddingTop: 16, display: "flex", flexWrap: "wrap", gap: 16, fontSize: 13, color: "#444", alignItems: "center" }}>
-                              <div style={{ display: "flex", alignItems: "center", gap: 6, background: "#f8f9fa", padding: "6px 12px", borderRadius: 20, border: "1px solid #eee" }}>
-                                <span style={{ fontSize: 14 }}>🏷️</span>
-                                <div>
-                                  <span style={{ fontSize: 10, textTransform: "uppercase", color: "#999", fontWeight: 700, marginRight: 4 }}>Grupo</span>
-                                  <span style={{ fontWeight: 600 }}>{p.g || "-"}</span>
-                                </div>
-                              </div>
-                              <div style={{ display: "flex", alignItems: "center", gap: 6, background: "#f8f9fa", padding: "6px 12px", borderRadius: 20, border: "1px solid #eee" }}>
-                                <span style={{ fontSize: 14 }}>🔧</span>
-                                <div>
-                                  <span style={{ fontSize: 10, textTransform: "uppercase", color: "#999", fontWeight: 700, marginRight: 4 }}>Técnica</span>
-                                  <span style={{ fontWeight: 600 }}>{p.tType}</span>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  });
-                }
-                return elements;
-              })()}
+                          )}
+                        </div>
+                      );
+                    });
+                  }
+                  return elements;
+                })()}
+              </div>
+
             </div>
+          )}
 
-          </div>
-        )}
-
-        {/* VIEW: SUMMARY */}
-        {view === "summary" && (
-          <div style={{ background: "white", borderRadius: 16, overflow: "hidden", border: "1px solid #eee" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
-              <thead style={{ background: "#f8f9fa", borderBottom: "1px solid #eee" }}>
-                <tr>
-                  <th style={{ padding: 12, textAlign: "left" }}>Consultor</th>
-                  <th style={{ padding: 12, textAlign: "center" }}>Total</th>
-                  <th style={{ padding: 12, textAlign: "center" }}>✈️</th>
-                  <th style={{ padding: 12, textAlign: "center" }}>🚄</th>
-                  <th style={{ padding: 12, textAlign: "center" }}>🚗</th>
-                </tr>
-              </thead>
-              <tbody>
-                {Object.entries(summaryByAuditor).map(([name, d]) => (
-                  <tr key={name} style={{ borderBottom: "1px solid #f0f0f0" }}>
-                    <td style={{ padding: 12, fontWeight: 500 }}>{name}</td>
-                    <td style={{ padding: 12, textAlign: "center", fontWeight: 700 }}>{d.total}</td>
-                    <td style={{ padding: 12, textAlign: "center", color: "#0D4BD9", fontWeight: d.vuelo ? 700 : 400 }}>{d.vuelo}</td>
-                    <td style={{ padding: 12, textAlign: "center", color: "#7C3AED", fontWeight: d.tren ? 700 : 400 }}>{d.tren}</td>
-                    <td style={{ padding: 12, textAlign: "center", color: "#059669", fontWeight: d.vehiculo ? 700 : 400 }}>{d.vehiculo}</td>
+          {/* VIEW: SUMMARY */}
+          {view === "summary" && (
+            <div style={{ background: "white", borderRadius: 16, overflow: "hidden", border: "1px solid #eee" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+                <thead style={{ background: "#f8f9fa", borderBottom: "1px solid #eee" }}>
+                  <tr>
+                    <th style={{ padding: 12, textAlign: "left" }}>Consultor</th>
+                    <th style={{ padding: 12, textAlign: "center" }}>Total</th>
+                    <th style={{ padding: 12, textAlign: "center" }}>✈️</th>
+                    <th style={{ padding: 12, textAlign: "center" }}>🚄</th>
+                    <th style={{ padding: 12, textAlign: "center" }}>🚗</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+                </thead>
+                <tbody>
+                  {Object.entries(summaryByAuditor).map(([name, d]) => (
+                    <tr key={name} style={{ borderBottom: "1px solid #f0f0f0" }}>
+                      <td style={{ padding: 12, fontWeight: 500 }}>{name}</td>
+                      <td style={{ padding: 12, textAlign: "center", fontWeight: 700 }}>{d.total}</td>
+                      <td style={{ padding: 12, textAlign: "center", color: "#0D4BD9", fontWeight: d.vuelo ? 700 : 400 }}>{d.vuelo}</td>
+                      <td style={{ padding: 12, textAlign: "center", color: "#7C3AED", fontWeight: d.tren ? 700 : 400 }}>{d.tren}</td>
+                      <td style={{ padding: 12, textAlign: "center", color: "#059669", fontWeight: d.vehiculo ? 700 : 400 }}>{d.vehiculo}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
 
-        {view === "consultants" && (
-          <ConsultantList
-            consultants={activeConsultants}
-            onUpdate={updateConsultant}
-            onDelete={deleteConsultant}
-          />
-        )}
-
-
-      </div>
-    </div>
+          {view === "consultants" && (
+            <ConsultantList
+              consultants={activeConsultants}
+              onUpdate={updateConsultant}
+              onDelete={deleteConsultant}
+            />
+          )}
+        </div>
+      </AppLayout>
+    </>
   );
 }

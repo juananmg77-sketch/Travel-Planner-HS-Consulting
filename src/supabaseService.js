@@ -469,6 +469,35 @@ export async function syncEstablishments(clientDataArray) {
     return true;
 }
 
+// Returns all establishments that have a validated address, in the app's
+// customClientInfo format: { "Hotel Name": { address, municipality, region, island } }
+export async function getValidatedEstablishments() {
+    if (!isSupabaseConfigured()) return {};
+
+    const { data, error } = await supabase
+        .from('establishments')
+        .select('name, address, municipality, region, island, is_validated')
+        .not('address', 'is', null);
+
+    if (error) {
+        console.error('Error fetching validated establishments:', error);
+        return {};
+    }
+
+    const map = {};
+    (data || []).forEach(row => {
+        map[row.name] = {
+            address: row.address,
+            municipality: row.municipality,
+            region: row.region,
+            island: row.island,
+            _validated: row.is_validated
+        };
+    });
+    return map;
+}
+
+
 // ============================================================
 // LOGISTICS HOTELS (future feature)
 // ============================================================
@@ -500,6 +529,61 @@ export async function upsertLogisticsHotel(hotel) {
 
     if (error) console.error('Error upserting logistics hotel:', error);
     return !error;
+}
+
+export async function getAllAccommodationHotels() {
+    if (!isSupabaseConfigured()) return null;
+
+    const { data, error } = await supabase
+        .from('logistics_hotels')
+        .select('name, zone, booking_portal_url')
+        .eq('is_active', true);
+
+    if (error) {
+        console.error('Error fetching accommodation hotels:', error);
+        return null;
+    }
+
+    const map = {};
+    (data || []).forEach(row => {
+        if (!map[row.zone]) map[row.zone] = [];
+        map[row.zone].push({ hotel: row.name, ubicacion: row.booking_portal_url || "" });
+    });
+    return map;
+}
+
+export async function syncAccommodationHotels(hotelsMap) {
+    if (!isSupabaseConfigured()) return false;
+
+    // First delete or mark inactive all existing hotels to avoid duplicates.
+    // For simplicity here, we'll mark them as inactive.
+    await supabase.from('logistics_hotels').update({ is_active: false }).neq('name', '___dummy___');
+
+    const rows = [];
+    Object.entries(hotelsMap).forEach(([zone, hotels]) => {
+        hotels.forEach(h => {
+            rows.push({
+                name: h.hotel,
+                zone: zone,
+                region: zone, // Set region to zone as it is required (NOT NULL)
+                booking_portal_url: h.ubicacion || null,
+                is_active: true
+            });
+        });
+    });
+
+    if (rows.length === 0) return true;
+
+    // Insert in batches of 100
+    for (let i = 0; i < rows.length; i += 100) {
+        const batch = rows.slice(i, i + 100);
+        const { error } = await supabase.from('logistics_hotels').insert(batch);
+        if (error) {
+            console.error('Error inserting accommodation hotels batch:', error);
+        }
+    }
+
+    return true;
 }
 
 // ============================================================
