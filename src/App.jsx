@@ -3598,6 +3598,31 @@ export default function HSConsultingTravelPlanner() {
                     filtered.forEach(p => {
                       const pDate = new Date(p.f.split('/').reverse().join('-'));
 
+                      // 1. Calculate transport fingerprints (locators) for this activity
+                      const pFPrints = [];
+                      const links = bookedLinks[p.id] || {};
+                      Object.entries(links).forEach(([url, data]) => {
+                        if (url === "__accom__") return; // ignore accommodation for transport grouping
+                        let groupKey = url;
+                        let hasData = false;
+                        if (data && typeof data === 'object') {
+                          if (data.segments) {
+                            const locs = data.segments.map(s => s.locator).filter(Boolean).sort().join('_');
+                            if (locs) { groupKey = locs; hasData = true; }
+                          } else if (data.locator) {
+                            groupKey = data.locator;
+                            hasData = true;
+                          }
+                        } else if (typeof data === 'string' && data.trim() !== '') {
+                          groupKey = data;
+                          hasData = true;
+                        }
+                        // Only add if it's a real recognizable string, skip generic empty manual entries
+                        if (hasData && groupKey.trim() !== '') {
+                          pFPrints.push(`${url}|${groupKey}`);
+                        }
+                      });
+
                       if (p.g) {
                         // USE EXPEDITION ID — each (consultant, expedition) = one trip
                         const key = `${p.cName}|g:${p.g}`;
@@ -3610,44 +3635,69 @@ export default function HSConsultingTravelPlanner() {
                             firstDate: pDate,
                             lastDate: pDate,
                             firstDateStr: p.f,
-                            lastDateStr: p.f
+                            lastDateStr: p.f,
+                            fPrints: [...pFPrints]
                           };
                           expMap[key] = expObj;
                           expeditions.push(expObj);
                         } else {
                           expMap[key].proposals.push(p);
+                          expMap[key].fPrints.push(...pFPrints);
                           if (pDate < expMap[key].firstDate) { expMap[key].firstDate = pDate; expMap[key].firstDateStr = p.f; }
                           if (pDate > expMap[key].lastDate) { expMap[key].lastDate = pDate; expMap[key].lastDateStr = p.f; }
                         }
                       } else {
-                        // FALLBACK: group by consultant+region and split on gaps > 14 days (not 4)
-                        const regionKey = p.island || p.r || "General";
-                        const bucketKey = `${p.cName}|${regionKey}`;
-                        // Find the most recent open expedition for this bucket
-                        let found = null;
-                        for (let i = expeditions.length - 1; i >= 0; i--) {
-                          const ex = expeditions[i];
-                          if (ex._bucketKey === bucketKey) {
-                            const diffDays = (pDate - ex.lastDate) / (1000 * 60 * 60 * 24);
-                            if (diffDays <= 14) { found = ex; break; }
+                        // NO EXPEDITION ID:
+                        // 1. First check if we share transport locators with ANY existing expedition of this consultant
+                        let foundByLinks = null;
+                        if (pFPrints.length > 0) {
+                          for (let i = expeditions.length - 1; i >= 0; i--) {
+                            const ex = expeditions[i];
+                            if (ex.consultant === p.a && ex.fPrints) {
+                              const shared = pFPrints.some(fp => ex.fPrints.includes(fp));
+                              if (shared) { foundByLinks = ex; break; }
+                            }
                           }
                         }
-                        if (found) {
-                          found.proposals.push(p);
-                          if (pDate > found.lastDate) { found.lastDate = pDate; found.lastDateStr = p.f; }
+
+                        if (foundByLinks) {
+                          foundByLinks.proposals.push(p);
+                          foundByLinks.fPrints.push(...pFPrints);
+                          if (pDate < foundByLinks.firstDate) { foundByLinks.firstDate = pDate; foundByLinks.firstDateStr = p.f; }
+                          if (pDate > foundByLinks.lastDate) { foundByLinks.lastDate = pDate; foundByLinks.lastDateStr = p.f; }
                         } else {
-                          const expObj = {
-                            id: `exp-${bucketKey}-${expeditions.length}`,
-                            consultant: p.a,
-                            region: regionKey,
-                            proposals: [p],
-                            firstDate: pDate,
-                            lastDate: pDate,
-                            firstDateStr: p.f,
-                            lastDateStr: p.f,
-                            _bucketKey: bucketKey
-                          };
-                          expeditions.push(expObj);
+                          // 2. FALLBACK: group by consultant+region and split on gaps > 14 days
+                          const regionKey = p.island || p.r || "General";
+                          const bucketKey = `${p.cName}|${regionKey}`;
+                          // Find the most recent open expedition for this bucket
+                          let found = null;
+                          for (let i = expeditions.length - 1; i >= 0; i--) {
+                            const ex = expeditions[i];
+                            if (ex._bucketKey === bucketKey) {
+                              const diffDays = Math.abs(pDate - ex.lastDate) / (1000 * 60 * 60 * 24);
+                              if (diffDays <= 14) { found = ex; break; }
+                            }
+                          }
+                          if (found) {
+                            found.proposals.push(p);
+                            if (found.fPrints) found.fPrints.push(...pFPrints);
+                            if (pDate < found.firstDate) { found.firstDate = pDate; found.firstDateStr = p.f; }
+                            if (pDate > found.lastDate) { found.lastDate = pDate; found.lastDateStr = p.f; }
+                          } else {
+                            const expObj = {
+                              id: `exp-${bucketKey}-${expeditions.length}-${Math.random().toString(36).substr(2, 5)}`,
+                              consultant: p.a,
+                              region: regionKey,
+                              proposals: [p],
+                              firstDate: pDate,
+                              lastDate: pDate,
+                              firstDateStr: p.f,
+                              lastDateStr: p.f,
+                              _bucketKey: bucketKey,
+                              fPrints: [...pFPrints]
+                            };
+                            expeditions.push(expObj);
+                          }
                         }
                       }
                     });
