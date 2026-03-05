@@ -1583,13 +1583,9 @@ function BookingPanel({ consultant, activity, transportType, establishments, con
   const modalIcon = modalIsCar ? "🚗" : (activeBookingLabel?.includes("Renfe") || activeBookingLabel?.includes("Iryo") || activeBookingLabel?.includes("Trainline")) ? "🚄" : "✈️";
 
   // Accommodation hotels: find matches for the destination zone
+  const destZone = activity.destMuni || activity.r || "";
   const accomHotels = useMemo(() => {
     const matched = [];
-
-    // Always include the visited establishments first as options!
-    establishments.forEach(e => {
-      matched.push({ hotel: e, zona: destZone || activity.r || "Destino", ubicacion: "" });
-    });
 
     if (accommodationHotels && Object.keys(accommodationHotels).length > 0) {
       const destNorm = destZone.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
@@ -1597,7 +1593,7 @@ function BookingPanel({ consultant, activity, transportType, establishments, con
       Object.entries(accommodationHotels).forEach(([zone, hotels]) => {
         const zoneNorm = zone.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
         if (destNorm.includes(zoneNorm) || zoneNorm.includes(destNorm) ||
-          activity.r?.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").includes(zoneNorm)) {
+          (activity.r && activity.r.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").includes(zoneNorm))) {
           hotels.forEach(h => matched.push({ ...h, zona: zone }));
         }
       });
@@ -1605,7 +1601,7 @@ function BookingPanel({ consultant, activity, transportType, establishments, con
 
     // Unique by name to avoid duplicates
     return Array.from(new Map(matched.map(item => [item.hotel, item])).values());
-  }, [accommodationHotels, destZone, activity.r, establishments]);
+  }, [accommodationHotels, destZone, activity.r]);
 
   // All zones for manual zone selector
   const allZones = useMemo(() => Object.keys(accommodationHotels || {}).sort(), [accommodationHotels]);
@@ -1613,14 +1609,12 @@ function BookingPanel({ consultant, activity, transportType, establishments, con
 
   const hotelsToShow = useMemo(() => {
     if (selectedZone) {
-      // If a DB zone is selected, show the establishments + that zone's hotels
-      const baseOptions = establishments.map(e => ({ hotel: e, zona: destZone || activity.r || "Destino", ubicacion: "" }));
+      // If a DB zone is selected, show that zone's hotels
       const dbOptions = (accommodationHotels[selectedZone] || []).map(h => ({ ...h, zona: selectedZone }));
-      const combined = [...baseOptions, ...dbOptions];
-      return Array.from(new Map(combined.map(item => [item.hotel, item])).values());
+      return Array.from(new Map(dbOptions.map(item => [item.hotel, item])).values());
     }
     return accomHotels;
-  }, [selectedZone, accommodationHotels, accomHotels, establishments, destZone, activity.r]);
+  }, [selectedZone, accommodationHotels, accomHotels]);
 
   // Single hotel selector + locator (replaces per-hotel list)
   const [selectedHotel, setSelectedHotel] = useState(null); // { hotel, zona, ubicacion }
