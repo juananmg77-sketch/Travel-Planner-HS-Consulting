@@ -3910,6 +3910,28 @@ export default function HSConsultingTravelPlanner() {
       ? bookingTarget.selectedIds
       : [bookingTarget.activity.id];
 
+    // Seal the group if booking multiple items together or they don't have one
+    let assignedG = null;
+    if (idsToUpdate.length > 1) {
+      // Find if they already share a group
+      const existingGs = new Set(proposals.filter(p => idsToUpdate.includes(p.id)).map(p => p.g).filter(Boolean));
+      if (existingGs.size !== 1) {
+        assignedG = `SEAL-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
+      } else {
+        assignedG = Array.from(existingGs)[0];
+      }
+    }
+
+    // Update internal activities state to apply the new group ID if needed
+    if (assignedG) {
+      setActivities(prev => prev.map(a => {
+        if (idsToUpdate.includes(a.id)) {
+          return { ...a, g: assignedG };
+        }
+        return a;
+      }));
+    }
+
     setBookedLinks(prev => {
       const next = { ...prev };
       idsToUpdate.forEach(id => {
@@ -3928,12 +3950,13 @@ export default function HSConsultingTravelPlanner() {
       // Automatically "Finalize" the activities if marked as booked
       const nextFinalized = new Set(finalizedIds);
       const managedUpdates = [];
+      idsToProcess: // labels are useless here but help context
       idsToUpdate.forEach(id => {
         nextFinalized.add(id);
-        managedUpdates.push({ id, isManaged: true });
+        managedUpdates.push({ id, isManaged: true, g: assignedG });
       });
       setFinalizedIds(nextFinalized);
-      // Sync managed status to Supabase
+      // Sync managed status to Supabase (including potential group seal)
       if (managedUpdates.length > 0) bulkSetManagedStatus(managedUpdates);
 
       setUploadFlash(`✅ Reserva registrada`);
@@ -3942,7 +3965,8 @@ export default function HSConsultingTravelPlanner() {
       setUploadFlash(`🗑️ Reserva eliminada`);
       setTimeout(() => setUploadFlash(null), 3000);
     }
-  }, [bookingTarget, finalizedIds]);
+  }, [bookingTarget, proposals, finalizedIds]);
+
 
   const groupRanges = useMemo(() => {
     const ranges = {};
@@ -4209,10 +4233,11 @@ export default function HSConsultingTravelPlanner() {
     setSelectedIds(new Set());
   };
 
-  const handleBookSelection = (consultantName, groupId) => {
-    // Filter selected proposals to ONLY the specified consultant and group
-    const selected = proposals.filter(p => selectedIds.has(p.id) && (!consultantName || p.cName === consultantName) && (!groupId || p.g === groupId));
+  const handleBookSelection = (consultantName) => {
+    // Filter selected proposals to ONLY the specified consultant (ignore group filter here to allow multiple hotels booking)
+    const selected = proposals.filter(p => selectedIds.has(p.id) && (!consultantName || p.cName === consultantName));
     if (selected.length === 0) return;
+
 
 
     // Use the first and last hotel dates from the filtered selection
@@ -4258,21 +4283,23 @@ export default function HSConsultingTravelPlanner() {
     setActivityManagedStatus(id, isNowManaged);
   };
 
-  const handleBulkFinalize = (consultantName, groupId) => {
+  const handleBulkFinalize = (consultantName) => {
     const next = new Set(finalizedIds);
     const isManaged = view !== "managed";
     const updates = [];
 
-    // The set of activities being processed
+    // The set of activities being processed - acts on whole selection for this consultant
     const idsToProcess = consultantName
-      ? new Set(proposals.filter(p => selectedIds.has(p.id) && p.cName === consultantName && (!groupId || p.g === groupId)).map(p => p.id))
+      ? new Set(proposals.filter(p => selectedIds.has(p.id) && p.cName === consultantName).map(p => p.id))
       : selectedIds;
 
-    // When finalizing, if items don't have a common groupId, generate a "Seal ID" to keep them together forever
-    let fallbackG = groupId;
-    if (isManaged && !fallbackG && idsToProcess.size > 0) {
+
+    // Use Seal ID for any plural finalization to keep them unified
+    let fallbackG = null;
+    if (isManaged && idsToProcess.size > 1) {
       fallbackG = `SEAL-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
     }
+
 
     // Update internal activities state to apply the new group ID if needed
     if (isManaged && fallbackG) {
@@ -5338,7 +5365,7 @@ export default function HSConsultingTravelPlanner() {
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     if (selectedIds.has(p.id)) {
-                                      handleBookSelection(p.cName, p.g); // Pass p.g to isolate this trip
+                                      handleBookSelection(p.cName); // Unify all selected items of this consultant
                                     } else {
                                       setBookingTarget({
                                         consultant: p.a,
@@ -5353,7 +5380,7 @@ export default function HSConsultingTravelPlanner() {
                                   style={{ background: "#0D4BD9", color: "white", border: "none", padding: "6px 14px", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer" }}
                                 >
                                   {selectedIds.has(p.id)
-                                    ? `Reservar (${proposals.filter(s => selectedIds.has(s.id) && s.cName === p.cName && (p.g ? s.g === p.g : true)).length})`
+                                    ? `Reservar (${proposals.filter(s => selectedIds.has(s.id) && s.cName === p.cName).length})`
                                     : "Reservar"}
                                 </button>
                               )}
@@ -5361,7 +5388,7 @@ export default function HSConsultingTravelPlanner() {
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   if (selectedIds.has(p.id)) {
-                                    handleBulkFinalize(p.cName, p.g); // Pass p.g to isolate this trip
+                                    handleBulkFinalize(p.cName);
                                   } else {
                                     toggleFinalize(p.id);
                                   }
@@ -5370,10 +5397,11 @@ export default function HSConsultingTravelPlanner() {
                               >
                                 {selectedIds.has(p.id)
                                   ? (view === "managed"
-                                    ? `Reabrir (${proposals.filter(s => selectedIds.has(s.id) && s.cName === p.cName && (p.g ? s.g === p.g : true)).length})`
-                                    : `Finalizar (${proposals.filter(s => selectedIds.has(s.id) && s.cName === p.cName && (p.g ? s.g === p.g : true)).length})`)
+                                    ? `Reabrir (${proposals.filter(s => selectedIds.has(s.id) && s.cName === p.cName).length})`
+                                    : `Finalizar (${proposals.filter(s => selectedIds.has(s.id) && s.cName === p.cName).length})`)
                                   : (finalizedIds.has(p.id) ? "Undo" : "Finalizar")}
                               </button>
+
 
                             </div>
                           </div>
