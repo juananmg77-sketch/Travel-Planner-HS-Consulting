@@ -3374,6 +3374,8 @@ export default function HSConsultingTravelPlanner() {
     const saved = localStorage.getItem("hs_travel_consultants");
     return saved ? JSON.parse(saved) : null;
   });
+  const activeConsultants = useMemo(() => customConsultants || CONSULTANTS, [customConsultants]);
+
   const [approvedIds, setApprovedIds] = useState(() => {
     const saved = localStorage.getItem("hs_travel_approved");
     return saved ? new Set(JSON.parse(saved)) : new Set();
@@ -3828,7 +3830,7 @@ export default function HSConsultingTravelPlanner() {
     }
   }, []);
 
-  const activeConsultants = useMemo(() => customConsultants || CONSULTANTS, [customConsultants]);
+
 
   // Centralized address update: local state + Supabase sync + logistics recalc
   const updateEstablishmentAddress = useCallback(async (establishmentName, newAddress, newMunicipality) => {
