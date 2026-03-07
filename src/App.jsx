@@ -5113,7 +5113,11 @@ export default function HSConsultingTravelPlanner() {
                                         <span style={{ fontSize: 10, fontWeight: 800, color: "#6366F1", textTransform: "uppercase", letterSpacing: "0.05em" }}>
                                           {consExpeditions.length > 1 ? `Expedición ${exIdx + 1} de ${consExpeditions.length}` : "Expedición / Viaje"}
                                         </span>
+                                        {ex.proposals.some(p => p._isAdHoc) && (
+                                          <span style={{ background: "#DBEAFE", color: "#1D4ED8", padding: "2px 8px", borderRadius: 4, fontSize: 10, fontWeight: 800 }}>✨ VIAJE AD-HOC</span>
+                                        )}
                                         {ex.proposals[0]?.g && (
+
                                           <span style={{ background: "#EEF2FF", color: "#4F46E5", padding: "2px 8px", borderRadius: 4, fontSize: 10, fontWeight: 700 }}>
                                             Exp: {ex.proposals[0].g}
                                           </span>
@@ -5235,7 +5239,14 @@ export default function HSConsultingTravelPlanner() {
                     // Standard proposals view
                     filtered.forEach(p => {
                       elements.push(
-                        <div key={p.id} style={{ background: "white", borderRadius: 12, border: selectedIds.has(p.id) ? "2px solid #0D4BD9" : (approvedIds.has(p.id) ? "1px solid #10B981" : "1px solid #eee"), overflow: "hidden", position: "relative" }}>
+                        <div key={p.id} style={{
+                          background: p._isAdHoc ? "#F0F7FF" : "white",
+                          borderRadius: 12,
+                          border: selectedIds.has(p.id) ? "2px solid #0D4BD9" : (approvedIds.has(p.id) ? "1px solid #10B981" : (p._isAdHoc ? "1px solid #BFDBFE" : "1px solid #eee")),
+                          overflow: "hidden",
+                          position: "relative"
+                        }}>
+
                           <div style={{ padding: "14px 16px", display: "flex", alignItems: "center", gap: 16 }}>
                             <div
                               onClick={() => toggleSelect(p.id)}
@@ -5253,7 +5264,11 @@ export default function HSConsultingTravelPlanner() {
                                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}>
                                   <div style={{ fontSize: 13, fontWeight: 700, color: "#111" }}>{p.e}</div>
                                   <div style={{ fontSize: 10, background: "#EEF2FF", color: "#4F46E5", padding: "2px 8px", borderRadius: 4, fontWeight: 600 }}>👤 {p.a}</div>
+                                  {p._isAdHoc && (
+                                    <div style={{ fontSize: 10, background: "#DBEAFE", color: "#1D4ED8", padding: "2px 8px", borderRadius: 4, fontWeight: 800 }}>✨ AD-HOC</div>
+                                  )}
                                   {p.g ? <span style={{ fontSize: 10, color: "#7C3AED", background: "#F3E8FF", padding: "2px 6px", borderRadius: 4 }}>{p.g}</span> : ""}
+
                                 </div>
                                 <div style={{ fontSize: 11, color: "#666" }}>
                                   {p.routeLabel}
