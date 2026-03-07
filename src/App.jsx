@@ -2185,7 +2185,7 @@ function AccommodationHotelsManager({ hotels, onClose, onUpdate, onImportCSV }) 
   );
 }
 
-function BookingPanel({ consultant, activity, transportType, establishments, consultants, onClose, onUpdateClientAddress, bookedLinks = {}, onMarkBooked, groupStartDate, groupEndDate, accommodationHotels = {}, onForceFinalize }) {
+function BookingPanel({ consultant, activity, transportType, establishments, consultants, onClose, onUpdateClientAddress, bookedLinks = {}, onMarkBooked, groupStartDate, groupEndDate, accommodationHotels = {}, onUpdateAccommodationHotels, onForceFinalize }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -2347,6 +2347,11 @@ function BookingPanel({ consultant, activity, transportType, establishments, con
   const [selectedHotel, setSelectedHotel] = useState(null); // { hotel, zona, ubicacion }
   const [accomLocator, setAccomLocator] = useState("");
   const [accomDate, setAccomDate] = useState(() => toInputDate(groupStartDate || activity.startDate || activity.f) || "");
+
+  // Form to add a new hotel manually to DB
+  const [addingHotel, setAddingHotel] = useState(false);
+  const [newHotelName, setNewHotelName] = useState("");
+  const [newHotelUrl, setNewHotelUrl] = useState("");
 
   // Auto-select first hotel when zone matches change
   useEffect(() => {
@@ -2535,9 +2540,61 @@ function BookingPanel({ consultant, activity, transportType, establishments, con
               )}
 
               {/* Hotel selector */}
-              {hotelsToShow.length === 0 ? (
-                <div style={{ fontSize: 12, color: "#64748B", textAlign: "center", padding: "12px 0" }}>
-                  No hay hoteles para esta zona. Usa el selector para buscar por ciudad.
+              {hotelsToShow.length === 0 && !addingHotel ? (
+                <div style={{ fontSize: 12, color: "#64748B", textAlign: "center", padding: "12px 0", display: "flex", flexDirection: "column", gap: 10 }}>
+                  <span>No hay hoteles para esta zona. Usa el selector para buscar por ciudad o añade uno nuevo.</span>
+                  <button
+                    onClick={() => setAddingHotel(true)}
+                    style={{ background: "#EEF2FF", color: "#4F46E5", border: "1px dashed #A5B4FC", padding: "8px 14px", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer", maxWidth: 220, margin: "0 auto", transition: "all 0.2s" }}
+                  >
+                    ➕ Añadir nuevo hotel
+                  </button>
+                </div>
+              ) : hotelsToShow.length === 0 && addingHotel ? (
+                <div style={{ marginBottom: 14 }}>
+                  <div style={{ background: "#F8FAFC", borderRadius: 10, padding: 14, border: "1px solid #E2E8F0" }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: "#475569", marginBottom: 8, textTransform: "uppercase" }}>Nuevo Hotel en {selectedZone || destZone}</div>
+                    <input
+                      value={newHotelName}
+                      onChange={e => setNewHotelName(e.target.value)}
+                      placeholder="Nombre del hotel..."
+                      style={{ width: "100%", padding: "8px 10px", borderRadius: 8, border: "1.5px solid #CBD5E1", fontSize: 13, boxSizing: "border-box", marginBottom: 8 }}
+                    />
+                    <input
+                      value={newHotelUrl}
+                      onChange={e => setNewHotelUrl(e.target.value)}
+                      placeholder="URL Maps (opcional)..."
+                      style={{ width: "100%", padding: "8px 10px", borderRadius: 8, border: "1.5px solid #CBD5E1", fontSize: 13, boxSizing: "border-box", marginBottom: 12 }}
+                    />
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <button
+                        onClick={() => {
+                          const zone = (selectedZone || destZone).trim().toUpperCase();
+                          const hotel = newHotelName.trim();
+                          if (!zone || !hotel) {
+                            alert("El nombre del hotel es obligatorio.");
+                            return;
+                          }
+                          const updated = { ...accommodationHotels };
+                          if (!updated[zone]) updated[zone] = [];
+                          if (updated[zone].some(x => x.hotel.toLowerCase() === hotel.toLowerCase())) {
+                            alert("Ese hotel ya existe en la zona.");
+                            return;
+                          }
+                          updated[zone] = [...updated[zone], { hotel, ubicacion: newHotelUrl.trim() }];
+                          if (onUpdateAccommodationHotels) onUpdateAccommodationHotels(updated);
+                          setAddingHotel(false);
+                          setNewHotelName("");
+                          setNewHotelUrl("");
+                          setTimeout(() => {
+                            setSelectedHotel({ hotel, zona: zone, ubicacion: newHotelUrl.trim() });
+                          }, 100);
+                        }}
+                        style={{ flex: 1, padding: "8px", background: "#10B981", color: "white", border: "none", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer" }}
+                      >Guardar</button>
+                      <button onClick={() => setAddingHotel(false)} style={{ flex: 1, padding: "8px", background: "white", color: "#64748B", border: "1px solid #CBD5E1", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer" }}>Cancelar</button>
+                    </div>
+                  </div>
                 </div>
               ) : (
                 <div>
@@ -2575,9 +2632,87 @@ function BookingPanel({ consultant, activity, transportType, establishments, con
                               style={{ fontSize: 11, color: "#0369A1", fontWeight: 600, background: "#E0F2FE", padding: "3px 8px", borderRadius: 6, textDecoration: "none", whiteSpace: "nowrap" }}
                             >🗺️ Maps</a>
                           )}
+                          <button
+                            onClick={e => {
+                              e.stopPropagation();
+                              if (confirm(`¿Eliminar de la base de datos de manera permanente el hotel ${h.hotel}?`)) {
+                                const updated = { ...accommodationHotels };
+                                const z = h.zona;
+                                if (updated[z]) {
+                                  updated[z] = updated[z].filter(x => x.hotel !== h.hotel);
+                                  if (updated[z].length === 0) delete updated[z];
+                                  if (onUpdateAccommodationHotels) onUpdateAccommodationHotels(updated);
+                                  if (selectedHotel?.hotel === h.hotel) setSelectedHotel(null);
+                                }
+                              }
+                            }}
+                            style={{ background: 'transparent', border: 'none', color: '#CBD5E1', fontSize: 15, cursor: 'pointer', padding: '2px 4px', flexShrink: 0, transition: 'color 0.2s', marginLeft: 4 }}
+                            onMouseEnter={e => e.currentTarget.style.color = '#EF4444'}
+                            onMouseLeave={e => e.currentTarget.style.color = '#CBD5E1'}
+                            title="Eliminar hotel base de datos"
+                          >🗑️</button>
                         </div>
                       );
                     })}
+                  </div>
+
+                  {/* Add manual hotel form */}
+                  <div style={{ marginBottom: 14 }}>
+                    {!addingHotel ? (
+                      <button
+                        onClick={() => setAddingHotel(true)}
+                        style={{ background: "transparent", color: "#475569", border: "1px dashed #CBD5E1", padding: "8px 14px", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer", width: "100%", textAlign: "center", transition: "all 0.2s" }}
+                        onMouseEnter={e => e.currentTarget.style.background = "#F8FAFC"}
+                        onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+                      >
+                        ➕ Añadir nuevo hotel a BD...
+                      </button>
+                    ) : (
+                      <div style={{ background: "#F8FAFC", borderRadius: 10, padding: 14, border: "1px solid #E2E8F0" }}>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: "#475569", marginBottom: 8, textTransform: "uppercase" }}>Nuevo Hotel en {selectedZone || destZone}</div>
+                        <input
+                          value={newHotelName}
+                          onChange={e => setNewHotelName(e.target.value)}
+                          placeholder="Nombre del hotel..."
+                          style={{ width: "100%", padding: "8px 10px", borderRadius: 8, border: "1.5px solid #CBD5E1", fontSize: 13, boxSizing: "border-box", marginBottom: 8 }}
+                        />
+                        <input
+                          value={newHotelUrl}
+                          onChange={e => setNewHotelUrl(e.target.value)}
+                          placeholder="URL Maps (opcional)..."
+                          style={{ width: "100%", padding: "8px 10px", borderRadius: 8, border: "1.5px solid #CBD5E1", fontSize: 13, boxSizing: "border-box", marginBottom: 12 }}
+                        />
+                        <div style={{ display: "flex", gap: 8 }}>
+                          <button
+                            onClick={() => {
+                              const zone = (selectedZone || destZone).trim().toUpperCase();
+                              const hotel = newHotelName.trim();
+                              if (!zone || !hotel) {
+                                alert("El nombre del hotel es obligatorio.");
+                                return;
+                              }
+                              const updated = { ...accommodationHotels };
+                              if (!updated[zone]) updated[zone] = [];
+                              if (updated[zone].some(x => x.hotel.toLowerCase() === hotel.toLowerCase())) {
+                                alert("Ese hotel ya existe en la zona.");
+                                return;
+                              }
+                              updated[zone] = [...updated[zone], { hotel, ubicacion: newHotelUrl.trim() }];
+                              if (onUpdateAccommodationHotels) onUpdateAccommodationHotels(updated);
+                              setAddingHotel(false);
+                              setNewHotelName("");
+                              setNewHotelUrl("");
+                              // Select it automatically
+                              setTimeout(() => {
+                                setSelectedHotel({ hotel, zona: zone, ubicacion: newHotelUrl.trim() });
+                              }, 100);
+                            }}
+                            style={{ flex: 1, padding: "8px", background: "#10B981", color: "white", border: "none", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer" }}
+                          >Guardar</button>
+                          <button onClick={() => setAddingHotel(false)} style={{ flex: 1, padding: "8px", background: "white", color: "#64748B", border: "1px solid #CBD5E1", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer" }}>Cancelar</button>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* Locator + date + save */}
@@ -4553,6 +4688,7 @@ export default function HSConsultingTravelPlanner() {
           groupStartDate={bookingTarget.groupStartDate}
           groupEndDate={bookingTarget.groupEndDate}
           accommodationHotels={accommodationHotels}
+          onUpdateAccommodationHotels={handleUpdateAccommodationHotels}
           onForceFinalize={() => {
             const idsToUpdate = bookingTarget.selectedIds && bookingTarget.selectedIds.length > 0
               ? bookingTarget.selectedIds
