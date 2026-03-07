@@ -1229,8 +1229,9 @@ function NewTripModal({ consultants, establishments, onSave, onClose }) {
       d: v.activity || "Visita Comercial",
       f: v.date.split("-").reverse().join("/"), // YYYY-MM-DD → DD/MM/YYYY
       j: 1,
-      g: groupName || "",
+      g: groupName || `ADHOC-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
       _isAdHoc: true, // Mark as ad-hoc trip
+
       _isOther: v.isCustom // Flag if it's "Otros" custom hotel
     }));
     onSave(items, shouldBook);
