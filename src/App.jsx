@@ -5144,8 +5144,8 @@ export default function HSConsultingTravelPlanner() {
                                 {consultantName.charAt(0)}
                               </div>
                               <div>
-                                <div style={{ fontSize: 17, fontWeight: 800, color: "white" }}>{consultantName}</div>
-                                <div style={{ fontSize: 11, color: "#94A3B8" }}>
+                                <div style={{ fontSize: 15, fontWeight: 800, color: "white" }}>{consultantName}</div>
+                                <div style={{ fontSize: 10, color: "#94A3B8" }}>
                                   📍 {consultantData.base || "—"}
                                   {consultantData.island && <span> • 🏝️ {consultantData.island}</span>}
                                   {consultantData.region && <span style={{ marginLeft: 8, opacity: 0.7 }}>{consultantData.region}</span>}
@@ -5153,15 +5153,15 @@ export default function HSConsultingTravelPlanner() {
                               </div>
                             </div>
                             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                              <div style={{ background: "rgba(255,255,255,0.1)", padding: "6px 14px", borderRadius: 8, color: "#E2E8F0", fontSize: 12, fontWeight: 600 }}>
-                                {consExpeditions.length} {consExpeditions.length === 1 ? "expedición" : "expediciones"} • {totalActivities} visitas
+                              <div style={{ background: "rgba(255,255,255,0.1)", padding: "4px 10px", borderRadius: 8, color: "#E2E8F0", fontSize: 11, fontWeight: 600 }}>
+                                {consExpeditions.length} {consExpeditions.length === 1 ? "expedición" : "expediciones"} • {totalActivities}v
                               </div>
                               <button
                                 onClick={() => {
                                   const allConsIds = consExpeditions.flatMap(ex => ex.proposals.map(p => p.id));
                                   allConsIds.forEach(id => toggleFinalize(id));
                                 }}
-                                style={{ background: "rgba(255,255,255,0.1)", color: "#E2E8F0", border: "1px solid rgba(255,255,255,0.2)", padding: "6px 14px", borderRadius: 8, fontSize: 11, fontWeight: 600, cursor: "pointer" }}
+                                style={{ background: "rgba(255,255,255,0.1)", color: "#E2E8F0", border: "1px solid rgba(255,255,255,0.2)", padding: "4px 10px", borderRadius: 8, fontSize: 10, fontWeight: 600, cursor: "pointer" }}
                               >
                                 ↩️ Reabrir Todos
                               </button>
@@ -5214,68 +5214,68 @@ export default function HSConsultingTravelPlanner() {
 
                               return (
                                 <div key={ex.id} style={{
-                                  margin: "0 16px",
-                                  padding: "20px 0",
+                                  margin: "0 12px",
+                                  padding: "8px 0",
                                   borderBottom: exIdx < consExpeditions.length - 1 ? "1px solid #E2E8F0" : "none"
                                 }}>
-                                  {/* Expedition Header */}
-                                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start", marginBottom: 16 }}>
-                                    <div style={{ flex: 1 }}>
-                                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-                                        <span style={{ fontSize: 10, fontWeight: 800, color: "#6366F1", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                                          {consExpeditions.length > 1 ? `Expedición ${exIdx + 1} de ${consExpeditions.length}` : "Expedición / Viaje"}
+                                  {/* Expedition Header (Compressed) */}
+                                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6, gap: 10 }}>
+                                    <div style={{ flex: 1, minWidth: 0 }}>
+                                      <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+                                        <span style={{ fontSize: 9, fontWeight: 800, color: "#6366F1", textTransform: "uppercase" }}>
+                                          {consExpeditions.length > 1 ? `Exp. ${exIdx + 1}/${consExpeditions.length}` : "Expedición"}
                                         </span>
                                         {ex.proposals.some(p => p._isAdHoc) && (
-                                          <span style={{ background: "#DBEAFE", color: "#1D4ED8", padding: "2px 8px", borderRadius: 4, fontSize: 10, fontWeight: 800 }}>✨ VIAJE AD-HOC</span>
+                                          <span style={{ background: "#DBEAFE", color: "#1D4ED8", padding: "1px 6px", borderRadius: 4, fontSize: 9, fontWeight: 800 }}>✨ AD-HOC</span>
                                         )}
                                         {ex.proposals[0]?.g && (
-
-                                          <span style={{ background: "#EEF2FF", color: "#4F46E5", padding: "2px 8px", borderRadius: 4, fontSize: 10, fontWeight: 700 }}>
-                                            Exp: {ex.proposals[0].g}
+                                          <span style={{ background: "#EEF2FF", color: "#4F46E5", padding: "1px 6px", borderRadius: 4, fontSize: 9, fontWeight: 700, fontFamily: "monospace" }}>
+                                            ID: {ex.proposals[0].g}
                                           </span>
                                         )}
                                       </div>
-                                      <div style={{ fontSize: 12, color: "#475569", fontWeight: 600, marginBottom: 4 }}>📍 {locationStr}</div>
-                                      <div style={{ fontSize: 12, color: "#6366F1", fontWeight: 700 }}>
-                                        📅 {ex.firstDateStr} → {ex.lastDateStr}
-                                        <span style={{ marginLeft: 10, color: "#64748B", fontWeight: 500 }}>({ex.proposals.length} {ex.proposals.length === 1 ? "visita" : "visitas"})</span>
+                                      <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 1 }}>
+                                        <div style={{ fontSize: 11, color: "#1E293B", fontWeight: 700 }}>{locationStr}</div>
+                                        <div style={{ width: 3, height: 3, borderRadius: "50%", background: "#CBD5E1" }} />
+                                        <div style={{ fontSize: 11, color: "#6366F1", fontWeight: 800 }}>{ex.firstDateStr} → {ex.lastDateStr}</div>
+                                        <div style={{ fontSize: 10, color: "#94A3B8", fontWeight: 500 }}>({ex.proposals.length}v)</div>
                                       </div>
                                     </div>
                                     <button
                                       onClick={(e) => { e.stopPropagation(); allIds.forEach(id => toggleFinalize(id)); }}
-                                      style={{ background: "white", color: "#6B7280", border: "1px solid #E2E8F0", padding: "5px 12px", borderRadius: 8, fontSize: 11, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap" }}
+                                      style={{ background: "#F1F5F9", color: "#64748B", border: "1px solid #E2E8F0", padding: "3px 8px", borderRadius: 6, fontSize: 9, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}
                                     >
-                                      ↩️ Reabrir
+                                      ↩️ REABRIR
                                     </button>
                                   </div>
 
                                   {/* Hotels Detail Table */}
-                                  <div style={{ background: "white", borderRadius: 12, border: "1px solid #E2E8F0", overflow: "hidden", marginBottom: hasBookings ? 16 : 0 }}>
-                                    <div style={{ padding: "10px 14px", background: "#F1F5F9", borderBottom: "1px solid #E2E8F0", fontSize: 11, fontWeight: 700, color: "#475569", display: "flex", alignItems: "center", gap: 6 }}>
+                                  <div style={{ background: "white", borderRadius: 10, border: "1px solid #E2E8F0", overflow: "hidden", marginBottom: hasBookings ? 8 : 0 }}>
+                                    <div style={{ padding: "6px 12px", background: "#F8FAFC", borderBottom: "1px solid #E2E8F0", fontSize: 10, fontWeight: 700, color: "#64748B", display: "flex", alignItems: "center", gap: 5 }}>
                                       🏨 Hoteles Visitados
                                     </div>
                                     <div style={{ padding: 0 }}>
                                       {Object.entries(hotelDetails).map(([hotelName, detail], hIdx) => (
                                         <div key={hIdx} style={{
-                                          display: "flex", alignItems: "center", padding: "10px 14px", gap: 12,
+                                          display: "flex", alignItems: "center", padding: "6px 12px", gap: 10,
                                           borderBottom: hIdx < Object.keys(hotelDetails).length - 1 ? "1px solid #F1F5F9" : "none"
                                         }}>
-                                          <div style={{ width: 32, height: 32, borderRadius: 8, background: TRANSPORT_META[detail.tType]?.bg || "#F1F5F9", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, flexShrink: 0 }}>
+                                          <div style={{ width: 24, height: 24, borderRadius: 6, background: TRANSPORT_META[detail.tType]?.bg || "#F1F5F9", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, flexShrink: 0 }}>
                                             {TRANSPORT_META[detail.tType]?.icon || "🏨"}
                                           </div>
                                           <div style={{ flex: 1, minWidth: 0 }}>
-                                            <div style={{ fontSize: 13, fontWeight: 700, color: "#1E293B", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{hotelName}</div>
-                                            <div style={{ fontSize: 10, color: "#64748B" }}>
+                                            <div style={{ fontSize: 12, fontWeight: 700, color: "#1E293B", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{hotelName}</div>
+                                            <div style={{ fontSize: 9, color: "#94A3B8" }}>
                                               {[...detail.munis].join(", ")}
-                                              {detail.activities[0]?.d && <span> • {detail.activities[0].d}</span>}
+                                              {detail.activities[0]?.d && <span style={{ marginLeft: 6 }}>• {detail.activities[0].d}</span>}
                                             </div>
                                           </div>
-                                          <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
-                                            <TransportBadge type={detail.tType} />
+                                          <div style={{ flexShrink: 0 }}>
+                                            <TransportBadge type={detail.tType} small />
                                           </div>
                                           <div style={{ textAlign: "right", flexShrink: 0 }}>
-                                            <div style={{ fontSize: 12, fontWeight: 700, color: "#6366F1" }}>{detail.dates.length} {detail.dates.length === 1 ? "jornada" : "jornadas"}</div>
-                                            <div style={{ fontSize: 10, color: "#94A3B8" }}>{detail.dates.join(", ")}</div>
+                                            <div style={{ fontSize: 11, fontWeight: 800, color: "#6366F1" }}>{detail.dates.length}d</div>
+                                            <div style={{ fontSize: 9, color: "#CBD5E1" }}>{detail.dates[0]}</div>
                                           </div>
                                         </div>
                                       ))}
@@ -5284,50 +5284,47 @@ export default function HSConsultingTravelPlanner() {
 
                                   {/* Accommodation + Transport Bookings */}
                                   {hasBookings && (
-                                    <div style={{ display: "grid", gridTemplateColumns: accomBooking && Object.keys(uniqueBookings).length > 0 ? "1fr 1fr" : "1fr", gap: 12 }}>
-                                      {/* Accommodation */}
+                                    <div style={{ display: "grid", gridTemplateColumns: accomBooking && Object.keys(uniqueBookings).length > 0 ? "1fr 1fr" : "1fr", gap: 8 }}>
+                                      {/* Accommodation (Compressed) */}
                                       {accomBooking && (
-                                        <div style={{ background: "#F0FDF4", border: "1px solid #86EFAC", borderRadius: 12, padding: 14 }}>
-                                          <div style={{ fontSize: 10, fontWeight: 800, color: "#16A34A", textTransform: "uppercase", marginBottom: 10 }}>🛏️ Alojamiento del Consultor</div>
-                                          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                                            <div style={{ width: 36, height: 36, background: "#DCFCE7", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0 }}>🏨</div>
-                                            <div style={{ flex: 1 }}>
-                                              <div style={{ fontWeight: 800, fontSize: 13, color: "#15803D" }}>{accomBooking.hotel}</div>
-                                              <div style={{ fontSize: 11, color: "#16A34A", fontWeight: 600 }}>📍 {accomBooking.zona}</div>
-                                              {accomBooking.date && <div style={{ fontSize: 10, color: "#64748B", marginTop: 2 }}>📅 {accomBooking.date}</div>}
+                                        <div style={{ background: "#F0FDF4", border: "1px solid #86EFAC", borderRadius: 10, padding: 10 }}>
+                                          <div style={{ fontSize: 9, fontWeight: 800, color: "#16A34A", textTransform: "uppercase", marginBottom: 6 }}>🛏️ ALOJAMIENTO CONSULTOR</div>
+                                          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                            <div style={{ width: 30, height: 30, background: "#DCFCE7", borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, flexShrink: 0 }}>🏨</div>
+                                            <div style={{ flex: 1, minWidth: 0 }}>
+                                              <div style={{ fontWeight: 800, fontSize: 12, color: "#15803D", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{accomBooking.hotel}</div>
+                                              <div style={{ fontSize: 10, color: "#16A34A", fontWeight: 600 }}>📍 {accomBooking.zona}</div>
                                             </div>
                                             {accomBooking.locator && (
-                                              <div style={{ background: "white", padding: "6px 10px", borderRadius: 8, border: "1px solid #BBF7D0", textAlign: "center" }}>
-                                                <div style={{ fontSize: 8, color: "#64748B", textTransform: "uppercase", letterSpacing: 1 }}>Localizador</div>
-                                                <div style={{ fontWeight: 900, fontSize: 14, color: "#0D4BD9", letterSpacing: 2 }}>{accomBooking.locator}</div>
+                                              <div style={{ background: "white", padding: "4px 8px", borderRadius: 6, border: "1px solid #BBF7D0", textAlign: "center" }}>
+                                                <div style={{ fontWeight: 900, fontSize: 12, color: "#0D4BD9", letterSpacing: 1 }}>{accomBooking.locator}</div>
                                               </div>
                                             )}
                                           </div>
                                         </div>
                                       )}
 
-                                      {/* Transport Bookings */}
+                                      {/* Transport (Compressed) */}
                                       {Object.keys(uniqueBookings).length > 0 && (
-                                        <div style={{ background: "#F0F9FF", border: "1px solid #BAE6FD", borderRadius: 12, padding: 14 }}>
-                                          <div style={{ fontSize: 10, fontWeight: 800, color: "#0369A1", textTransform: "uppercase", marginBottom: 10 }}>🎫 Reservas de Transporte</div>
-                                          <div style={{ display: "grid", gap: 8 }}>
+                                        <div style={{ background: "#F0F9FF", border: "1px solid #BAE6FD", borderRadius: 10, padding: 10 }}>
+                                          <div style={{ fontSize: 9, fontWeight: 800, color: "#0369A1", textTransform: "uppercase", marginBottom: 6 }}>🎫 RESERVAS TRANSPORTE</div>
+                                          <div style={{ display: "grid", gap: 6 }}>
                                             {Object.values(uniqueBookings).map(({ url, data }, idx) => {
                                               const segments = data?.segments || [{ type: data?.type || "ida", locator: data?.locator || data, date: data?.date || "" }];
                                               return (
-                                                <div key={idx} style={{ background: "white", borderRadius: 8, padding: 10, border: "1px solid #E0F2FE" }}>
-                                                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
-                                                    <span style={{ fontSize: 14 }}>{getBookingIcon(url)}</span>
-                                                    <span style={{ fontWeight: 800, fontSize: 12, color: "#0369A1" }}>{getCompanyName(url)}</span>
+                                                <div key={idx} style={{ background: "white", borderRadius: 6, padding: 6, border: "1px solid #E0F2FE" }}>
+                                                  <div style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 4 }}>
+                                                    <span style={{ fontSize: 12 }}>{getBookingIcon(url)}</span>
+                                                    <span style={{ fontWeight: 800, fontSize: 10, color: "#0369A1" }}>{getCompanyName(url)}</span>
                                                   </div>
-                                                  <div style={{ display: "grid", gap: 4 }}>
+                                                  <div style={{ display: "grid", gap: 3 }}>
                                                     {segments.map((seg, si) => (
-                                                      <div key={si} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "4px 8px", background: "#F8FAFC", borderRadius: 6, fontSize: 11 }}>
-                                                        <span style={{ fontWeight: 600, color: "#475569" }}>
-                                                          {seg.type === "ida" ? "🛫 Ida" : seg.type === "vuelta" ? "🛬 Vuelta" : seg.type === "recogida" ? "🏁 Recogida" : seg.type === "devolución" ? "🔄 Devolución" : seg.type}
+                                                      <div key={si} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "3px 6px", background: "#F8FAFC", borderRadius: 4, fontSize: 10 }}>
+                                                        <span style={{ fontWeight: 600, color: "#64748B" }}>
+                                                          {seg.type === "ida" ? "🛫" : seg.type === "vuelta" ? "🛬" : seg.type === "recogida" ? "🏁" : seg.type === "devolución" ? "🔄" : "•"} {seg.type.charAt(0).toUpperCase() + seg.type.slice(1)}
                                                         </span>
-                                                        <div style={{ textAlign: "right" }}>
-                                                          <span style={{ fontWeight: 800, color: "#0D4BD9", letterSpacing: 1 }}>{seg.locator}</span>
-                                                          {seg.date && <span style={{ marginLeft: 8, fontSize: 10, color: "#94A3B8" }}>{seg.date}</span>}
+                                                        <div>
+                                                          <span style={{ fontWeight: 800, color: "#0D4BD9" }}>{seg.locator}</span>
                                                         </div>
                                                       </div>
                                                     ))}
