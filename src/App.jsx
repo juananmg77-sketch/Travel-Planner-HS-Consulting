@@ -3,7 +3,7 @@ import Papa from "papaparse";
 import CLIENT_DATA from './clientData.json';
 import CLIENT_DATA_raw from './clientData.json';
 import { signIn, signOut, getCurrentSession, getUserProfile, onAuthStateChange } from './supabaseAuth';
-import { upsertEstablishment, updateActivityAddress, updateActivityTransport, logAction, getAllDistances, upsertDistance, getValidatedEstablishments, getAllAccommodationHotels, syncAccommodationHotels, setActivityManagedStatus, bulkSetManagedStatus, getManagedActivityIds, getAllActivities as getAllActivitiesFromDB, saveBookingConfirmation, getAllBookingConfirmations } from './supabaseService';
+import { upsertEstablishment, updateActivityAddress, updateActivityTransport, logAction, getAllDistances, upsertDistance, getValidatedEstablishments, getAllAccommodationHotels, syncAccommodationHotels, setActivityManagedStatus, bulkSetManagedStatus, getManagedActivityIds, getAllActivities as getAllActivitiesFromDB, saveBookingConfirmation, getAllBookingConfirmations, upsertConsultant, deleteConsultant as deleteConsultantDB, getAllConsultants } from './supabaseService';
 
 const CLIENT_LOOKUP = CLIENT_DATA.reduce((acc, client) => {
   acc[client.name] = client;
@@ -3270,6 +3270,17 @@ export default function HSConsultingTravelPlanner() {
         });
         console.log(`✅ Supabase: ${Object.keys(remoteBookings).length} confirmaciones de reserva restauradas`);
       }
+
+      // 4. Load consultants from Supabase (source of truth)
+      const remoteConsultants = await getAllConsultants();
+      if (remoteConsultants && Object.keys(remoteConsultants).length > 0) {
+        setCustomConsultants(prev => {
+          // Merge: Supabase takes precedence, but preserve any local-only entries
+          const merged = { ...(prev || {}), ...remoteConsultants };
+          return merged;
+        });
+        console.log(`✅ Supabase: ${Object.keys(remoteConsultants).length} consultores cargados desde la base de datos`);
+      }
     }
     loadManagedFromSupabase();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -3617,12 +3628,19 @@ export default function HSConsultingTravelPlanner() {
   };
 
   // No longer using CSV upload for consultants. Substituted by database management.
-  const deleteConsultant = useCallback((name) => {
+  const handleDeleteConsultant = useCallback(async (name) => {
     setCustomConsultants(prev => {
       const next = prev ? { ...prev } : { ...CONSULTANTS };
       delete next[name];
       return next;
     });
+    // Persist to Supabase
+    const ok = await deleteConsultantDB(name);
+    if (ok) {
+      console.log(`✅ Supabase: Consultor "${name}" eliminado permanentemente`);
+    } else {
+      console.warn(`⚠️ Supabase: No se pudo eliminar "${name}" de la base de datos`);
+    }
   }, []);
 
   const activeConsultants = useMemo(() => customConsultants || CONSULTANTS, [customConsultants]);
@@ -3743,7 +3761,7 @@ export default function HSConsultingTravelPlanner() {
     return ranges;
   }, [activities]);
 
-  const updateConsultant = useCallback((name, updatedData) => {
+  const updateConsultant = useCallback(async (name, updatedData) => {
     // If we are using valid customConsultants, update it. 
     // If we are using default CONSULTANTS, we need to clone it to custom first to avoid mutating constant.
     let nextState = customConsultants ? { ...customConsultants } : { ...CONSULTANTS };
@@ -3752,6 +3770,14 @@ export default function HSConsultingTravelPlanner() {
     nextState[name] = { ...nextState[name], ...updatedData };
 
     setCustomConsultants(nextState);
+
+    // Persist to Supabase permanently
+    const ok = await upsertConsultant(name, nextState[name]);
+    if (ok) {
+      console.log(`✅ Supabase: Consultor "${name}" actualizado permanentemente`);
+    } else {
+      console.warn(`⚠️ Supabase: No se pudo guardar "${name}" en la base de datos`);
+    }
   }, [customConsultants]);
 
   const proposals = useMemo(() => {
@@ -5201,7 +5227,7 @@ export default function HSConsultingTravelPlanner() {
             <ConsultantList
               consultants={activeConsultants}
               onUpdate={updateConsultant}
-              onDelete={deleteConsultant}
+              onDelete={handleDeleteConsultant}
             />
           )}
         </div>
