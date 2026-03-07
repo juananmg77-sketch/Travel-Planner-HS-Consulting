@@ -3579,9 +3579,43 @@ export default function HSConsultingTravelPlanner() {
       setPendingNewEstablishments({ names: unmatchedNames, regionMap });
     }
 
+    // Automatically open booking modal for the new trip if it's a flight, train, or car
+    if (newItems.length > 0) {
+      const firstItem = newItems[0];
+      const consultantName = (firstItem.a || "").trim();
+      const c = activeConsultants[consultantName];
+      if (c) {
+        const clientName = firstItem.e;
+        const baseClient = CLIENT_LOOKUP[clientName] || {};
+        const customClient = customClientInfo[clientName] || {};
+        const mergedClient = { ...baseClient, ...customClient };
+
+        const tType = getTransportType(c.region, firstItem.r, firstItem.e, c.pref, c.island, mergedClient.island, c.base, mergedClient.municipality, mergedClient);
+
+        if (["vuelo", "tren", "auto"].includes(tType)) {
+          const activityToBook = {
+            ...firstItem,
+            startDate: firstItem.f,
+            endDate: newItems[newItems.length - 1].f,
+            cName: consultantName
+          };
+
+          setBookingTarget({
+            consultant: consultantName,
+            activity: activityToBook,
+            transportType: tType,
+            establishments: Array.from(new Set(newItems.map(i => i.e))),
+            selectedIds: newItems.map(i => i.id),
+            groupStartDate: firstItem.f,
+            groupEndDate: newItems[newItems.length - 1].f
+          });
+        }
+      }
+    }
+
     setUploadFlash(`✈️ Viaje ad-hoc creado: ${newItems.length} ${newItems.length === 1 ? 'visita añadida' : 'visitas añadidas'}.`);
     setTimeout(() => setUploadFlash(null), 4000);
-  }, [activities, customClientInfo]);
+  }, [activities, customClientInfo, activeConsultants]);
 
   const handleClearData = () => {
     setActivities([]);
