@@ -3,7 +3,7 @@ import Papa from "papaparse";
 import CLIENT_DATA from './clientData.json';
 import CLIENT_DATA_raw from './clientData.json';
 import { signIn, signOut, getCurrentSession, getUserProfile, onAuthStateChange } from './supabaseAuth';
-import { upsertEstablishment, updateActivityAddress, updateActivityTransport, logAction, getAllDistances, upsertDistance, getValidatedEstablishments, getAllAccommodationHotels, syncAccommodationHotels } from './supabaseService';
+import { upsertEstablishment, updateActivityAddress, updateActivityTransport, logAction, getAllDistances, upsertDistance, getValidatedEstablishments, getAllAccommodationHotels, syncAccommodationHotels, setActivityManagedStatus, bulkSetManagedStatus, getManagedActivityIds, getAllActivities as getAllActivitiesFromDB, saveBookingConfirmation, getAllBookingConfirmations } from './supabaseService';
 
 const CLIENT_LOOKUP = CLIENT_DATA.reduce((acc, client) => {
   acc[client.name] = client;
@@ -352,6 +352,7 @@ const TRANSPORT_META = {
   tren: { icon: "🚄", label: "Tren AVE", color: "#7C3AED", bg: "#F3EEFF" },
   vehiculo: { icon: "🚗", label: "Vehículo Propio", color: "#059669", bg: "#ECFDF5" },
   auto: { icon: "🚙", label: "Coche Alquiler", color: "#0891B2", bg: "#ECFEFF" },
+  local: { icon: "📍", label: "Local", color: "#6B7280", bg: "#F3F4F6" },
 };
 
 
@@ -873,6 +874,601 @@ function UploadScreen({ onDataLoaded, onConsultantsLoaded, existingActivities = 
   );
 }
 
+// ── New Establishments Validation Modal ──
+// Shows when CSV upload detects hotels not in the database
+const REGION_OPTIONS = [
+  "Andalucía", "Aragón", "Asturias", "Islas Baleares", "Islas Canarias",
+  "Cantabria", "Castilla-La Mancha", "Castilla y León", "Cataluña",
+  "Comunidad Valenciana", "Extremadura", "Galicia", "La Rioja",
+  "Madrid", "Murcia", "Navarra", "País Vasco"
+];
+const ISLAND_OPTIONS = {
+  "Islas Baleares": ["Mallorca", "Menorca", "Ibiza", "Formentera"],
+  "Islas Canarias": ["Tenerife", "Gran Canaria", "Lanzarote", "Fuerteventura", "La Palma", "La Gomera", "El Hierro"]
+};
+
+function NewEstablishmentsModal({ establishments, regionFromCSV, consultantFromCSV, onSave, onSkip }) {
+  const [formData, setFormData] = useState(() =>
+    establishments.map(name => ({
+      name,
+      address: "",
+      municipality: "",
+      region: regionFromCSV[name] || "",
+      island: ""
+    }))
+  );
+  const [saving, setSaving] = useState(false);
+  const [expandedIdx, setExpandedIdx] = useState(null);
+
+  const update = (idx, field, value) => {
+    setFormData(prev => {
+      const next = [...prev];
+      next[idx] = { ...next[idx], [field]: value };
+      if (field === "region" && !ISLAND_OPTIONS[value]) {
+        next[idx].island = "";
+      }
+      return next;
+    });
+  };
+
+  const gmapsSearchUrl = (name) =>
+    `https://www.google.com/maps/search/${encodeURIComponent(name + " hotel España")}`;
+
+  // Open Maps + expand form
+  const openMapsAndExpand = (idx) => {
+    window.open(gmapsSearchUrl(formData[idx].name), "_blank");
+    setExpandedIdx(idx);
+  };
+
+  const handleSaveAll = async () => {
+    setSaving(true);
+    await onSave(formData);
+    setSaving(false);
+  };
+
+  const completedCount = formData.filter(f => f.municipality && f.region).length;
+
+  const goToNext = () => {
+    const nextIdx = formData.findIndex((f, i) => i !== expandedIdx && (!f.municipality || !f.region));
+    if (nextIdx >= 0) {
+      setExpandedIdx(nextIdx);
+      window.open(gmapsSearchUrl(formData[nextIdx].name), "_blank");
+    }
+  };
+
+  return (
+    <div style={{
+      position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 9999,
+      display: "flex", alignItems: "center", justifyContent: "center", padding: 20
+    }}>
+      <div style={{
+        background: "white", borderRadius: 20, width: "100%", maxWidth: 900,
+        maxHeight: "92vh", overflow: "hidden", display: "flex", flexDirection: "column",
+        boxShadow: "0 25px 50px rgba(0,0,0,0.25)"
+      }}>
+        {/* Header */}
+        <div style={{
+          background: "linear-gradient(135deg, #F59E0B 0%, #D97706 100%)",
+          padding: "20px 28px", color: "white"
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
+            <span style={{ fontSize: 28 }}>🏨</span>
+            <div>
+              <h2 style={{ margin: 0, fontSize: 20, fontWeight: 800 }}>Nuevos Establecimientos Detectados</h2>
+              <p style={{ margin: "4px 0 0", fontSize: 13, opacity: 0.9 }}>
+                <strong>{establishments.length}</strong> establecimientos nuevos.
+                Pulsa <strong>"🗺️ Abrir Maps"</strong> para buscar la dirección y pégala en el formulario.
+              </p>
+            </div>
+          </div>
+          <div style={{ display: "flex", gap: 8, marginTop: 8, alignItems: "center" }}>
+            <div style={{ background: "rgba(255,255,255,0.25)", padding: "4px 12px", borderRadius: 8, fontSize: 12, fontWeight: 700 }}>
+              ✅ {completedCount}/{establishments.length}
+            </div>
+            <div style={{ flex: 1, background: "rgba(255,255,255,0.15)", borderRadius: 8, overflow: "hidden", height: 8 }}>
+              <div style={{
+                width: `${(completedCount / establishments.length) * 100}%`,
+                height: "100%", background: "rgba(255,255,255,0.6)", borderRadius: 8,
+                transition: "width 0.3s ease"
+              }} />
+            </div>
+          </div>
+        </div>
+
+        {/* Establishments List */}
+        <div style={{ flex: 1, overflow: "auto", padding: "12px 24px" }}>
+          {formData.map((est, idx) => {
+            const isIslandRegion = ISLAND_OPTIONS[est.region];
+            const isComplete = est.municipality && est.region;
+            const isExpanded = expandedIdx === idx;
+
+            return (
+              <div key={idx} style={{
+                background: isComplete ? "#F0FDF4" : isExpanded ? "#FEFCE8" : "white",
+                border: `1.5px solid ${isComplete ? "#86EFAC" : isExpanded ? "#FCD34D" : "#E2E8F0"}`,
+                borderRadius: 12, padding: "12px 16px", marginBottom: 8,
+                transition: "all 0.2s ease"
+              }}>
+                {/* Row: Name + Consultant + Button */}
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <span style={{ fontSize: 16, width: 24, textAlign: "center" }}>
+                    {isComplete ? "✅" : "⬜"}
+                  </span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: "#1E293B", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                      {est.name}
+                    </div>
+                    {consultantFromCSV?.[est.name] && (
+                      <span style={{ fontSize: 10, color: "#6366F1", fontWeight: 600 }}>
+                        👤 {consultantFromCSV[est.name]}
+                      </span>
+                    )}
+                    {isComplete && !isExpanded && (
+                      <div style={{ fontSize: 10, color: "#16A34A", fontWeight: 500 }}>
+                        {est.municipality} — {est.region}{est.address ? ` · ${est.address.substring(0, 40)}...` : ""}
+                      </div>
+                    )}
+                  </div>
+                  <div style={{ display: "flex", gap: 6, alignItems: "center", flexShrink: 0 }}>
+                    <button
+                      onClick={() => openMapsAndExpand(idx)}
+                      style={{
+                        background: isExpanded ? "#2563EB" : "linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)",
+                        color: "white", border: "none", borderRadius: 8,
+                        padding: "7px 14px", fontSize: 11, fontWeight: 700,
+                        cursor: "pointer", display: "flex", alignItems: "center", gap: 5,
+                        boxShadow: "0 2px 8px rgba(37,99,235,0.3)", transition: "all 0.2s"
+                      }}
+                    >
+                      🗺️ Abrir Maps
+                    </button>
+                    {isExpanded && (
+                      <button
+                        onClick={() => setExpandedIdx(null)}
+                        style={{
+                          background: "#F1F5F9", color: "#64748B", border: "none", borderRadius: 6,
+                          padding: "6px 8px", fontSize: 12, cursor: "pointer", lineHeight: 1
+                        }}
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Expanded: Form to paste address */}
+                {isExpanded && (
+                  <div style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid #E2E8F0" }}>
+                    <div style={{
+                      background: "#EFF6FF", borderRadius: 8, padding: "8px 12px", marginBottom: 12,
+                      fontSize: 11, color: "#1D4ED8", fontWeight: 500
+                    }}>
+                      📋 Copia la dirección de Google Maps y pégala abajo. Selecciona la región y el municipio.
+                    </div>
+
+                    {/* Address - full width, prominent */}
+                    <div style={{ marginBottom: 10 }}>
+                      <label style={{ fontSize: 10, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.05em", display: "block", marginBottom: 4 }}>
+                        📍 Dirección de Google Maps
+                      </label>
+                      <input
+                        type="text"
+                        value={est.address}
+                        onChange={e => update(idx, "address", e.target.value)}
+                        placeholder="Pega aquí la dirección de Google Maps..."
+                        autoFocus
+                        style={{
+                          width: "100%", padding: "10px 14px", borderRadius: 8,
+                          border: `2px solid ${est.address ? "#86EFAC" : "#60A5FA"}`,
+                          fontSize: 14, boxSizing: "border-box",
+                          background: est.address ? "#F0FDF4" : "#FAFCFF",
+                          outline: "none"
+                        }}
+                      />
+                    </div>
+
+                    <div style={{ display: "grid", gridTemplateColumns: isIslandRegion ? "1fr 1fr 1fr" : "1fr 1fr", gap: 8 }}>
+                      {/* Region */}
+                      <div>
+                        <label style={{ fontSize: 10, fontWeight: 700, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.05em", display: "block", marginBottom: 3 }}>
+                          Región *
+                        </label>
+                        <select
+                          value={est.region}
+                          onChange={e => update(idx, "region", e.target.value)}
+                          style={{
+                            width: "100%", padding: "8px 10px", borderRadius: 8,
+                            border: `1.5px solid ${est.region ? "#86EFAC" : "#FDE68A"}`,
+                            fontSize: 12, background: "white"
+                          }}
+                        >
+                          <option value="">— Región —</option>
+                          {REGION_OPTIONS.map(r => <option key={r} value={r}>{r}</option>)}
+                        </select>
+                      </div>
+
+                      {/* Island (if applicable) */}
+                      {isIslandRegion && (
+                        <div>
+                          <label style={{ fontSize: 10, fontWeight: 700, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.05em", display: "block", marginBottom: 3 }}>
+                            Isla
+                          </label>
+                          <select
+                            value={est.island}
+                            onChange={e => update(idx, "island", e.target.value)}
+                            style={{
+                              width: "100%", padding: "8px 10px", borderRadius: 8,
+                              border: "1.5px solid #E2E8F0", fontSize: 12, background: "white"
+                            }}
+                          >
+                            <option value="">— Isla —</option>
+                            {isIslandRegion.map(i => <option key={i} value={i}>{i}</option>)}
+                          </select>
+                        </div>
+                      )}
+
+                      {/* Municipality */}
+                      <div>
+                        <label style={{ fontSize: 10, fontWeight: 700, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.05em", display: "block", marginBottom: 3 }}>
+                          Municipio *
+                        </label>
+                        <input
+                          type="text"
+                          value={est.municipality}
+                          onChange={e => update(idx, "municipality", e.target.value)}
+                          placeholder="Ciudad..."
+                          style={{
+                            width: "100%", padding: "8px 10px", borderRadius: 8,
+                            border: `1.5px solid ${est.municipality ? "#86EFAC" : "#FDE68A"}`,
+                            fontSize: 12, boxSizing: "border-box"
+                          }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Action: next */}
+                    {isComplete && (
+                      <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 10 }}>
+                        <button
+                          onClick={goToNext}
+                          style={{
+                            background: "linear-gradient(135deg, #10B981 0%, #059669 100%)", color: "white", border: "none",
+                            padding: "7px 18px", borderRadius: 8, fontSize: 12, fontWeight: 700,
+                            cursor: "pointer", display: "flex", alignItems: "center", gap: 5,
+                            boxShadow: "0 2px 8px rgba(16,185,129,0.3)"
+                          }}
+                        >
+                          Siguiente hotel →
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Footer */}
+        <div style={{
+          padding: "14px 24px", borderTop: "1px solid #E2E8F0",
+          display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12
+        }}>
+          <button
+            onClick={onSkip}
+            style={{
+              background: "transparent", color: "#64748B", border: "1px solid #E2E8F0",
+              padding: "9px 18px", borderRadius: 10, fontSize: 12, fontWeight: 600,
+              cursor: "pointer"
+            }}
+          >
+            Omitir por ahora
+          </button>
+          <button
+            onClick={handleSaveAll}
+            disabled={saving || completedCount === 0}
+            style={{
+              background: saving ? "#94A3B8" : "linear-gradient(135deg, #0D4BD9 0%, #2563EB 100%)", color: "white",
+              border: "none", padding: "10px 28px", borderRadius: 10,
+              fontSize: 13, fontWeight: 700, cursor: saving ? "wait" : "pointer",
+              opacity: completedCount === 0 ? 0.5 : 1,
+              boxShadow: completedCount > 0 ? "0 4px 12px rgba(13,75,217,0.3)" : "none"
+            }}
+          >
+            {saving ? "⏳ Guardando..." : `💾 Guardar ${completedCount} establecimientos`}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── New Ad-hoc Trip Modal ──
+// For creating trips not in the CSV/programming
+function NewTripModal({ consultants, establishments, onSave, onClose }) {
+  const consultantNames = Object.keys(consultants).sort();
+  const estNames = establishments.map(c => c.name).sort();
+
+  const emptyVisit = () => ({ date: "", establishment: "", customEstablishment: "", activity: "Visita Comercial", isCustom: false });
+
+  const [consultant, setConsultant] = useState("");
+  const [visits, setVisits] = useState([emptyVisit()]);
+  const [groupName, setGroupName] = useState("");
+
+  const updateVisit = (idx, field, value) => {
+    setVisits(prev => {
+      const next = [...prev];
+      next[idx] = { ...next[idx], [field]: value };
+      if (field === "establishment" && value === "__custom__") {
+        next[idx].isCustom = true;
+        next[idx].establishment = "";
+      } else if (field === "establishment") {
+        next[idx].isCustom = false;
+        next[idx].customEstablishment = "";
+      }
+      return next;
+    });
+  };
+
+  const addVisit = () => setVisits(prev => [...prev, emptyVisit()]);
+  const removeVisit = (idx) => setVisits(prev => prev.filter((_, i) => i !== idx));
+
+  const validVisits = visits.filter(v =>
+    v.date && (v.establishment || (v.isCustom && v.customEstablishment))
+  );
+  const canSave = consultant && validVisits.length > 0;
+
+  const handleSave = () => {
+    if (!canSave) return;
+    const c = consultants[consultant];
+    const items = validVisits.map(v => ({
+      id: Math.random().toString(36).substr(2, 9),
+      a: consultant,
+      r: c?.region || "",
+      e: v.isCustom ? v.customEstablishment : v.establishment,
+      d: v.activity || "Visita Comercial",
+      f: v.date.split("-").reverse().join("/"), // YYYY-MM-DD → DD/MM/YYYY
+      j: 1,
+      g: groupName || "",
+      _isAdHoc: true // Mark as ad-hoc trip
+    }));
+    onSave(items);
+  };
+
+  // Auto-fill dates: if first date set & others empty, suggest consecutive dates
+  const suggestDates = () => {
+    if (visits.length <= 1 || !visits[0].date) return;
+    setVisits(prev => {
+      const next = [...prev];
+      const base = new Date(next[0].date);
+      for (let i = 1; i < next.length; i++) {
+        if (!next[i].date) {
+          const d = new Date(base);
+          d.setDate(d.getDate() + i);
+          next[i] = { ...next[i], date: d.toISOString().split("T")[0] };
+        }
+      }
+      return next;
+    });
+  };
+
+  return (
+    <div style={{
+      position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 9999,
+      display: "flex", alignItems: "center", justifyContent: "center", padding: 20
+    }}>
+      <div style={{
+        background: "white", borderRadius: 20, width: "100%", maxWidth: 800,
+        maxHeight: "90vh", overflow: "hidden", display: "flex", flexDirection: "column",
+        boxShadow: "0 25px 50px rgba(0,0,0,0.25)"
+      }}>
+        {/* Header */}
+        <div style={{
+          background: "linear-gradient(135deg, #0D4BD9 0%, #4F46E5 100%)",
+          padding: "20px 28px", color: "white"
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <span style={{ fontSize: 28 }}>✈️</span>
+            <div>
+              <h2 style={{ margin: 0, fontSize: 20, fontWeight: 800 }}>Nuevo Viaje Ad-hoc</h2>
+              <p style={{ margin: "4px 0 0", fontSize: 13, opacity: 0.85 }}>
+                Crea un viaje fuera de programación con las mismas opciones de reserva
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div style={{ flex: 1, overflow: "auto", padding: "20px 28px" }}>
+          {/* Consultant + Group */}
+          <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 14, marginBottom: 20 }}>
+            <div>
+              <label style={{ fontSize: 10, fontWeight: 700, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.05em", display: "block", marginBottom: 4 }}>
+                Consultor *
+              </label>
+              <select
+                value={consultant}
+                onChange={e => setConsultant(e.target.value)}
+                style={{
+                  width: "100%", padding: "10px 14px", borderRadius: 10,
+                  border: `2px solid ${consultant ? "#86EFAC" : "#FDE68A"}`,
+                  fontSize: 14, fontWeight: 600, background: "white"
+                }}
+              >
+                <option value="">— Seleccionar consultor —</option>
+                {consultantNames.map(n => (
+                  <option key={n} value={n}>{n}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label style={{ fontSize: 10, fontWeight: 700, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.05em", display: "block", marginBottom: 4 }}>
+                Grupo / Expedición
+              </label>
+              <input
+                type="text"
+                value={groupName}
+                onChange={e => setGroupName(e.target.value)}
+                placeholder="Ej: Visita Comercial Mar"
+                style={{
+                  width: "100%", padding: "10px 14px", borderRadius: 10,
+                  border: "1px solid #E2E8F0", fontSize: 13, boxSizing: "border-box"
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Visits */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+            <div style={{ fontSize: 11, fontWeight: 800, color: "#475569", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+              📋 Visitas del viaje ({visits.length})
+            </div>
+            <div style={{ display: "flex", gap: 8 }}>
+              {visits.length > 1 && visits[0].date && (
+                <button
+                  onClick={suggestDates}
+                  style={{ background: "#EEF2FF", color: "#4F46E5", border: "none", padding: "4px 12px", borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: "pointer" }}
+                >
+                  📅 Auto-rellenar fechas
+                </button>
+              )}
+              <button
+                onClick={addVisit}
+                style={{ background: "#0D4BD9", color: "white", border: "none", padding: "4px 14px", borderRadius: 6, fontSize: 11, fontWeight: 700, cursor: "pointer" }}
+              >
+                + Añadir visita
+              </button>
+            </div>
+          </div>
+
+          {visits.map((visit, idx) => (
+            <div key={idx} style={{
+              background: "#F8FAFC", border: "1px solid #E2E8F0", borderRadius: 12,
+              padding: "14px 16px", marginBottom: 10
+            }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10 }}>
+                <span style={{ fontSize: 11, fontWeight: 800, color: "#6366F1" }}>Visita {idx + 1}</span>
+                {visits.length > 1 && (
+                  <button
+                    onClick={() => removeVisit(idx)}
+                    style={{ marginLeft: "auto", background: "transparent", border: "none", color: "#EF4444", fontSize: 16, cursor: "pointer", padding: 0, lineHeight: 1 }}
+                    title="Eliminar visita"
+                  >×</button>
+                )}
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "140px 1fr 1fr", gap: 10 }}>
+                {/* Date */}
+                <div>
+                  <label style={{ fontSize: 9, fontWeight: 700, color: "#94A3B8", textTransform: "uppercase", display: "block", marginBottom: 3 }}>Fecha *</label>
+                  <input
+                    type="date"
+                    value={visit.date}
+                    onChange={e => updateVisit(idx, "date", e.target.value)}
+                    style={{
+                      width: "100%", padding: "8px 10px", borderRadius: 8,
+                      border: `1px solid ${visit.date ? "#86EFAC" : "#FDE68A"}`,
+                      fontSize: 12, boxSizing: "border-box"
+                    }}
+                  />
+                </div>
+
+                {/* Establishment */}
+                <div>
+                  <label style={{ fontSize: 9, fontWeight: 700, color: "#94A3B8", textTransform: "uppercase", display: "block", marginBottom: 3 }}>
+                    Establecimiento *
+                  </label>
+                  {visit.isCustom ? (
+                    <div style={{ display: "flex", gap: 6 }}>
+                      <input
+                        type="text"
+                        value={visit.customEstablishment}
+                        onChange={e => updateVisit(idx, "customEstablishment", e.target.value)}
+                        placeholder="Nombre del establecimiento / empresa..."
+                        style={{
+                          flex: 1, padding: "8px 10px", borderRadius: 8,
+                          border: `1px solid ${visit.customEstablishment ? "#86EFAC" : "#FDE68A"}`,
+                          fontSize: 12, boxSizing: "border-box"
+                        }}
+                      />
+                      <button
+                        onClick={() => { updateVisit(idx, "isCustom", false); updateVisit(idx, "establishment", ""); }}
+                        style={{ background: "#F1F5F9", border: "1px solid #E2E8F0", borderRadius: 8, padding: "0 8px", fontSize: 11, cursor: "pointer", color: "#64748B", whiteSpace: "nowrap" }}
+                      >
+                        ← Lista
+                      </button>
+                    </div>
+                  ) : (
+                    <select
+                      value={visit.establishment}
+                      onChange={e => updateVisit(idx, "establishment", e.target.value)}
+                      style={{
+                        width: "100%", padding: "8px 10px", borderRadius: 8,
+                        border: `1px solid ${visit.establishment ? "#86EFAC" : "#FDE68A"}`,
+                        fontSize: 12, background: "white"
+                      }}
+                    >
+                      <option value="">— Seleccionar —</option>
+                      {estNames.map(n => <option key={n} value={n}>{n}</option>)}
+                      <option value="__custom__">📝 Otro (escribir nombre)...</option>
+                    </select>
+                  )}
+                </div>
+
+                {/* Activity */}
+                <div>
+                  <label style={{ fontSize: 9, fontWeight: 700, color: "#94A3B8", textTransform: "uppercase", display: "block", marginBottom: 3 }}>Actividad</label>
+                  <input
+                    type="text"
+                    value={visit.activity}
+                    onChange={e => updateVisit(idx, "activity", e.target.value)}
+                    placeholder="Ej: Auditoría, Visita Comercial..."
+                    style={{
+                      width: "100%", padding: "8px 10px", borderRadius: 8,
+                      border: "1px solid #E2E8F0", fontSize: 12, boxSizing: "border-box"
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Footer */}
+        <div style={{
+          padding: "16px 28px", borderTop: "1px solid #E2E8F0",
+          display: "flex", justifyContent: "space-between", alignItems: "center"
+        }}>
+          <button
+            onClick={onClose}
+            style={{
+              background: "transparent", color: "#64748B", border: "1px solid #E2E8F0",
+              padding: "10px 20px", borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: "pointer"
+            }}
+          >
+            Cancelar
+          </button>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <span style={{ fontSize: 12, color: "#94A3B8" }}>
+              {validVisits.length} {validVisits.length === 1 ? "visita válida" : "visitas válidas"}
+            </span>
+            <button
+              onClick={handleSave}
+              disabled={!canSave}
+              style={{
+                background: canSave ? "#0D4BD9" : "#94A3B8", color: "white",
+                border: "none", padding: "10px 28px", borderRadius: 10,
+                fontSize: 13, fontWeight: 700, cursor: canSave ? "pointer" : "not-allowed",
+                display: "flex", alignItems: "center", gap: 8
+              }}
+            >
+              ✈️ Crear Viaje ({validVisits.length} {validVisits.length === 1 ? "visita" : "visitas"})
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── BulkGeocodeModal imported CLIENT_DATA_raw at the top of file ──
 
 function BulkGeocodeModal({ onClose, customClientInfo, onValidate }) {
@@ -1070,48 +1666,104 @@ function Dashboard({ stats, summaryByAuditor, onNavigate, onTriggerPlanning, onT
       )}
       <div style={{ marginBottom: 40, display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
         <div>
-          <h2 style={{ fontSize: 32, fontWeight: 800, color: "#111", margin: "0 0 8px" }}>Dashboard Logística</h2>
-          <p style={{ fontSize: 16, color: "#666", margin: 0 }}>Recursos y planificación operativa HS</p>
+          <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 6 }}>
+            <div style={{
+              width: 48, height: 48, borderRadius: 14,
+              background: "linear-gradient(135deg, #0D4BD9 0%, #4F46E5 100%)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              boxShadow: "0 4px 12px rgba(13, 75, 217, 0.3)"
+            }}>
+              <span style={{ fontSize: 24 }}>📊</span>
+            </div>
+            <div>
+              <h2 style={{ fontSize: 28, fontWeight: 800, color: "#0F172A", margin: 0, letterSpacing: "-0.02em" }}>
+                Centro de Operaciones
+              </h2>
+              <p style={{ fontSize: 14, color: "#64748B", margin: "2px 0 0", fontWeight: 500 }}>
+                Gestión logística y planificación de viajes <span style={{ color: "#0D4BD9", fontWeight: 700 }}>HS Consulting</span>
+              </p>
+            </div>
+          </div>
         </div>
-        <div style={{ display: "flex", gap: 12 }}>
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
           <button
             onClick={() => onNavigate("consultants")}
-            style={{ background: "white", color: "#111", border: "1px solid #ddd", padding: "10px 18px", borderRadius: 12, fontSize: 13, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 8, transition: "all 0.2s" }}
-            onMouseEnter={e => e.currentTarget.style.borderColor = "#111"}
-            onMouseLeave={e => e.currentTarget.style.borderColor = "#ddd"}
+            style={{
+              background: "white", color: "#334155", border: "1px solid #E2E8F0",
+              padding: "10px 16px", borderRadius: 10, fontSize: 12, fontWeight: 600,
+              cursor: "pointer", display: "flex", alignItems: "center", gap: 6,
+              transition: "all 0.2s ease", boxShadow: "0 1px 3px rgba(0,0,0,0.04)"
+            }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = "#94A3B8"; e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.08)"; e.currentTarget.style.transform = "translateY(-1px)"; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = "#E2E8F0"; e.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.04)"; e.currentTarget.style.transform = "translateY(0)"; }}
           >
-            👥 Gestión Consultores
+            <span style={{ fontSize: 16 }}>👥</span> Consultores
           </button>
           <button
             onClick={onTriggerPlanning}
-            style={{ background: "#0D4BD9", color: "white", border: "none", padding: "10px 18px", borderRadius: 12, fontSize: 13, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 8, boxShadow: "0 4px 12px rgba(13, 75, 217, 0.2)" }}
+            style={{
+              background: "linear-gradient(135deg, #0D4BD9 0%, #2563EB 100%)", color: "white", border: "none",
+              padding: "10px 18px", borderRadius: 10, fontSize: 12, fontWeight: 700,
+              cursor: "pointer", display: "flex", alignItems: "center", gap: 6,
+              boxShadow: "0 4px 14px rgba(13, 75, 217, 0.3)", transition: "all 0.2s ease"
+            }}
+            onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 6px 20px rgba(13, 75, 217, 0.4)"; e.currentTarget.style.transform = "translateY(-1px)"; }}
+            onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 4px 14px rgba(13, 75, 217, 0.3)"; e.currentTarget.style.transform = "translateY(0)"; }}
           >
-            📅 Cargar Agenda (CSV)
+            <span style={{ fontSize: 16 }}>📄</span> Importar CSV
           </button>
 
           {onTriggerHotels && (
             <button
               onClick={onTriggerHotels}
-              style={{ background: accommodationHotelsCount > 0 ? "#EFF6FF" : "white", color: accommodationHotelsCount > 0 ? "#1D4ED8" : "#555", border: accommodationHotelsCount > 0 ? "1px solid #93C5FD" : "1px solid #ddd", padding: "10px 18px", borderRadius: 12, fontSize: 13, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }}
+              style={{
+                background: accommodationHotelsCount > 0 ? "linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%)" : "white",
+                color: accommodationHotelsCount > 0 ? "#3730A3" : "#475569",
+                border: accommodationHotelsCount > 0 ? "1px solid #A5B4FC" : "1px solid #E2E8F0",
+                padding: "10px 16px", borderRadius: 10, fontSize: 12, fontWeight: 600,
+                cursor: "pointer", display: "flex", alignItems: "center", gap: 6,
+                transition: "all 0.2s ease", boxShadow: "0 1px 3px rgba(0,0,0,0.04)"
+              }}
               title={accommodationHotelsCount > 0 ? `${accommodationHotelsCount} zonas cargadas` : "Cargar hoteles de alojamiento"}
+              onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.08)"; }}
+              onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.04)"; }}
             >
-              🏨 Hoteles Aloj.{accommodationHotelsCount > 0 ? <span style={{ background: "#1D4ED8", color: "white", borderRadius: 99, padding: "1px 7px", fontSize: 11, marginLeft: 4 }}>{accommodationHotelsCount}</span> : ""}
+              <span style={{ fontSize: 16 }}>🏨</span> Alojamientos{accommodationHotelsCount > 0 ? <span style={{ background: "#4F46E5", color: "white", borderRadius: 99, padding: "1px 7px", fontSize: 10, fontWeight: 800, marginLeft: 2 }}>{accommodationHotelsCount}</span> : ""}
             </button>
           )}
+
+          <div style={{ width: 1, height: 28, background: "#E2E8F0", margin: "0 2px" }} />
+
           {onClearData && (
             <button
               onClick={() => setShowClearConfirm(true)}
-              style={{ background: "#FEF2F2", color: "#B91C1C", border: "1px solid #FCA5A5", padding: "10px 18px", borderRadius: 12, fontSize: 13, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }}
+              style={{
+                background: "white", color: "#94A3B8", border: "1px solid #E2E8F0",
+                padding: "8px 12px", borderRadius: 8, fontSize: 11, fontWeight: 600,
+                cursor: "pointer", display: "flex", alignItems: "center", gap: 4,
+                transition: "all 0.2s ease"
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = "#FEF2F2"; e.currentTarget.style.color = "#DC2626"; e.currentTarget.style.borderColor = "#FCA5A5"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "white"; e.currentTarget.style.color = "#94A3B8"; e.currentTarget.style.borderColor = "#E2E8F0"; }}
+              title="Limpiar todos los datos"
             >
-              🗑️ Limpiar
+              🗑️
             </button>
           )}
           {onLogout && (
             <button
               onClick={onLogout}
-              style={{ background: "white", color: "#666", border: "1px solid #ddd", padding: "10px 18px", borderRadius: 12, fontSize: 13, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }}
+              style={{
+                background: "white", color: "#94A3B8", border: "1px solid #E2E8F0",
+                padding: "8px 12px", borderRadius: 8, fontSize: 11, fontWeight: 600,
+                cursor: "pointer", display: "flex", alignItems: "center", gap: 4,
+                transition: "all 0.2s ease"
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = "#F8FAFC"; e.currentTarget.style.color = "#475569"; e.currentTarget.style.borderColor = "#94A3B8"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "white"; e.currentTarget.style.color = "#94A3B8"; e.currentTarget.style.borderColor = "#E2E8F0"; }}
+              title="Cerrar sesión"
             >
-              🚪 Cerrar Sesión
+              🚪
             </button>
           )}
         </div>
@@ -1172,6 +1824,66 @@ function Dashboard({ stats, summaryByAuditor, onNavigate, onTriggerPlanning, onT
           <div style={{ fontSize: 14, color: "#666", marginTop: 8 }}>Logística Cerrada</div>
         </div>
       </div>
+
+      {/* Monthly Stats */}
+      {stats.byMonth && Object.keys(stats.byMonth).length > 0 && (
+        <div style={{ marginBottom: 40 }}>
+          <h3 style={{ fontSize: 20, margin: "0 0 16px", color: "#111" }}>📊 Resumen por Mes</h3>
+          <div style={{ background: "white", borderRadius: 16, border: "1px solid #eee", overflow: "hidden" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+              <thead>
+                <tr style={{ background: "#F8FAFC" }}>
+                  <th style={{ padding: "12px 16px", textAlign: "left", fontWeight: 700, color: "#475569", borderBottom: "2px solid #E2E8F0" }}>Mes</th>
+                  <th style={{ padding: "12px 16px", textAlign: "center", fontWeight: 700, color: "#2563EB", borderBottom: "2px solid #E2E8F0" }}>Importados</th>
+                  <th style={{ padding: "12px 16px", textAlign: "center", fontWeight: 700, color: "#7C3AED", borderBottom: "2px solid #E2E8F0" }}>Pendientes</th>
+                  <th style={{ padding: "12px 16px", textAlign: "center", fontWeight: 700, color: "#10B981", borderBottom: "2px solid #E2E8F0" }}>Gestionados</th>
+                  <th style={{ padding: "12px 16px", textAlign: "center", fontWeight: 700, color: "#64748B", borderBottom: "2px solid #E2E8F0" }}>% Completado</th>
+                </tr>
+              </thead>
+              <tbody>
+                {Object.entries(stats.byMonth)
+                  .sort(([a], [b]) => b.localeCompare(a)) // Most recent first
+                  .map(([month, data]) => {
+                    const pct = data.imported > 0 ? Math.round((data.managed / data.imported) * 100) : 0;
+                    const monthLabel = month === "sin-fecha" ? "Sin Fecha" : (() => {
+                      const [y, m] = month.split("-");
+                      const names = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+                      return `${names[parseInt(m) - 1] || m} ${y}`;
+                    })();
+                    return (
+                      <tr key={month} style={{ borderBottom: "1px solid #F1F5F9" }}>
+                        <td style={{ padding: "10px 16px", fontWeight: 600, color: "#1E293B" }}>📅 {monthLabel}</td>
+                        <td style={{ padding: "10px 16px", textAlign: "center", fontWeight: 700, color: "#2563EB" }}>{data.imported}</td>
+                        <td style={{ padding: "10px 16px", textAlign: "center", fontWeight: 600, color: data.pending > 0 ? "#7C3AED" : "#94A3B8" }}>{data.pending}</td>
+                        <td style={{ padding: "10px 16px", textAlign: "center", fontWeight: 700, color: "#10B981" }}>{data.managed}</td>
+                        <td style={{ padding: "10px 16px", textAlign: "center" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 8, justifyContent: "center" }}>
+                            <div style={{ width: 60, height: 6, background: "#E2E8F0", borderRadius: 3, overflow: "hidden" }}>
+                              <div style={{ width: `${pct}%`, height: "100%", background: pct === 100 ? "#10B981" : "#4F46E5", borderRadius: 3 }} />
+                            </div>
+                            <span style={{ fontSize: 12, fontWeight: 700, color: pct === 100 ? "#10B981" : "#475569" }}>{pct}%</span>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                {/* Totals Row */}
+                <tr style={{ background: "#F8FAFC", borderTop: "2px solid #E2E8F0" }}>
+                  <td style={{ padding: "12px 16px", fontWeight: 800, color: "#111" }}>TOTAL</td>
+                  <td style={{ padding: "12px 16px", textAlign: "center", fontWeight: 800, color: "#2563EB", fontSize: 15 }}>{stats.total}</td>
+                  <td style={{ padding: "12px 16px", textAlign: "center", fontWeight: 800, color: "#7C3AED", fontSize: 15 }}>{stats.pending}</td>
+                  <td style={{ padding: "12px 16px", textAlign: "center", fontWeight: 800, color: "#10B981", fontSize: 15 }}>{stats.managed}</td>
+                  <td style={{ padding: "12px 16px", textAlign: "center" }}>
+                    <span style={{ fontSize: 14, fontWeight: 800, color: stats.total > 0 ? "#10B981" : "#94A3B8" }}>
+                      {stats.total > 0 ? Math.round((stats.managed / stats.total) * 100) : 0}%
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       <div style={{ marginBottom: 40 }}>
         <h3 style={{ fontSize: 20, margin: "0 0 16px", color: "#111" }}>Planificación por Consultor</h3>
@@ -2524,6 +3236,44 @@ export default function HSConsultingTravelPlanner() {
     const saved = localStorage.getItem("hs_travel_finalized");
     return saved ? new Set(JSON.parse(saved)) : new Set();
   });
+
+  // Load managed activity IDs and activities from Supabase on mount
+  useEffect(() => {
+    async function loadManagedFromSupabase() {
+      // 1. Load activities from Supabase if local is empty
+      const localActs = JSON.parse(localStorage.getItem("hs_travel_activities") || "[]");
+      if (localActs.length === 0) {
+        const remoteActs = await getAllActivitiesFromDB();
+        if (remoteActs && remoteActs.length > 0) {
+          setActivities(remoteActs);
+          console.log(`✅ Supabase: ${remoteActs.length} actividades cargadas desde la base de datos`);
+        }
+      }
+
+      // 2. Load managed IDs from Supabase (always sync, Supabase is source of truth)
+      const managedIds = await getManagedActivityIds();
+      if (managedIds.length > 0) {
+        setFinalizedIds(prev => {
+          const merged = new Set(prev);
+          managedIds.forEach(id => merged.add(id));
+          return merged;
+        });
+        console.log(`✅ Supabase: ${managedIds.length} trayectos gestionados restaurados`);
+      }
+
+      // 3. Load booking confirmations from Supabase
+      const remoteBookings = await getAllBookingConfirmations();
+      if (Object.keys(remoteBookings).length > 0) {
+        setBookingConfirmations(prev => {
+          const merged = { ...prev, ...remoteBookings };
+          return merged;
+        });
+        console.log(`✅ Supabase: ${Object.keys(remoteBookings).length} confirmaciones de reserva restauradas`);
+      }
+    }
+    loadManagedFromSupabase();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [customClientInfo, setCustomClientInfo] = useState(() => {
     const saved = localStorage.getItem("hs_travel_client_info");
     return saved ? JSON.parse(saved) : {};
@@ -2539,6 +3289,8 @@ export default function HSConsultingTravelPlanner() {
   const [bookingTarget, setBookingTarget] = useState(null);
   const [showBulkGeocode, setShowBulkGeocode] = useState(false);
   const [showHotelsManager, setShowHotelsManager] = useState(false);
+  const [pendingNewEstablishments, setPendingNewEstablishments] = useState(null); // { names: [...], regionMap: {...} }
+  const [showNewTrip, setShowNewTrip] = useState(false);
   const [accommodationHotels, setAccommodationHotels] = useState(() => {
     const saved = localStorage.getItem("hs_travel_accom_hotels");
     return saved ? JSON.parse(saved) : {};
@@ -2664,6 +3416,8 @@ export default function HSConsultingTravelPlanner() {
     if (!file) return;
 
     parseCSV(file, (results) => {
+      // Tag import with current month for historical tracking
+      const importMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
       const mapped = results.data.map((row) => ({
         id: Math.random().toString(36).substr(2, 9),
         a: (row["Auditor"] || row["auditor"] || row["Consultor"] || row["Nombre"] || "").trim(),
@@ -2672,7 +3426,8 @@ export default function HSConsultingTravelPlanner() {
         d: (row["Disciplina"] || row["disciplina"] || row["Actividad"] || row["actividad"] || row["Tarea"] || row["Tareas"] || "").trim(),
         f: (row["Fecha"] || row["fecha"] || row["Date"] || "").trim(),
         j: parseFloat((row["Jornada"] || row["jornada"] || row["Jornadas"] || row["jornadas"] || row["Duración"] || "0").replace(",", ".")),
-        g: (row["Grupo"] || row["grupo"] || row["Cadena"] || "").trim()
+        g: (row["Grupo"] || row["grupo"] || row["Cadena"] || "").trim(),
+        _importMonth: importMonth
       })).filter(item => item.a && item.f);
 
       // 1. Agrupación y Deduplicación interna (si el archivo fuente tiene duplicados)
@@ -2704,12 +3459,102 @@ export default function HSConsultingTravelPlanner() {
         setActivities(prev => [...prev, ...newItems]);
         setUploadFlash(`✅ Se han añadido ${newItems.length} registros de agenda.`);
         setTimeout(() => setUploadFlash(null), 4000);
+
+        // 3. Detect establishments NOT in the database
+        // Match is by EXACT NAME (case-sensitive, trimmed)
+        const allEstNames = new Set(newItems.map(i => i.e).filter(Boolean));
+        const unmatchedNames = [];
+        const regionMap = {};
+        const consultantMap = {}; // Track which consultant visits which hotel
+        allEstNames.forEach(name => {
+          const inClientData = !!CLIENT_LOOKUP[name];
+          const inCustom = !!customClientInfo[name];
+          if (!inClientData && !inCustom) {
+            unmatchedNames.push(name);
+            const itemWithRegion = newItems.find(i => i.e === name && i.r);
+            if (itemWithRegion) regionMap[name] = itemWithRegion.r;
+            // Find consultant assigned to this hotel from CSV
+            const itemWithConsultant = newItems.find(i => i.e === name && i.a);
+            if (itemWithConsultant) consultantMap[name] = itemWithConsultant.a;
+          }
+        });
+
+        if (unmatchedNames.length > 0) {
+          setPendingNewEstablishments({ names: unmatchedNames, regionMap, consultantMap });
+        }
       } else {
         alert("No se han encontrado registros nuevos o ya existen en el sistema.");
       }
     });
     e.target.value = ""; // reset
   };
+
+  // Handler for saving new establishments from the modal
+  const handleSaveNewEstablishments = useCallback(async (formData) => {
+    for (const est of formData) {
+      if (!est.municipality || !est.region) continue; // Skip incomplete
+      // 1. Save to Supabase permanently
+      await upsertEstablishment(est.name, {
+        address: est.address || null,
+        municipality: est.municipality,
+        region: est.region,
+        island: est.island || null
+      });
+      // 2. Update local customClientInfo (triggers recalculation of proposals)
+      setCustomClientInfo(prev => ({
+        ...prev,
+        [est.name]: {
+          ...(prev[est.name] || {}),
+          address: est.address || undefined,
+          municipality: est.municipality,
+          region: est.region,
+          island: est.island || undefined
+        }
+      }));
+    }
+    const saved = formData.filter(e => e.municipality && e.region).length;
+    setPendingNewEstablishments(null);
+    setUploadFlash(`🏨 ${saved} nuevos establecimientos guardados en la base de datos.`);
+    setTimeout(() => setUploadFlash(null), 4000);
+  }, []);
+
+  // Handler for creating ad-hoc trips from the modal
+  const handleSaveNewTrip = useCallback((items) => {
+    // Deduplicate against existing activities
+    const existingSeen = new Set(activities.map(a => `${a.e}|${a.f}|${a.a}`.toLowerCase()));
+    const newItems = items.filter(item => {
+      const key = `${item.e}|${item.f}|${item.a}`.toLowerCase();
+      return !existingSeen.has(key);
+    });
+
+    if (newItems.length === 0) {
+      alert("Todos los viajes creados ya existen en el sistema.");
+      return;
+    }
+
+    setActivities(prev => [...prev, ...newItems]);
+    setShowNewTrip(false);
+
+    // Check for unmatched establishments (same logic as CSV upload)
+    const unmatchedNames = [];
+    const regionMap = {};
+    newItems.forEach(item => {
+      if (!item.e) return;
+      const inClientData = !!CLIENT_LOOKUP[item.e];
+      const inCustom = !!customClientInfo[item.e];
+      if (!inClientData && !inCustom && !unmatchedNames.includes(item.e)) {
+        unmatchedNames.push(item.e);
+        if (item.r) regionMap[item.e] = item.r;
+      }
+    });
+
+    if (unmatchedNames.length > 0) {
+      setPendingNewEstablishments({ names: unmatchedNames, regionMap });
+    }
+
+    setUploadFlash(`✈️ Viaje ad-hoc creado: ${newItems.length} ${newItems.length === 1 ? 'visita añadida' : 'visitas añadidas'}.`);
+    setTimeout(() => setUploadFlash(null), 4000);
+  }, [activities, customClientInfo]);
 
   const handleClearData = () => {
     setActivities([]);
@@ -2858,8 +3703,14 @@ export default function HSConsultingTravelPlanner() {
     if (bookingData !== null) {
       // Automatically "Finalize" the activities if marked as booked
       const nextFinalized = new Set(finalizedIds);
-      idsToUpdate.forEach(id => nextFinalized.add(id));
+      const managedUpdates = [];
+      idsToUpdate.forEach(id => {
+        nextFinalized.add(id);
+        managedUpdates.push({ id, isManaged: true });
+      });
       setFinalizedIds(nextFinalized);
+      // Sync managed status to Supabase
+      if (managedUpdates.length > 0) bulkSetManagedStatus(managedUpdates);
 
       setUploadFlash(`✅ Reserva registrada`);
       setTimeout(() => setUploadFlash(null), 3000);
@@ -3038,12 +3889,24 @@ export default function HSConsultingTravelPlanner() {
   }, [proposals, filterAuditor, filterRegion, filterTransport, filterDateStart, filterDateEnd, finalizedIds, view]);
 
   const stats = useMemo(() => {
-    const s = { total: proposals.length, pending: 0, managed: 0, vuelo: 0, tren: 0, vehiculo: 0, auto: 0 };
+    const s = { total: proposals.length, pending: 0, managed: 0, vuelo: 0, tren: 0, vehiculo: 0, auto: 0, byMonth: {} };
     proposals.forEach(p => {
+      // Monthly breakdown: parse DD/MM/YYYY -> YYYY-MM, or use _importMonth
+      let month = p._importMonth || "";
+      if (!month && p.f) {
+        const parts = p.f.split("/");
+        if (parts.length === 3) month = `${parts[2]}-${parts[1].padStart(2, "0")}`;
+      }
+      if (!month) month = "sin-fecha";
+      if (!s.byMonth[month]) s.byMonth[month] = { imported: 0, managed: 0, pending: 0 };
+      s.byMonth[month].imported++;
+
       if (finalizedIds.has(p.id)) {
         s.managed++;
+        s.byMonth[month].managed++;
       } else {
         s.pending++;
+        s.byMonth[month].pending++;
         const type = p.tType;
         s[type] = (s[type] || 0) + 1;
       }
@@ -3081,13 +3944,15 @@ export default function HSConsultingTravelPlanner() {
     setSelectedIds(new Set());
   };
 
-  const handleBookSelection = () => {
-    const selected = proposals.filter(p => selectedIds.has(p.id));
+  const handleBookSelection = (consultantName) => {
+    // Filter selected proposals to ONLY the specified consultant
+    const selected = proposals.filter(p => selectedIds.has(p.id) && (!consultantName || p.cName === consultantName));
     if (selected.length === 0) return;
 
-    // Use the first and last hotel dates from the selection
+    // Use the first and last hotel dates from the filtered selection
     const firstHotel = selected[0];
     const lastHotel = selected[selected.length - 1];
+    const consultantIds = selected.map(s => s.id);
 
     setBookingTarget({
       consultant: firstHotel.a,
@@ -3098,7 +3963,7 @@ export default function HSConsultingTravelPlanner() {
       },
       transportType: firstHotel.tType,
       establishments: Array.from(new Set(selected.map(s => s.e))),
-      selectedIds: Array.from(selectedIds),
+      selectedIds: consultantIds, // Only IDs of this consultant
       groupStartDate: firstHotel.f,
       groupEndDate: lastHotel.f
     });
@@ -3119,19 +3984,40 @@ export default function HSConsultingTravelPlanner() {
 
   const toggleFinalize = (id) => {
     const next = new Set(finalizedIds);
+    const isNowManaged = !next.has(id);
     if (next.has(id)) next.delete(id);
     else next.add(id);
     setFinalizedIds(next);
+    // Sync to Supabase
+    setActivityManagedStatus(id, isNowManaged);
   };
 
-  const handleBulkFinalize = () => {
+  const handleBulkFinalize = (consultantName) => {
     const next = new Set(finalizedIds);
-    selectedIds.forEach(id => {
+    const isManaged = view !== "managed";
+    const updates = [];
+    // If consultantName is given, only finalize activities of that consultant
+    const idsToProcess = consultantName
+      ? new Set(proposals.filter(p => selectedIds.has(p.id) && p.cName === consultantName).map(p => p.id))
+      : selectedIds;
+    idsToProcess.forEach(id => {
       if (view === "managed") next.delete(id);
       else next.add(id);
+      updates.push({ id, isManaged });
     });
     setFinalizedIds(next);
-    setSelectedIds(new Set());
+    // Only clear the processed IDs from selection, keep other consultants' selections
+    if (consultantName) {
+      setSelectedIds(prev => {
+        const remaining = new Set(prev);
+        idsToProcess.forEach(id => remaining.delete(id));
+        return remaining;
+      });
+    } else {
+      setSelectedIds(new Set());
+    }
+    // Sync to Supabase in bulk
+    if (updates.length > 0) bulkSetManagedStatus(updates);
   };
 
   const handleDataLoaded = (newData) => {
@@ -3455,6 +4341,23 @@ export default function HSConsultingTravelPlanner() {
             onValidate={updateEstablishmentAddress}
           />
         )}
+        {pendingNewEstablishments && (
+          <NewEstablishmentsModal
+            establishments={pendingNewEstablishments.names}
+            regionFromCSV={pendingNewEstablishments.regionMap}
+            consultantFromCSV={pendingNewEstablishments.consultantMap}
+            onSave={handleSaveNewEstablishments}
+            onSkip={() => setPendingNewEstablishments(null)}
+          />
+        )}
+        {showNewTrip && (
+          <NewTripModal
+            consultants={activeConsultants}
+            establishments={CLIENT_DATA}
+            onSave={handleSaveNewTrip}
+            onClose={() => setShowNewTrip(false)}
+          />
+        )}
         {showHotelsManager && (
           <AccommodationHotelsManager
             hotels={accommodationHotels}
@@ -3545,8 +4448,13 @@ export default function HSConsultingTravelPlanner() {
               ? bookingTarget.selectedIds
               : [bookingTarget.activity.id];
             const nextFinalized = new Set(finalizedIds);
-            idsToUpdate.forEach(id => nextFinalized.add(id));
+            const managedUpdates = [];
+            idsToUpdate.forEach(id => {
+              nextFinalized.add(id);
+              managedUpdates.push({ id, isManaged: true });
+            });
             setFinalizedIds(nextFinalized);
+            if (managedUpdates.length > 0) bulkSetManagedStatus(managedUpdates);
           }}
         />
       )}
@@ -3591,8 +4499,14 @@ export default function HSConsultingTravelPlanner() {
                 </select>
 
                 <button
+                  onClick={() => setShowNewTrip(true)}
+                  style={{ marginLeft: "auto", background: "#10B981", color: "white", border: "none", padding: "8px 16px", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }}
+                >
+                  ✈️ Nuevo Viaje
+                </button>
+                <button
                   onClick={exportFilteredToCSV}
-                  style={{ marginLeft: "auto", background: "white", color: "#0D4BD9", border: "1px solid #0D4BD9", padding: "8px 16px", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }}
+                  style={{ background: "white", color: "#0D4BD9", border: "1px solid #0D4BD9", padding: "8px 16px", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }}
                 >
                   📊 Exportar Reporte (CSV)
                 </button>
@@ -3731,173 +4645,346 @@ export default function HSConsultingTravelPlanner() {
                       }
                     });
 
-                    // Sort expeditions by first date
-                    expeditions.sort((a, b) => a.firstDate - b.firstDate);
+                    // === MERGE PASS ===
+                    // After initial grouping, merge expeditions from the same consultant
+                    // that share transport fingerprints (e.g. same flight locators, same car rental).
+                    // This handles cases where different expedition IDs share the same bookings.
+                    let mergeOccurred = true;
+                    while (mergeOccurred) {
+                      mergeOccurred = false;
+                      for (let i = 0; i < expeditions.length; i++) {
+                        const exA = expeditions[i];
+                        if (!exA || !exA.fPrints || exA.fPrints.length === 0) continue;
+                        for (let j = i + 1; j < expeditions.length; j++) {
+                          const exB = expeditions[j];
+                          if (!exB || !exB.fPrints || exB.fPrints.length === 0) continue;
+                          // Must be the same consultant
+                          if (exA.consultant !== exB.consultant) continue;
+                          // Check if they share any transport fingerprint
+                          const shared = exA.fPrints.some(fp => exB.fPrints.includes(fp));
+                          if (shared) {
+                            // Merge B into A
+                            exA.proposals.push(...exB.proposals);
+                            exA.fPrints.push(...exB.fPrints);
+                            if (exB.firstDate < exA.firstDate) { exA.firstDate = exB.firstDate; exA.firstDateStr = exB.firstDateStr; }
+                            if (exB.lastDate > exA.lastDate) { exA.lastDate = exB.lastDate; exA.lastDateStr = exB.lastDateStr; }
+                            // Merge region info
+                            if (exB.region && exB.region !== exA.region) {
+                              exA.region = exA.region + ", " + exB.region;
+                            }
+                            // Remove B from the array
+                            expeditions.splice(j, 1);
+                            j--; // re-check this index
+                            mergeOccurred = true;
+                          }
+                        }
+                      }
+                    }
 
-
-                    // 3. Render Expeditions
-                    expeditions.forEach(ex => {
-                      // Aggregate Data
-                      const hotelNames = [...new Set(ex.proposals.map(p => p.e))];
-
-                      // Calculate detailed location string
-                      const uniqueRegions = [...new Set(ex.proposals.map(p => p.r).filter(Boolean))];
-                      const uniqueIslands = [...new Set(ex.proposals.map(p => p.island).filter(Boolean))];
-                      const uniqueMunis = [...new Set(ex.proposals.map(p => p.destMuni).filter(Boolean))];
-
-                      let locationStr = "";
-                      if (uniqueRegions.length > 0) locationStr += uniqueRegions.join(", ");
-                      if (uniqueIslands.length > 0) locationStr += (locationStr ? " • " : "") + uniqueIslands.join(", ");
-                      if (uniqueMunis.length > 0) locationStr += (locationStr ? " • " : "") + uniqueMunis.join(", ");
-
-                      if (!locationStr) locationStr = ex.region; // Fallback
-
-                      const title = `${hotelNames.join(" + ")}`;
-                      const allIds = ex.proposals.map(p => p.id);
-
-                      // Collect Bookings (deduplicated by Locator), separated from accommodation
-                      const uniqueBookings = {};
-                      let accomBooking = null; // __accom__ stored separately
-                      ex.proposals.forEach(p => {
-                        const links = bookedLinks[p.id] || {};
-                        Object.entries(links).forEach(([url, data]) => {
-                          if (url === "__accom__") { accomBooking = data; return; }
-                          let groupKey = url;
-                          if (data && typeof data === 'object') {
-                            if (data.segments) {
-                              const locs = data.segments.map(s => s.locator).sort().join('_');
-                              if (locs) groupKey = locs;
-                            } else if (data.locator) groupKey = data.locator;
-                          } else if (typeof data === 'string') groupKey = data;
-
-                          uniqueBookings[groupKey] = { url, data };
+                    // Also merge expeditions from the same consultant that share accommodation (__accom__)
+                    // Look for shared accommodation hotel name
+                    mergeOccurred = true;
+                    while (mergeOccurred) {
+                      mergeOccurred = false;
+                      for (let i = 0; i < expeditions.length; i++) {
+                        const exA = expeditions[i];
+                        if (!exA) continue;
+                        // Get accommodation for exA
+                        const accomA = new Set();
+                        exA.proposals.forEach(p => {
+                          const links = bookedLinks[p.id] || {};
+                          if (links.__accom__?.hotel) accomA.add(links.__accom__.hotel);
                         });
-                      });
+                        if (accomA.size === 0) continue;
+
+                        for (let j = i + 1; j < expeditions.length; j++) {
+                          const exB = expeditions[j];
+                          if (!exB) continue;
+                          if (exA.consultant !== exB.consultant) continue;
+                          // Get accommodation for exB
+                          let sharedAccom = false;
+                          exB.proposals.forEach(p => {
+                            const links = bookedLinks[p.id] || {};
+                            if (links.__accom__?.hotel && accomA.has(links.__accom__.hotel)) sharedAccom = true;
+                          });
+                          if (sharedAccom) {
+                            exA.proposals.push(...exB.proposals);
+                            if (exA.fPrints && exB.fPrints) exA.fPrints.push(...exB.fPrints);
+                            if (exB.firstDate < exA.firstDate) { exA.firstDate = exB.firstDate; exA.firstDateStr = exB.firstDateStr; }
+                            if (exB.lastDate > exA.lastDate) { exA.lastDate = exB.lastDate; exA.lastDateStr = exB.lastDateStr; }
+                            if (exB.region && exB.region !== exA.region) {
+                              exA.region = exA.region + ", " + exB.region;
+                            }
+                            expeditions.splice(j, 1);
+                            j--;
+                            mergeOccurred = true;
+                          }
+                        }
+                      }
+                    }
+
+                    // Sort expeditions by consultant name, then by first date
+                    expeditions.sort((a, b) => {
+                      const nameCompare = a.consultant.localeCompare(b.consultant);
+                      if (nameCompare !== 0) return nameCompare;
+                      return a.firstDate - b.firstDate;
+                    });
+
+                    // Group expeditions by consultant
+                    const consultantGroups = {};
+                    expeditions.forEach(ex => {
+                      if (!consultantGroups[ex.consultant]) {
+                        consultantGroups[ex.consultant] = [];
+                      }
+                      consultantGroups[ex.consultant].push(ex);
+                    });
+
+                    // Helper: get company name from URL
+                    const getCompanyName = (url) => {
+                      const u = (url || "").toLowerCase();
+                      if (u.includes("binter")) return "Binter Canarias";
+                      if (u.includes("vueling")) return "Vueling";
+                      if (u.includes("iberia")) return "Iberia";
+                      if (u.includes("renfe")) return "Renfe";
+                      if (u.includes("iryo")) return "Iryo";
+                      if (u.includes("trainline")) return "Trainline";
+                      if (u.includes("cicar")) return "CICAR";
+                      if (u.includes("goldcar")) return "Goldcar";
+                      if (u.includes("okmobility") || u.includes("mobility")) return "OK Mobility";
+                      if (u.includes("europcar")) return "Europcar";
+                      if (u.includes("skyscanner")) return "Skyscanner";
+                      if (u.includes("google")) return "Google Flights";
+                      if (u === "manual_entry" || u.startsWith("manual_")) return "Entrada Manual";
+                      return "Reserva";
+                    };
+                    const getBookingIcon = (url) => {
+                      const u = (url || "").toLowerCase();
+                      if (u.includes("cicar") || u.includes("mobility") || u.includes("rent") || u.includes("goldcar") || u.includes("europcar")) return "🚗";
+                      if (u.includes("renfe") || u.includes("iryo") || u.includes("trainline")) return "🚄";
+                      return "✈️";
+                    };
+
+                    // 3. Render by Consultant
+                    Object.entries(consultantGroups).forEach(([consultantName, consExpeditions]) => {
+                      const totalActivities = consExpeditions.reduce((sum, ex) => sum + ex.proposals.length, 0);
+                      const consultantData = activeConsultants[consultantName] || {};
 
                       elements.push(
-                        <div key={ex.id} style={{ background: "white", borderRadius: 16, border: "1px solid #CBD5E0", overflow: "hidden", marginBottom: 20, boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}>
-                          {/* Summary Header */}
-                          <div style={{ background: "#F8FAFC", padding: "16px 20px", borderBottom: "1px solid #E2E8F0" }}>
-                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start", marginBottom: 12 }}>
-                              <div style={{ flex: 1, paddingRight: 20 }}>
-                                <div style={{ fontSize: 10, fontWeight: 800, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.05em" }}>Expedición / Viaje Agrupado</div>
-                                <div style={{ fontSize: 18, fontWeight: 800, color: "#1E293B", lineHeight: 1.3, marginBottom: 4 }}>{title}</div>
-                                <div style={{ fontSize: 12, color: "#475569", fontWeight: 600 }}>📍 {locationStr}</div>
-                                <div style={{ fontSize: 11, color: "#6366F1", fontWeight: 700, marginTop: 4 }}>
-                                  📅 {ex.firstDateStr} → {ex.lastDateStr}
-                                  {ex.proposals[0]?.g && <span style={{ marginLeft: 8, background: "#EEF2FF", padding: "1px 6px", borderRadius: 4, fontSize: 10 }}>Exp: {ex.proposals[0].g}</span>}
-                                </div>
+                        <div key={`cons-${consultantName}`} style={{ marginBottom: 28 }}>
+                          {/* ===== CONSULTANT HEADER ===== */}
+                          <div style={{
+                            background: "linear-gradient(135deg, #1E293B 0%, #334155 100%)",
+                            padding: "16px 24px",
+                            borderRadius: "16px 16px 0 0",
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center"
+                          }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                              <div style={{
+                                width: 44, height: 44, borderRadius: 12,
+                                background: "rgba(99,102,241,0.2)", border: "2px solid rgba(99,102,241,0.4)",
+                                display: "flex", alignItems: "center", justifyContent: "center",
+                                fontSize: 18, fontWeight: 800, color: "#A5B4FC"
+                              }}>
+                                {consultantName.charAt(0)}
                               </div>
-                              <div style={{ textAlign: "right", display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
-                                <div style={{ background: "#EEF2FF", color: "#4F46E5", padding: "4px 12px", borderRadius: 8, fontSize: 12, fontWeight: 700 }}>👤 {ex.consultant}</div>
-                                <button
-                                  onClick={(e) => { e.stopPropagation(); allIds.forEach(id => toggleFinalize(id)); }}
-                                  style={{ background: "#fff", color: "#6B7280", border: "1px solid #E2E8F0", padding: "4px 12px", borderRadius: 8, fontSize: 11, fontWeight: 600, cursor: "pointer" }}
-                                >
-                                  Reabrir Todo
-                                </button>
+                              <div>
+                                <div style={{ fontSize: 17, fontWeight: 800, color: "white" }}>{consultantName}</div>
+                                <div style={{ fontSize: 11, color: "#94A3B8" }}>
+                                  📍 {consultantData.base || "—"}
+                                  {consultantData.island && <span> • 🏝️ {consultantData.island}</span>}
+                                  {consultantData.region && <span style={{ marginLeft: 8, opacity: 0.7 }}>{consultantData.region}</span>}
+                                </div>
                               </div>
                             </div>
-
-                            {/* Visits Timeline */}
-                            <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
-                              {/* Group by Hotel for the timeline display */}
-                              {Object.entries(ex.proposals.reduce((acc, p) => {
-                                if (!acc[p.e]) acc[p.e] = [];
-                                acc[p.e].push(p.f);
-                                return acc;
-                              }, {})).map(([hName, dates], i) => (
-                                <div key={i} style={{ background: "white", padding: "8px 12px", borderRadius: 8, border: "1px solid #E2E8F0", display: "flex", alignItems: "center", gap: 8 }}>
-                                  <span style={{ fontSize: 13, fontWeight: 700, color: "#1E293B" }}>🏨 {hName}</span>
-                                  <span style={{ fontSize: 11, color: "#6366F1", fontWeight: 600, background: "#EEF2FF", padding: "2px 6px", borderRadius: 4 }}>{dates.length} jornadas</span>
-                                  <span style={{ fontSize: 10, color: "#94A3B8" }}>({dates.join(", ")})</span>
-                                </div>
-                              ))}
+                            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                              <div style={{ background: "rgba(255,255,255,0.1)", padding: "6px 14px", borderRadius: 8, color: "#E2E8F0", fontSize: 12, fontWeight: 600 }}>
+                                {consExpeditions.length} {consExpeditions.length === 1 ? "expedición" : "expediciones"} • {totalActivities} visitas
+                              </div>
+                              <button
+                                onClick={() => {
+                                  const allConsIds = consExpeditions.flatMap(ex => ex.proposals.map(p => p.id));
+                                  allConsIds.forEach(id => toggleFinalize(id));
+                                }}
+                                style={{ background: "rgba(255,255,255,0.1)", color: "#E2E8F0", border: "1px solid rgba(255,255,255,0.2)", padding: "6px 14px", borderRadius: 8, fontSize: 11, fontWeight: 600, cursor: "pointer" }}
+                              >
+                                ↩️ Reabrir Todos
+                              </button>
                             </div>
                           </div>
 
-                          {/* Integrated Bookings Section */}
-                          <div style={{ padding: 20 }}>
-                            {/* === ACCOMMODATION HOTEL CARD === */}
-                            {accomBooking && (
-                              <div style={{ marginBottom: 18 }}>
-                                <div style={{ fontSize: 11, fontWeight: 800, color: "#64748B", textTransform: "uppercase", marginBottom: 10, display: "flex", alignItems: "center", gap: 8 }}>
-                                  <span>🛏️</span> Hotel de Alojamiento del Consultor
-                                </div>
-                                <div style={{ background: "#F0FDF4", border: "1px solid #86EFAC", borderRadius: 12, padding: "14px 16px", display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-                                  <div style={{ width: 42, height: 42, background: "#DCFCE7", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, flexShrink: 0 }}>🏨</div>
-                                  <div style={{ flex: 1, minWidth: 140 }}>
-                                    <div style={{ fontWeight: 800, fontSize: 14, color: "#15803D" }}>{accomBooking.hotel}</div>
-                                    <div style={{ fontSize: 11, color: "#16A34A", fontWeight: 600 }}>📍 {accomBooking.zona}</div>
-                                    {accomBooking.date && <div style={{ fontSize: 11, color: "#64748B", marginTop: 2 }}>📅 {accomBooking.date}</div>}
-                                  </div>
-                                  {accomBooking.locator && (
-                                    <div style={{ background: "white", padding: "8px 14px", borderRadius: 8, border: "1px solid #BBF7D0" }}>
-                                      <div style={{ fontSize: 9, color: "#64748B", textTransform: "uppercase", letterSpacing: 1, marginBottom: 2 }}>Localizador</div>
-                                      <div style={{ fontWeight: 900, fontSize: 16, color: "#0D4BD9", letterSpacing: 3 }}>{accomBooking.locator}</div>
-                                    </div>
-                                  )}
-                                  {accomBooking.ubicacion && (
-                                    <a href={accomBooking.ubicacion} target="_blank" rel="noopener noreferrer"
-                                      style={{ fontSize: 12, color: "#0369A1", fontWeight: 700, background: "#E0F2FE", padding: "6px 12px", borderRadius: 8, textDecoration: "none", whiteSpace: "nowrap" }}
-                                    >🗺️ Ver en Maps</a>
-                                  )}
-                                </div>
-                              </div>
-                            )}
+                          {/* ===== EXPEDITIONS FOR THIS CONSULTANT ===== */}
+                          <div style={{ background: "#F8FAFC", borderRadius: "0 0 16px 16px", border: "1px solid #E2E8F0", borderTop: "none" }}>
+                            {consExpeditions.map((ex, exIdx) => {
+                              const hotelNames = [...new Set(ex.proposals.map(p => p.e))];
+                              const uniqueRegions = [...new Set(ex.proposals.map(p => p.r).filter(Boolean))];
+                              const uniqueIslands = [...new Set(ex.proposals.map(p => p.island).filter(Boolean))];
+                              const uniqueMunis = [...new Set(ex.proposals.map(p => p.destMuni).filter(Boolean))];
+                              let locationStr = "";
+                              if (uniqueRegions.length > 0) locationStr += uniqueRegions.join(", ");
+                              if (uniqueIslands.length > 0) locationStr += (locationStr ? " • " : "") + uniqueIslands.join(", ");
+                              if (uniqueMunis.length > 0) locationStr += (locationStr ? " • " : "") + uniqueMunis.join(", ");
+                              if (!locationStr) locationStr = ex.region;
 
-                            <div style={{ fontSize: 11, fontWeight: 800, color: "#64748B", textTransform: "uppercase", marginBottom: 14, display: "flex", alignItems: "center", gap: 8 }}>
-                              <span>🎫</span> Reservas y Logística de la Expedición (Común)
-                            </div>
-                            {Object.keys(uniqueBookings).length > 0 ? (
-                              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 12 }}>
-                                {Object.values(uniqueBookings).map(({ url, data }, idx) => {
-                                  const icon = (url.includes("cicar") || url.includes("mobility") || url.includes("rent") || url.includes("goldcar")) ? "🚗" : "✈️";
-                                  const u = url.toLowerCase();
-                                  const companyName =
-                                    u.includes("binter") ? "Binter Canarias" :
-                                      u.includes("vueling") ? "Vueling" :
-                                        u.includes("iberia") ? "Iberia" :
-                                          u.includes("renfe") ? "Renfe" :
-                                            u.includes("iryo") ? "Iryo" :
-                                              u.includes("trainline") ? "Trainline" :
-                                                u.includes("cicar") ? "CICAR" :
-                                                  u.includes("goldcar") ? "Goldcar" :
-                                                    (u.includes("okmobility") || u.includes("mobility")) ? "OK Mobility" :
-                                                      u.includes("europcar") ? "Europcar" :
-                                                        u.includes("skyscanner") ? "Skyscanner" :
-                                                          u.includes("google") ? "Google Flights" :
-                                                            (u === "manual_entry" || u.startsWith("manual_")) ? "Entrada Manual" :
-                                                              "Reserva";
-                                  const segments = data?.segments || [{ type: data?.type || "ida", locator: data?.locator || data, date: data?.date || "" }];
-                                  return (
-                                    <div key={idx} style={{ background: "#F0F9FF", border: "1px solid #BAE6FD", borderRadius: 12, padding: 14 }}>
-                                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
-                                        <span style={{ fontSize: 16 }}>{icon}</span>
-                                        <div style={{ fontWeight: 800, fontSize: 13, color: "#0369A1" }}>{companyName}</div>
+                              const allIds = ex.proposals.map(p => p.id);
+
+                              // Collect bookings (deduplicated)
+                              const uniqueBookings = {};
+                              let accomBooking = null;
+                              ex.proposals.forEach(p => {
+                                const links = bookedLinks[p.id] || {};
+                                Object.entries(links).forEach(([url, data]) => {
+                                  if (url === "__accom__") { accomBooking = data; return; }
+                                  let groupKey = url;
+                                  if (data && typeof data === 'object') {
+                                    if (data.segments) {
+                                      const locs = data.segments.map(s => s.locator).sort().join('_');
+                                      if (locs) groupKey = locs;
+                                    } else if (data.locator) groupKey = data.locator;
+                                  } else if (typeof data === 'string') groupKey = data;
+                                  uniqueBookings[groupKey] = { url, data };
+                                });
+                              });
+
+                              // Group proposals by hotel for detail display
+                              const hotelDetails = {};
+                              ex.proposals.forEach(p => {
+                                if (!hotelDetails[p.e]) hotelDetails[p.e] = { dates: [], activities: [], munis: new Set(), tType: p.tType };
+                                hotelDetails[p.e].dates.push(p.f);
+                                hotelDetails[p.e].activities.push(p);
+                                if (p.destMuni) hotelDetails[p.e].munis.add(p.destMuni);
+                              });
+
+                              const hasBookings = Object.keys(uniqueBookings).length > 0 || accomBooking;
+
+                              return (
+                                <div key={ex.id} style={{
+                                  margin: "0 16px",
+                                  padding: "20px 0",
+                                  borderBottom: exIdx < consExpeditions.length - 1 ? "1px solid #E2E8F0" : "none"
+                                }}>
+                                  {/* Expedition Header */}
+                                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start", marginBottom: 16 }}>
+                                    <div style={{ flex: 1 }}>
+                                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                                        <span style={{ fontSize: 10, fontWeight: 800, color: "#6366F1", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                                          {consExpeditions.length > 1 ? `Expedición ${exIdx + 1} de ${consExpeditions.length}` : "Expedición / Viaje"}
+                                        </span>
+                                        {ex.proposals[0]?.g && (
+                                          <span style={{ background: "#EEF2FF", color: "#4F46E5", padding: "2px 8px", borderRadius: 4, fontSize: 10, fontWeight: 700 }}>
+                                            Exp: {ex.proposals[0].g}
+                                          </span>
+                                        )}
                                       </div>
-                                      <div style={{ display: "grid", gap: 8 }}>
-                                        {segments.map((seg, si) => (
-                                          <div key={si} style={{ display: "flex", justifyContent: "space-between", background: "white", padding: "8px 12px", borderRadius: 8, fontSize: 12 }}>
-                                            <span style={{ fontWeight: 700, color: "#1E293B" }}>
-                                              {seg.type === "ida" ? "🛫 Ida" : seg.type === "vuelta" ? "🛬 Vuelta" : seg.type === "recogida" ? "🏁 Recogida" : seg.type === "devolución" ? "🔄 Devolución" : seg.type}
-                                            </span>
-                                            <div style={{ textAlign: "right" }}>
-                                              <div style={{ fontWeight: 800, color: "#0D4BD9" }}>{seg.locator}</div>
-                                              <div style={{ fontSize: 10, color: "#64748B" }}>{seg.date}</div>
+                                      <div style={{ fontSize: 12, color: "#475569", fontWeight: 600, marginBottom: 4 }}>📍 {locationStr}</div>
+                                      <div style={{ fontSize: 12, color: "#6366F1", fontWeight: 700 }}>
+                                        📅 {ex.firstDateStr} → {ex.lastDateStr}
+                                        <span style={{ marginLeft: 10, color: "#64748B", fontWeight: 500 }}>({ex.proposals.length} {ex.proposals.length === 1 ? "visita" : "visitas"})</span>
+                                      </div>
+                                    </div>
+                                    <button
+                                      onClick={(e) => { e.stopPropagation(); allIds.forEach(id => toggleFinalize(id)); }}
+                                      style={{ background: "white", color: "#6B7280", border: "1px solid #E2E8F0", padding: "5px 12px", borderRadius: 8, fontSize: 11, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap" }}
+                                    >
+                                      ↩️ Reabrir
+                                    </button>
+                                  </div>
+
+                                  {/* Hotels Detail Table */}
+                                  <div style={{ background: "white", borderRadius: 12, border: "1px solid #E2E8F0", overflow: "hidden", marginBottom: hasBookings ? 16 : 0 }}>
+                                    <div style={{ padding: "10px 14px", background: "#F1F5F9", borderBottom: "1px solid #E2E8F0", fontSize: 11, fontWeight: 700, color: "#475569", display: "flex", alignItems: "center", gap: 6 }}>
+                                      🏨 Hoteles Visitados
+                                    </div>
+                                    <div style={{ padding: 0 }}>
+                                      {Object.entries(hotelDetails).map(([hotelName, detail], hIdx) => (
+                                        <div key={hIdx} style={{
+                                          display: "flex", alignItems: "center", padding: "10px 14px", gap: 12,
+                                          borderBottom: hIdx < Object.keys(hotelDetails).length - 1 ? "1px solid #F1F5F9" : "none"
+                                        }}>
+                                          <div style={{ width: 32, height: 32, borderRadius: 8, background: TRANSPORT_META[detail.tType]?.bg || "#F1F5F9", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, flexShrink: 0 }}>
+                                            {TRANSPORT_META[detail.tType]?.icon || "🏨"}
+                                          </div>
+                                          <div style={{ flex: 1, minWidth: 0 }}>
+                                            <div style={{ fontSize: 13, fontWeight: 700, color: "#1E293B", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{hotelName}</div>
+                                            <div style={{ fontSize: 10, color: "#64748B" }}>
+                                              {[...detail.munis].join(", ")}
+                                              {detail.activities[0]?.d && <span> • {detail.activities[0].d}</span>}
                                             </div>
                                           </div>
-                                        ))}
-                                      </div>
+                                          <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+                                            <TransportBadge type={detail.tType} />
+                                          </div>
+                                          <div style={{ textAlign: "right", flexShrink: 0 }}>
+                                            <div style={{ fontSize: 12, fontWeight: 700, color: "#6366F1" }}>{detail.dates.length} {detail.dates.length === 1 ? "jornada" : "jornadas"}</div>
+                                            <div style={{ fontSize: 10, color: "#94A3B8" }}>{detail.dates.join(", ")}</div>
+                                          </div>
+                                        </div>
+                                      ))}
                                     </div>
-                                  );
-                                })}
-                              </div>
-                            ) : (
-                              <div style={{ padding: "16px", background: "#F8FAFC", borderRadius: 12, border: "1px dashed #CBD5E0", textAlign: "center", color: "#64748B", fontSize: 12 }}>
-                                No hay registros de reservas de transporte para esta expedición.
-                              </div>
-                            )}
+                                  </div>
+
+                                  {/* Accommodation + Transport Bookings */}
+                                  {hasBookings && (
+                                    <div style={{ display: "grid", gridTemplateColumns: accomBooking && Object.keys(uniqueBookings).length > 0 ? "1fr 1fr" : "1fr", gap: 12 }}>
+                                      {/* Accommodation */}
+                                      {accomBooking && (
+                                        <div style={{ background: "#F0FDF4", border: "1px solid #86EFAC", borderRadius: 12, padding: 14 }}>
+                                          <div style={{ fontSize: 10, fontWeight: 800, color: "#16A34A", textTransform: "uppercase", marginBottom: 10 }}>🛏️ Alojamiento del Consultor</div>
+                                          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                                            <div style={{ width: 36, height: 36, background: "#DCFCE7", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0 }}>🏨</div>
+                                            <div style={{ flex: 1 }}>
+                                              <div style={{ fontWeight: 800, fontSize: 13, color: "#15803D" }}>{accomBooking.hotel}</div>
+                                              <div style={{ fontSize: 11, color: "#16A34A", fontWeight: 600 }}>📍 {accomBooking.zona}</div>
+                                              {accomBooking.date && <div style={{ fontSize: 10, color: "#64748B", marginTop: 2 }}>📅 {accomBooking.date}</div>}
+                                            </div>
+                                            {accomBooking.locator && (
+                                              <div style={{ background: "white", padding: "6px 10px", borderRadius: 8, border: "1px solid #BBF7D0", textAlign: "center" }}>
+                                                <div style={{ fontSize: 8, color: "#64748B", textTransform: "uppercase", letterSpacing: 1 }}>Localizador</div>
+                                                <div style={{ fontWeight: 900, fontSize: 14, color: "#0D4BD9", letterSpacing: 2 }}>{accomBooking.locator}</div>
+                                              </div>
+                                            )}
+                                          </div>
+                                        </div>
+                                      )}
+
+                                      {/* Transport Bookings */}
+                                      {Object.keys(uniqueBookings).length > 0 && (
+                                        <div style={{ background: "#F0F9FF", border: "1px solid #BAE6FD", borderRadius: 12, padding: 14 }}>
+                                          <div style={{ fontSize: 10, fontWeight: 800, color: "#0369A1", textTransform: "uppercase", marginBottom: 10 }}>🎫 Reservas de Transporte</div>
+                                          <div style={{ display: "grid", gap: 8 }}>
+                                            {Object.values(uniqueBookings).map(({ url, data }, idx) => {
+                                              const segments = data?.segments || [{ type: data?.type || "ida", locator: data?.locator || data, date: data?.date || "" }];
+                                              return (
+                                                <div key={idx} style={{ background: "white", borderRadius: 8, padding: 10, border: "1px solid #E0F2FE" }}>
+                                                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
+                                                    <span style={{ fontSize: 14 }}>{getBookingIcon(url)}</span>
+                                                    <span style={{ fontWeight: 800, fontSize: 12, color: "#0369A1" }}>{getCompanyName(url)}</span>
+                                                  </div>
+                                                  <div style={{ display: "grid", gap: 4 }}>
+                                                    {segments.map((seg, si) => (
+                                                      <div key={si} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "4px 8px", background: "#F8FAFC", borderRadius: 6, fontSize: 11 }}>
+                                                        <span style={{ fontWeight: 600, color: "#475569" }}>
+                                                          {seg.type === "ida" ? "🛫 Ida" : seg.type === "vuelta" ? "🛬 Vuelta" : seg.type === "recogida" ? "🏁 Recogida" : seg.type === "devolución" ? "🔄 Devolución" : seg.type}
+                                                        </span>
+                                                        <div style={{ textAlign: "right" }}>
+                                                          <span style={{ fontWeight: 800, color: "#0D4BD9", letterSpacing: 1 }}>{seg.locator}</span>
+                                                          {seg.date && <span style={{ marginLeft: 8, fontSize: 10, color: "#94A3B8" }}>{seg.date}</span>}
+                                                        </div>
+                                                      </div>
+                                                    ))}
+                                                  </div>
+                                                </div>
+                                              );
+                                            })}
+                                          </div>
+                                        </div>
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
                           </div>
                         </div>
                       );
@@ -3943,7 +5030,7 @@ export default function HSConsultingTravelPlanner() {
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     if (selectedIds.has(p.id)) {
-                                      handleBookSelection();
+                                      handleBookSelection(p.cName); // Only book this consultant's selected activities
                                     } else {
                                       setBookingTarget({
                                         consultant: p.a,
@@ -3957,21 +5044,21 @@ export default function HSConsultingTravelPlanner() {
                                   }}
                                   style={{ background: "#0D4BD9", color: "white", border: "none", padding: "6px 14px", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer" }}
                                 >
-                                  {selectedIds.has(p.id) ? "Reservar (Multiple)" : "Reservar"}
+                                  {selectedIds.has(p.id) ? `Reservar (${proposals.filter(s => selectedIds.has(s.id) && s.cName === p.cName).length})` : "Reservar"}
                                 </button>
                               )}
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   if (selectedIds.has(p.id)) {
-                                    handleBulkFinalize();
+                                    handleBulkFinalize(p.cName); // Only finalize this consultant's selected activities
                                   } else {
                                     toggleFinalize(p.id);
                                   }
                                 }}
                                 style={{ background: finalizedIds.has(p.id) ? "#6B7280" : "#10B981", color: "white", border: "none", padding: "6px 14px", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer" }}
                               >
-                                {selectedIds.has(p.id) ? (view === "managed" ? "Reabrir (Multiple)" : "Finalizar (Multiple)") : (finalizedIds.has(p.id) ? "Undo" : "Finalizar")}
+                                {selectedIds.has(p.id) ? (view === "managed" ? `Reabrir (${proposals.filter(s => selectedIds.has(s.id) && s.cName === p.cName).length})` : `Finalizar (${proposals.filter(s => selectedIds.has(s.id) && s.cName === p.cName).length})`) : (finalizedIds.has(p.id) ? "Undo" : "Finalizar")}
                               </button>
                             </div>
                           </div>

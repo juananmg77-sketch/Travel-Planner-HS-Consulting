@@ -638,6 +638,150 @@ export async function logAction(entityType, entityId, action, details) {
 }
 
 // ============================================================
+// ACTIVITY FINALIZATION (managed status persistence)
+// ============================================================
+
+/**
+ * Mark an activity as 'managed' (finalized) or revert to 'pending' in Supabase.
+ * Uses the existing activities.status column.
+ */
+export async function setActivityManagedStatus(activityId, isManaged) {
+    if (!isSupabaseConfigured()) return false;
+
+    const update = {
+        status: isManaged ? 'managed' : 'pending'
+    };
+    if (isManaged) update.managed_at = new Date().toISOString();
+
+    const { error } = await supabase
+        .from('activities')
+        .update(update)
+        .eq('id', activityId);
+
+    if (error) console.error('Error updating activity managed status:', error);
+    return !error;
+}
+
+/**
+ * Bulk-update multiple activities' managed status.
+ * Accepts an array of { id, isManaged } objects.
+ */
+export async function bulkSetManagedStatus(updates) {
+    if (!isSupabaseConfigured()) return false;
+
+    const managedIds = updates.filter(u => u.isManaged).map(u => u.id);
+    const pendingIds = updates.filter(u => !u.isManaged).map(u => u.id);
+
+    if (managedIds.length > 0) {
+        const { error } = await supabase
+            .from('activities')
+            .update({ status: 'managed', managed_at: new Date().toISOString() })
+            .in('id', managedIds);
+        if (error) console.error('Error bulk-managing activities:', error);
+    }
+
+    if (pendingIds.length > 0) {
+        const { error } = await supabase
+            .from('activities')
+            .update({ status: 'pending', managed_at: null })
+            .in('id', pendingIds);
+        if (error) console.error('Error bulk-reverting activities:', error);
+    }
+
+    return true;
+}
+
+/**
+ * Get all activity IDs that have status='managed'.
+ * Used on app mount to rebuild the finalizedIds Set.
+ */
+export async function getManagedActivityIds() {
+    if (!isSupabaseConfigured()) return [];
+
+    const { data, error } = await supabase
+        .from('activities')
+        .select('id')
+        .eq('status', 'managed');
+
+    if (error) {
+        console.error('Error fetching managed activity IDs:', error);
+        return [];
+    }
+    return (data || []).map(row => row.id);
+}
+
+// ============================================================
+// BOOKING CONFIRMATIONS PERSISTENCE
+// ============================================================
+
+/**
+ * Save/update a booking confirmation for an activity.
+ * bookingData is an object keyed by URL with booking details.
+ */
+export async function saveBookingConfirmation(activityId, bookingData) {
+    if (!isSupabaseConfigured()) return false;
+
+    // Delete existing locators for this activity
+    await supabase
+        .from('booking_locators')
+        .delete()
+        .eq('activity_id', activityId);
+
+    // Insert new locators from bookingData
+    const rows = [];
+    Object.entries(bookingData).forEach(([url, data]) => {
+        if (data) {
+            rows.push({
+                activity_id: activityId,
+                locator_code: data.locator || data.confirmationCode || url,
+                locator_type: data.type || null,
+                provider: data.provider || url
+            });
+        }
+    });
+
+    if (rows.length > 0) {
+        const { error } = await supabase
+            .from('booking_locators')
+            .insert(rows);
+        if (error) console.error('Error saving booking confirmation:', error);
+    }
+
+    return true;
+}
+
+/**
+ * Get all booking confirmations grouped by activity ID.
+ * Returns { activityId: { url: bookingData, ... }, ... }
+ */
+export async function getAllBookingConfirmations() {
+    if (!isSupabaseConfigured()) return {};
+
+    const { data, error } = await supabase
+        .from('booking_locators')
+        .select('*')
+        .order('created_at');
+
+    if (error) {
+        console.error('Error fetching booking confirmations:', error);
+        return {};
+    }
+
+    const map = {};
+    (data || []).forEach(row => {
+        if (!map[row.activity_id]) map[row.activity_id] = {};
+        const key = row.provider || row.locator_code;
+        map[row.activity_id][key] = {
+            locator: row.locator_code,
+            type: row.locator_type,
+            provider: row.provider,
+            _dbId: row.id
+        };
+    });
+    return map;
+}
+
+// ============================================================
 // VIEWS / REPORTS
 // ============================================================
 export async function getConsultantMonthlySummary(year, month) {
