@@ -1230,7 +1230,8 @@ function NewTripModal({ consultants, establishments, onSave, onClose }) {
       f: v.date.split("-").reverse().join("/"), // YYYY-MM-DD → DD/MM/YYYY
       j: 1,
       g: groupName || "",
-      _isAdHoc: true // Mark as ad-hoc trip
+      _isAdHoc: true, // Mark as ad-hoc trip
+      _isOther: v.isCustom // Flag if it's "Otros" custom hotel
     }));
     onSave(items);
   };
@@ -1652,7 +1653,7 @@ function ConfirmClearModal({ onConfirm, onCancel }) {
   );
 }
 
-function Dashboard({ stats, summaryByAuditor, onNavigate, onTriggerPlanning, onTriggerConsultants, uploadFlash, onClearData, onLogout, onBulkGeocode, onTriggerHotels, accommodationHotelsCount }) {
+function Dashboard({ stats, summaryByAuditor, onNavigate, onTriggerPlanning, onTriggerConsultants, uploadFlash, onClearData, onLogout, onBulkGeocode, onTriggerHotels, accommodationHotelsCount, onTriggerNewTrip }) {
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const consultants = Object.entries(summaryByAuditor || {}).sort((a, b) => b[1].total - a[1].total);
 
@@ -1711,6 +1712,20 @@ function Dashboard({ stats, summaryByAuditor, onNavigate, onTriggerPlanning, onT
             onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 4px 14px rgba(13, 75, 217, 0.3)"; e.currentTarget.style.transform = "translateY(0)"; }}
           >
             <span style={{ fontSize: 16 }}>📄</span> Importar CSV
+          </button>
+
+          <button
+            onClick={onTriggerNewTrip}
+            style={{
+              background: "linear-gradient(135deg, #10B981 0%, #059669 100%)", color: "white", border: "none",
+              padding: "10px 18px", borderRadius: 10, fontSize: 12, fontWeight: 700,
+              cursor: "pointer", display: "flex", alignItems: "center", gap: 6,
+              boxShadow: "0 4px 14px rgba(16, 185, 129, 0.3)", transition: "all 0.2s ease"
+            }}
+            onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 6px 20px rgba(16, 185, 129, 0.4)"; e.currentTarget.style.transform = "translateY(-1px)"; }}
+            onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 4px 14px rgba(16, 185, 129, 0.3)"; e.currentTarget.style.transform = "translateY(0)"; }}
+          >
+            <span style={{ fontSize: 16 }}>✈️</span> Nuevo Viaje
           </button>
 
           {onTriggerHotels && (
@@ -3550,7 +3565,8 @@ export default function HSConsultingTravelPlanner() {
     const unmatchedNames = [];
     const regionMap = {};
     newItems.forEach(item => {
-      if (!item.e) return;
+      // Do not consider "Otros" custom hotels from new trips as missing establishments
+      if (!item.e || item._isOther) return;
       const inClientData = !!CLIENT_LOOKUP[item.e];
       const inCustom = !!customClientInfo[item.e];
       if (!inClientData && !inCustom && !unmatchedNames.includes(item.e)) {
@@ -3778,7 +3794,40 @@ export default function HSConsultingTravelPlanner() {
     } else {
       console.warn(`⚠️ Supabase: No se pudo guardar "${name}" en la base de datos`);
     }
-  }, [customConsultants]);
+
+    // Automaticaly recalculate and persist transport for all affected activities
+    const c = nextState[name];
+    const affectedActivities = activities.filter(a => (a.a || "").trim() === name);
+    let updateCount = 0;
+
+    for (const act of affectedActivities) {
+      const clientName = act.e;
+      const baseClient = CLIENT_LOOKUP[clientName] || {};
+      const customClient = customClientInfo[clientName] || {};
+      const mergedClient = { ...baseClient, ...customClient };
+
+      const tType = getTransportType(c.region, act.r, act.e, c.pref, c.island, mergedClient.island, c.base, mergedClient.municipality, mergedClient);
+      const destFullAddr = mergedClient.address || EXTRA_CLIENT_INFO[act.e]?.address || mergedClient.municipality || act.r;
+      const originFullAddr = c.address || c.base;
+      const distKey = `${originFullAddr}|${destFullAddr}`;
+
+      const km = (tType === "vehiculo" || tType === "auto" || tType === "local")
+        ? (realDistances[distKey] || estimateDistance(originFullAddr, destFullAddr))
+        : 0;
+
+      if (act._supabaseId) {
+        // Sync to Supabase without blocking
+        updateActivityTransport(act._supabaseId, tType, km);
+        updateCount++;
+      }
+    }
+
+    if (updateCount > 0) {
+      console.log(`✅ Reprogramadas ${updateCount} rutas para el consultor ${name}`);
+      setUploadFlash(`🔄 Reprogramadas ${updateCount} rutas para ${name}`);
+      setTimeout(() => setUploadFlash(null), 3000);
+    }
+  }, [customConsultants, activities, customClientInfo, realDistances]);
 
   const proposals = useMemo(() => {
     return activities.map(activity => {
@@ -4404,6 +4453,7 @@ export default function HSConsultingTravelPlanner() {
 
             onTriggerHotels={() => setShowHotelsManager(true)}
             accommodationHotelsCount={Object.keys(accommodationHotels).length}
+            onTriggerNewTrip={() => setShowNewTrip(true)}
           />
           <input type="file" ref={planningInputRef} style={{ display: "none" }} accept=".csv" onChange={onUploadPlanning} />
           <input type="file" ref={hotelsInputRef} style={{ display: "none" }} accept=".csv" onChange={e => handleHotelsCSV(e, 'replace')} />
@@ -4524,12 +4574,6 @@ export default function HSConsultingTravelPlanner() {
                   <option value="vehiculo">🚗 Vehículo Propio</option>
                 </select>
 
-                <button
-                  onClick={() => setShowNewTrip(true)}
-                  style={{ marginLeft: "auto", background: "#10B981", color: "white", border: "none", padding: "8px 16px", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }}
-                >
-                  ✈️ Nuevo Viaje
-                </button>
                 <button
                   onClick={exportFilteredToCSV}
                   style={{ background: "white", color: "#0D4BD9", border: "1px solid #0D4BD9", padding: "8px 16px", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }}
