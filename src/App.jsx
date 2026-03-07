@@ -1229,8 +1229,9 @@ function NewTripModal({ consultants, establishments, onSave, onClose }) {
       d: v.activity || "Visita Comercial",
       f: v.date.split("-").reverse().join("/"), // YYYY-MM-DD → DD/MM/YYYY
       j: 1,
-      g: groupName || `ADHOC-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
+      g: (groupName ? groupName + '-' : '') + `ADHOC-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
       _isAdHoc: true, // Mark as ad-hoc trip
+
 
       _isOther: v.isCustom // Flag if it's "Otros" custom hotel
     }));
@@ -4208,10 +4209,11 @@ export default function HSConsultingTravelPlanner() {
     setSelectedIds(new Set());
   };
 
-  const handleBookSelection = (consultantName) => {
-    // Filter selected proposals to ONLY the specified consultant
-    const selected = proposals.filter(p => selectedIds.has(p.id) && (!consultantName || p.cName === consultantName));
+  const handleBookSelection = (consultantName, groupId) => {
+    // Filter selected proposals to ONLY the specified consultant and group
+    const selected = proposals.filter(p => selectedIds.has(p.id) && (!consultantName || p.cName === consultantName) && (!groupId || p.g === groupId));
     if (selected.length === 0) return;
+
 
     // Use the first and last hotel dates from the filtered selection
     const firstHotel = selected[0];
@@ -4256,14 +4258,15 @@ export default function HSConsultingTravelPlanner() {
     setActivityManagedStatus(id, isNowManaged);
   };
 
-  const handleBulkFinalize = (consultantName) => {
+  const handleBulkFinalize = (consultantName, groupId) => {
     const next = new Set(finalizedIds);
     const isManaged = view !== "managed";
     const updates = [];
-    // If consultantName is given, only finalize activities of that consultant
+    // If consultantName is given, only finalize activities of that consultant (+ optional group)
     const idsToProcess = consultantName
-      ? new Set(proposals.filter(p => selectedIds.has(p.id) && p.cName === consultantName).map(p => p.id))
+      ? new Set(proposals.filter(p => selectedIds.has(p.id) && p.cName === consultantName && (!groupId || p.g === groupId)).map(p => p.id))
       : selectedIds;
+
     idsToProcess.forEach(id => {
       if (view === "managed") next.delete(id);
       else next.add(id);
@@ -5305,7 +5308,7 @@ export default function HSConsultingTravelPlanner() {
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     if (selectedIds.has(p.id)) {
-                                      handleBookSelection(p.cName); // Only book this consultant's selected activities
+                                      handleBookSelection(p.cName, p.g); // Pass p.g to isolate this trip
                                     } else {
                                       setBookingTarget({
                                         consultant: p.a,
@@ -5319,22 +5322,29 @@ export default function HSConsultingTravelPlanner() {
                                   }}
                                   style={{ background: "#0D4BD9", color: "white", border: "none", padding: "6px 14px", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer" }}
                                 >
-                                  {selectedIds.has(p.id) ? `Reservar (${proposals.filter(s => selectedIds.has(s.id) && s.cName === p.cName).length})` : "Reservar"}
+                                  {selectedIds.has(p.id)
+                                    ? `Reservar (${proposals.filter(s => selectedIds.has(s.id) && s.cName === p.cName && (p.g ? s.g === p.g : true)).length})`
+                                    : "Reservar"}
                                 </button>
                               )}
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   if (selectedIds.has(p.id)) {
-                                    handleBulkFinalize(p.cName); // Only finalize this consultant's selected activities
+                                    handleBulkFinalize(p.cName, p.g); // Pass p.g to isolate this trip
                                   } else {
                                     toggleFinalize(p.id);
                                   }
                                 }}
                                 style={{ background: finalizedIds.has(p.id) ? "#6B7280" : "#10B981", color: "white", border: "none", padding: "6px 14px", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer" }}
                               >
-                                {selectedIds.has(p.id) ? (view === "managed" ? `Reabrir (${proposals.filter(s => selectedIds.has(s.id) && s.cName === p.cName).length})` : `Finalizar (${proposals.filter(s => selectedIds.has(s.id) && s.cName === p.cName).length})`) : (finalizedIds.has(p.id) ? "Undo" : "Finalizar")}
+                                {selectedIds.has(p.id)
+                                  ? (view === "managed"
+                                    ? `Reabrir (${proposals.filter(s => selectedIds.has(s.id) && s.cName === p.cName && (p.g ? s.g === p.g : true)).length})`
+                                    : `Finalizar (${proposals.filter(s => selectedIds.has(s.id) && s.cName === p.cName && (p.g ? s.g === p.g : true)).length})`)
+                                  : (finalizedIds.has(p.id) ? "Undo" : "Finalizar")}
                               </button>
+
                             </div>
                           </div>
 
