@@ -3571,6 +3571,212 @@ export default function HSConsultingTravelPlanner() {
     localStorage.setItem("hs_travel_bookings", JSON.stringify(bookingConfirmations));
   }, [bookingConfirmations]);
 
+  // ============================================================
+  // COMPUTED STATE / MEMOS (Moved up to prevent ReferenceErrors)
+  // ============================================================
+  const groupRanges = useMemo(() => {
+    const ranges = {};
+    activities.forEach(a => {
+      if (!a.g || !a.f) return;
+      const key = `${(a.a || "").trim()}-${a.g}`;
+      const [d, m, y] = a.f.split("/");
+      const date = new Date(y, m - 1, d);
+      if (!ranges[key]) {
+        ranges[key] = { start: date, end: date, startStr: a.f, endStr: a.f };
+      } else {
+        if (date < ranges[key].start) {
+          ranges[key].start = date;
+          ranges[key].startStr = a.f;
+        }
+        if (date > ranges[key].end) {
+          ranges[key].end = date;
+          ranges[key].endStr = a.f;
+        }
+      }
+    });
+    return ranges;
+  }, [activities]);
+
+  const proposals = useMemo(() => {
+    return activities.map(activity => {
+      const auditorName = (activity.a || "").trim();
+      const c = activeConsultants[auditorName];
+
+      const clientName = activity.e;
+      const baseClient = CLIENT_LOOKUP[clientName] || {};
+      const customClient = customClientInfo[clientName] || {};
+      const client = { ...baseClient, ...customClient };
+
+      const destFullAddress = client.address || EXTRA_CLIENT_INFO[activity.e]?.address || client.municipality || activity.r;
+      const isGenericAddress = !client.address && !EXTRA_CLIENT_INFO[activity.e]?.address;
+
+      if (!c) {
+        return {
+          ...activity,
+          consultant: { base: "Desconocido" },
+          cName: auditorName,
+          tType: "local",
+          needsTravel: false,
+          originAddress: "N/A",
+          originMuni: "N/A",
+          originDisplay: "N/A",
+          destAddress: destFullAddress,
+          destMuni: client.municipality || activity.r,
+          destDisplay: activity.r,
+          isGenericAddress,
+          routeLabel: "N/A",
+          startDate: activity.f,
+          endDate: activity.f,
+          km: 0
+        };
+      }
+
+      const tType = getTransportType(c.region, activity.r, activity.e, c.pref, c.island, client.island, c.base, client.municipality, client);
+      const originMuni = c.base || "Desconocido";
+      const originCCAA = normalizeRegion(c.region);
+      const isOriginIsland = ISLAND_REGIONS.includes(originCCAA);
+      const originDisplay = isOriginIsland ? (c.island || originCCAA) : originCCAA;
+
+      const destMuni = client.municipality || activity.r;
+      // Prioritize data from clientData.json over inference (inference is fallback only)
+      const destCCAA = normalizeRegion(client.region || inferRegionFromMuni(destMuni) || activity.r);
+      const isDestIsland = ISLAND_REGIONS.includes(destCCAA);
+      const destIsland = client.island || inferIslandFromMuni(destMuni);
+      const destDisplay = isDestIsland ? (destIsland || destCCAA) : destCCAA;
+
+      const routeLabel = tType === "local" ? "Transporte Local" : `${originMuni} / ${originDisplay} → ${destMuni} / ${destDisplay}`;
+
+      const groupKey = `${auditorName}-${activity.g}`;
+      const range = groupRanges[groupKey];
+      const startDate = range ? range.startStr : activity.f;
+      const endDate = range ? range.endStr : activity.f;
+
+      const distKey = `${c.address || c.base}|${destFullAddress}`;
+      const km = (tType === "vehiculo" || tType === "auto" || tType === "local")
+        ? (realDistances[distKey] || estimateDistance(c.address || c.base, destFullAddress))
+        : 0;
+
+      return {
+        ...activity,
+        consultant: c,
+        cName: auditorName,
+        tType,
+        needsTravel: tType !== "local",
+        originAddress: c.address || c.base,
+        originMuni,
+        originDisplay,
+        destAddress: destFullAddress,
+        destMuni,
+        destDisplay,
+        isGenericAddress,
+        routeLabel,
+        startDate,
+        endDate,
+        km
+      };
+    });
+  }, [activities, activeConsultants, groupRanges, customClientInfo, realDistances]);
+
+  const filtered = useMemo(() => {
+    return proposals.filter(p => {
+      // Logic for finalized tabs
+      if (view === "proposals" && finalizedIds.has(p.id)) return false;
+      if (view === "managed" && !finalizedIds.has(p.id)) return false;
+
+      if (filterAuditor && p.cName !== filterAuditor) return false;
+      if (filterRegion && p.r !== filterRegion) return false;
+
+      if (filterDateStart || filterDateEnd) {
+        const [d, m, y] = p.f.split("/");
+        const pDate = new Date(y, m - 1, d);
+        if (filterDateStart) {
+          const startDate = new Date(filterDateStart);
+          if (pDate < startDate) return false;
+        }
+        if (filterDateEnd) {
+          const endDate = new Date(filterDateEnd);
+          if (pDate > endDate) return false;
+        }
+      }
+
+      if (filterTransport === "viaje") {
+        if (p.tType === "vehiculo") return false;
+      } else if (Array.isArray(filterTransport)) {
+        if (!filterTransport.includes(p.tType)) return false;
+      } else if (filterTransport && p.tType !== filterTransport) {
+        return false;
+      }
+      return true;
+    }).sort((a, b) => {
+      // If in managed view, group by consultant and group first
+      if (view === "managed") {
+        if (a.cName !== b.cName) return a.cName.localeCompare(b.cName);
+        if (a.g !== b.g) return (a.g || "").localeCompare(b.g || "");
+      }
+
+      // Prioritize travel (viajes) over own vehicle
+      const isTravelA = a.tType !== "vehiculo";
+      const isTravelB = b.tType !== "vehiculo";
+      if (isTravelA && !isTravelB) return -1;
+      if (!isTravelA && isTravelB) return 1;
+
+      // Secondary sort: Date
+      const [da, ma, ya] = a.f.split("/");
+      const [db, mb, yb] = b.f.split("/");
+      const dateA = new Date(ya, ma - 1, da);
+      const dateB = new Date(yb, mb - 1, db);
+      if (dateA - dateB !== 0) return dateA - dateB;
+
+      return a.e.localeCompare(b.e);
+    });
+  }, [proposals, filterAuditor, filterRegion, filterTransport, filterDateStart, filterDateEnd, finalizedIds, view]);
+
+  const stats = useMemo(() => {
+    const s = { total: proposals.length, pending: 0, managed: 0, vuelo: 0, tren: 0, vehiculo: 0, auto: 0, byMonth: {} };
+    proposals.forEach(p => {
+      // Monthly breakdown: parse DD/MM/YYYY -> YYYY-MM, or use _importMonth
+      let month = p._importMonth || "";
+      if (!month && p.f) {
+        const parts = p.f.split("/");
+        if (parts.length === 3) month = `${parts[2]}-${parts[1].padStart(2, "0")}`;
+      }
+      if (!month) month = "sin-fecha";
+      if (!s.byMonth[month]) s.byMonth[month] = { imported: 0, managed: 0, pending: 0 };
+      s.byMonth[month].imported++;
+
+      if (finalizedIds.has(p.id)) {
+        s.managed++;
+        s.byMonth[month].managed++;
+      } else {
+        s.pending++;
+        s.byMonth[month].pending++;
+        const type = p.tType;
+        s[type] = (s[type] || 0) + 1;
+      }
+    });
+    return s;
+  }, [proposals, finalizedIds]);
+
+  const summaryByAuditor = useMemo(() => {
+    const m = {};
+    proposals.forEach(p => {
+      if (!m[p.cName]) m[p.cName] = { vuelo: 0, tren: 0, vehiculo: 0, auto: 0, total: 0, managed: 0, pending: 0, jornadas: 0, base: p.consultant.base };
+      m[p.cName].total++;
+      if (finalizedIds.has(p.id)) {
+        m[p.cName].managed++;
+      } else {
+        m[p.cName].pending++;
+        m[p.cName].jornadas += p.j;
+        const type = p.tType;
+        if (m[p.cName][type] !== undefined) {
+          m[p.cName][type]++;
+        }
+      }
+    });
+    return m;
+  }, [proposals, finalizedIds]);
+
+
   // Auth screens are rendered in the RENDER section below to avoid violating Rules of Hooks
 
   // Helper for CSV Parsing
@@ -3968,28 +4174,7 @@ export default function HSConsultingTravelPlanner() {
   }, [bookingTarget, proposals, finalizedIds]);
 
 
-  const groupRanges = useMemo(() => {
-    const ranges = {};
-    activities.forEach(a => {
-      if (!a.g || !a.f) return;
-      const key = `${(a.a || "").trim()}-${a.g}`;
-      const [d, m, y] = a.f.split("/");
-      const date = new Date(y, m - 1, d);
-      if (!ranges[key]) {
-        ranges[key] = { start: date, end: date, startStr: a.f, endStr: a.f };
-      } else {
-        if (date < ranges[key].start) {
-          ranges[key].start = date;
-          ranges[key].startStr = a.f;
-        }
-        if (date > ranges[key].end) {
-          ranges[key].end = date;
-          ranges[key].endStr = a.f;
-        }
-      }
-    });
-    return ranges;
-  }, [activities]);
+
 
   const updateConsultant = useCallback(async (name, updatedData) => {
     // If we are using valid customConsultants, update it. 
@@ -4043,184 +4228,13 @@ export default function HSConsultingTravelPlanner() {
     }
   }, [customConsultants, activities, customClientInfo, realDistances]);
 
-  const proposals = useMemo(() => {
-    return activities.map(activity => {
-      const auditorName = (activity.a || "").trim();
-      const c = activeConsultants[auditorName];
 
-      const clientName = activity.e;
-      const baseClient = CLIENT_LOOKUP[clientName] || {};
-      const customClient = customClientInfo[clientName] || {};
-      const client = { ...baseClient, ...customClient };
 
-      const destFullAddress = client.address || EXTRA_CLIENT_INFO[activity.e]?.address || client.municipality || activity.r;
-      const isGenericAddress = !client.address && !EXTRA_CLIENT_INFO[activity.e]?.address;
 
-      if (!c) {
-        return {
-          ...activity,
-          consultant: { base: "Desconocido" },
-          cName: auditorName,
-          tType: "local",
-          needsTravel: false,
-          originAddress: "N/A",
-          originMuni: "N/A",
-          originDisplay: "N/A",
-          destAddress: destFullAddress,
-          destMuni: client.municipality || activity.r,
-          destDisplay: activity.r,
-          isGenericAddress,
-          routeLabel: "N/A",
-          startDate: activity.f,
-          endDate: activity.f,
-          km: 0
-        };
-      }
 
-      const tType = getTransportType(c.region, activity.r, activity.e, c.pref, c.island, client.island, c.base, client.municipality, client);
-      const originMuni = c.base || "Desconocido";
-      const originCCAA = normalizeRegion(c.region);
-      const isOriginIsland = ISLAND_REGIONS.includes(originCCAA);
-      const originDisplay = isOriginIsland ? (c.island || originCCAA) : originCCAA;
 
-      const destMuni = client.municipality || activity.r;
-      // Prioritize data from clientData.json over inference (inference is fallback only)
-      const destCCAA = normalizeRegion(client.region || inferRegionFromMuni(destMuni) || activity.r);
-      const isDestIsland = ISLAND_REGIONS.includes(destCCAA);
-      const destIsland = client.island || inferIslandFromMuni(destMuni);
-      const destDisplay = isDestIsland ? (destIsland || destCCAA) : destCCAA;
 
-      const routeLabel = tType === "local" ? "Transporte Local" : `${originMuni} / ${originDisplay} → ${destMuni} / ${destDisplay}`;
 
-      const groupKey = `${auditorName}-${activity.g}`;
-      const range = groupRanges[groupKey];
-      const startDate = range ? range.startStr : activity.f;
-      const endDate = range ? range.endStr : activity.f;
-
-      const distKey = `${c.address || c.base}|${destFullAddress}`;
-      const km = (tType === "vehiculo" || tType === "auto" || tType === "local")
-        ? (realDistances[distKey] || estimateDistance(c.address || c.base, destFullAddress))
-        : 0;
-
-      return {
-        ...activity,
-        consultant: c,
-        cName: auditorName,
-        tType,
-        needsTravel: tType !== "local",
-        originAddress: c.address || c.base,
-        originMuni,
-        originDisplay,
-        destAddress: destFullAddress,
-        destMuni,
-        destDisplay,
-        isGenericAddress,
-        routeLabel,
-        startDate,
-        endDate,
-        km
-      };
-    });
-  }, [activities, activeConsultants, groupRanges, customClientInfo]);
-
-  const filtered = useMemo(() => {
-    return proposals.filter(p => {
-      // Logic for finalized tabs
-      if (view === "proposals" && finalizedIds.has(p.id)) return false;
-      if (view === "managed" && !finalizedIds.has(p.id)) return false;
-
-      if (filterAuditor && p.cName !== filterAuditor) return false;
-      if (filterRegion && p.r !== filterRegion) return false;
-
-      if (filterDateStart || filterDateEnd) {
-        const [d, m, y] = p.f.split("/");
-        const pDate = new Date(y, m - 1, d);
-        if (filterDateStart) {
-          const startDate = new Date(filterDateStart);
-          if (pDate < startDate) return false;
-        }
-        if (filterDateEnd) {
-          const endDate = new Date(filterDateEnd);
-          if (pDate > endDate) return false;
-        }
-      }
-
-      if (filterTransport === "viaje") {
-        if (p.tType === "vehiculo") return false;
-      } else if (Array.isArray(filterTransport)) {
-        if (!filterTransport.includes(p.tType)) return false;
-      } else if (filterTransport && p.tType !== filterTransport) {
-        return false;
-      }
-      return true;
-    }).sort((a, b) => {
-      // If in managed view, group by consultant and group first
-      if (view === "managed") {
-        if (a.cName !== b.cName) return a.cName.localeCompare(b.cName);
-        if (a.g !== b.g) return (a.g || "").localeCompare(b.g || "");
-      }
-
-      // Prioritize travel (viajes) over own vehicle
-      const isTravelA = a.tType !== "vehiculo";
-      const isTravelB = b.tType !== "vehiculo";
-      if (isTravelA && !isTravelB) return -1;
-      if (!isTravelA && isTravelB) return 1;
-
-      // Secondary sort: Date
-      const [da, ma, ya] = a.f.split("/");
-      const [db, mb, yb] = b.f.split("/");
-      const dateA = new Date(ya, ma - 1, da);
-      const dateB = new Date(yb, mb - 1, db);
-      if (dateA - dateB !== 0) return dateA - dateB;
-
-      return a.e.localeCompare(b.e);
-    });
-  }, [proposals, filterAuditor, filterRegion, filterTransport, filterDateStart, filterDateEnd, finalizedIds, view]);
-
-  const stats = useMemo(() => {
-    const s = { total: proposals.length, pending: 0, managed: 0, vuelo: 0, tren: 0, vehiculo: 0, auto: 0, byMonth: {} };
-    proposals.forEach(p => {
-      // Monthly breakdown: parse DD/MM/YYYY -> YYYY-MM, or use _importMonth
-      let month = p._importMonth || "";
-      if (!month && p.f) {
-        const parts = p.f.split("/");
-        if (parts.length === 3) month = `${parts[2]}-${parts[1].padStart(2, "0")}`;
-      }
-      if (!month) month = "sin-fecha";
-      if (!s.byMonth[month]) s.byMonth[month] = { imported: 0, managed: 0, pending: 0 };
-      s.byMonth[month].imported++;
-
-      if (finalizedIds.has(p.id)) {
-        s.managed++;
-        s.byMonth[month].managed++;
-      } else {
-        s.pending++;
-        s.byMonth[month].pending++;
-        const type = p.tType;
-        s[type] = (s[type] || 0) + 1;
-      }
-    });
-    return s;
-  }, [proposals, finalizedIds]);
-
-  const summaryByAuditor = useMemo(() => {
-    const m = {};
-    proposals.forEach(p => {
-      if (!m[p.cName]) m[p.cName] = { vuelo: 0, tren: 0, vehiculo: 0, auto: 0, total: 0, managed: 0, pending: 0, jornadas: 0, base: p.consultant.base };
-      m[p.cName].total++;
-      if (finalizedIds.has(p.id)) {
-        m[p.cName].managed++;
-      } else {
-        m[p.cName].pending++;
-        m[p.cName].jornadas += p.j;
-        const type = p.tType;
-        if (m[p.cName][type] !== undefined) {
-          m[p.cName][type]++;
-        }
-      }
-    });
-    return m;
-  }, [proposals, finalizedIds]);
 
   const handleManualGroup = () => {
     if (selectedIds.size < 1) return;
