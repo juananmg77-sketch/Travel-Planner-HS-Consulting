@@ -669,27 +669,22 @@ export async function setActivityManagedStatus(activityId, isManaged) {
 export async function bulkSetManagedStatus(updates) {
     if (!isSupabaseConfigured()) return false;
 
-    const managedIds = updates.filter(u => u.isManaged).map(u => u.id);
-    const pendingIds = updates.filter(u => !u.isManaged).map(u => u.id);
+    for (const u of updates) {
+        const payload = {
+            status: u.isManaged ? 'managed' : 'pending',
+            managed_at: u.isManaged ? new Date().toISOString() : null
+        };
+        // Update expedition_id if a group ID was specified in the update
+        if (u.g) payload.expedition_id = u.g;
 
-    if (managedIds.length > 0) {
-        const { error } = await supabase
+        await supabase
             .from('activities')
-            .update({ status: 'managed', managed_at: new Date().toISOString() })
-            .in('id', managedIds);
-        if (error) console.error('Error bulk-managing activities:', error);
+            .update(payload)
+            .eq('id', u.id);
     }
-
-    if (pendingIds.length > 0) {
-        const { error } = await supabase
-            .from('activities')
-            .update({ status: 'pending', managed_at: null })
-            .in('id', pendingIds);
-        if (error) console.error('Error bulk-reverting activities:', error);
-    }
-
     return true;
 }
+
 
 /**
  * Get all activity IDs that have status='managed'.

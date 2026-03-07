@@ -4262,17 +4262,45 @@ export default function HSConsultingTravelPlanner() {
     const next = new Set(finalizedIds);
     const isManaged = view !== "managed";
     const updates = [];
-    // If consultantName is given, only finalize activities of that consultant (+ optional group)
+
+    // The set of activities being processed
     const idsToProcess = consultantName
       ? new Set(proposals.filter(p => selectedIds.has(p.id) && p.cName === consultantName && (!groupId || p.g === groupId)).map(p => p.id))
       : selectedIds;
 
+    // When finalizing, if items don't have a common groupId, generate a "Seal ID" to keep them together forever
+    let fallbackG = groupId;
+    if (isManaged && !fallbackG && idsToProcess.size > 0) {
+      fallbackG = `SEAL-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
+    }
+
+    // Update internal activities state to apply the new group ID if needed
+    if (isManaged && fallbackG) {
+      setActivities(prev => prev.map(a => {
+        if (idsToProcess.has(a.id) && !a.g) {
+          return { ...a, g: fallbackG };
+        }
+        return a;
+      }));
+    }
+
     idsToProcess.forEach(id => {
       if (view === "managed") next.delete(id);
       else next.add(id);
-      updates.push({ id, isManaged });
+
+      // Determine what group ID to send to DB
+      let gForDB = undefined;
+      if (isManaged) {
+        const item = activities.find(a => a.id === id);
+        // Use existing group if it has one, otherwise use the new fallbackG
+        gForDB = (item && item.g) ? item.g : fallbackG;
+      }
+
+      updates.push({ id, isManaged, g: gForDB });
     });
+
     setFinalizedIds(next);
+
     // Only clear the processed IDs from selection, keep other consultants' selections
     if (consultantName) {
       setSelectedIds(prev => {
@@ -4283,9 +4311,11 @@ export default function HSConsultingTravelPlanner() {
     } else {
       setSelectedIds(new Set());
     }
-    // Sync to Supabase in bulk
+
+    // Sync to Supabase in bulk (now including potential group ID updates)
     if (updates.length > 0) bulkSetManagedStatus(updates);
   };
+
 
   const handleDataLoaded = (newData) => {
     setActivities(prev => [...prev, ...newData]);
