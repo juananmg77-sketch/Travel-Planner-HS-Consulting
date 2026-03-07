@@ -3,7 +3,7 @@ import Papa from "papaparse";
 import CLIENT_DATA from './clientData.json';
 import CLIENT_DATA_raw from './clientData.json';
 import { signIn, signOut, getCurrentSession, getUserProfile, onAuthStateChange } from './supabaseAuth';
-import { upsertEstablishment, updateActivityAddress, updateActivityTransport, logAction, getAllDistances, upsertDistance, getValidatedEstablishments, getAllAccommodationHotels, syncAccommodationHotels, setActivityManagedStatus, bulkSetManagedStatus, getManagedActivityIds, getAllActivities as getAllActivitiesFromDB, saveBookingConfirmation, getAllBookingConfirmations, upsertConsultant, deleteConsultant as deleteConsultantDB, getAllConsultants } from './supabaseService';
+import { uploadActivities, upsertEstablishment, updateActivityAddress, updateActivityTransport, logAction, getAllDistances, upsertDistance, getValidatedEstablishments, getAllAccommodationHotels, syncAccommodationHotels, setActivityManagedStatus, bulkSetManagedStatus, getManagedActivityIds, getAllActivities as getAllActivitiesFromDB, saveBookingConfirmation, getAllBookingConfirmations, upsertConsultant, deleteConsultant as deleteConsultantDB, getAllConsultants } from './supabaseService';
 
 const CLIENT_LOOKUP = CLIENT_DATA.reduce((acc, client) => {
   acc[client.name] = client;
@@ -3904,8 +3904,7 @@ export default function HSConsultingTravelPlanner() {
   }, []);
 
   // Handler for creating ad-hoc trips from the modal
-  const handleSaveNewTrip = useCallback((items, shouldBook = false) => {
-
+  const handleSaveNewTrip = useCallback(async (items, shouldBook = false) => {
     // Deduplicate against existing activities
     const existingSeen = new Set(activities.map(a => `${a.e}|${a.f}|${a.a}`.toLowerCase()));
     const newItems = items.filter(item => {
@@ -3918,8 +3917,28 @@ export default function HSConsultingTravelPlanner() {
       return;
     }
 
+    // 1. Sync to Supabase before local state to get valid IDs if possible
+    // (Note: uploadActivities doesn't return the IDs, but it ensures persistence)
+    const syncOk = await uploadActivities(newItems, null, shouldBook ? 'managed' : 'pending');
+    if (!syncOk) {
+      console.warn("⚠️ Falló la sincronización con Supabase, guardando localmente.");
+    }
+
+    // 2. Update local activities state
     setActivities(prev => [...prev, ...newItems]);
     setShowNewTrip(false);
+
+    // 3. Mark as finalized IMMEDIATELY if "Gestionar" was selected
+    // This makes it work like the "Finalize" button as requested.
+    if (shouldBook) {
+      const idsToFinalize = newItems.map(i => i.id);
+      setFinalizedIds(prev => {
+        const next = new Set(prev);
+        idsToFinalize.forEach(id => next.add(id));
+        return next;
+      });
+      // status is already set in uploadActivities
+    }
 
     // Check for unmatched establishments (same logic as CSV upload)
     const unmatchedNames = [];
@@ -3931,7 +3950,8 @@ export default function HSConsultingTravelPlanner() {
       const inCustom = !!customClientInfo[item.e];
       if (!inClientData && !inCustom && !unmatchedNames.includes(item.e)) {
         unmatchedNames.push(item.e);
-        if (item.r) regionMap[item.e] = item.r;
+        const itemWithRegion = newItems.find(i => i.e === item.e && i.r);
+        if (itemWithRegion) regionMap[item.e] = itemWithRegion.r;
       }
     });
 
@@ -3939,8 +3959,8 @@ export default function HSConsultingTravelPlanner() {
       setPendingNewEstablishments({ names: unmatchedNames, regionMap });
     }
 
-    // Automatically open booking modal if requested OR if it's a priority transport (vuelo/tren/auto) and we have items
-    if (newItems.length > 0 && (shouldBook || true)) {
+    // Automatically open booking modal if requested
+    if (newItems.length > 0) {
       const firstItem = newItems[0];
       const consultantName = (firstItem.a || "").trim();
       const c = activeConsultants[consultantName];
@@ -3954,7 +3974,6 @@ export default function HSConsultingTravelPlanner() {
 
         // Open if user clicked "Guardar y Reservar" OR if it's definitely a flight/train/car (previous automation)
         if (shouldBook || ["vuelo", "tren", "auto"].includes(tType)) {
-
           const activityToBook = {
             ...firstItem,
             startDate: firstItem.f,
@@ -3977,7 +3996,8 @@ export default function HSConsultingTravelPlanner() {
 
     setUploadFlash(`✈️ Viaje ad-hoc creado: ${newItems.length} ${newItems.length === 1 ? 'visita añadida' : 'visitas añadidas'}.`);
     setTimeout(() => setUploadFlash(null), 4000);
-  }, [activities, customClientInfo, activeConsultants]);
+  }, [activities, customClientInfo, activeConsultants, finalizedIds, bulkSetManagedStatus, uploadActivities]);
+
 
   const handleClearData = () => {
     setActivities([]);

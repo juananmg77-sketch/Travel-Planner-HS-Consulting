@@ -172,7 +172,7 @@ export async function syncConsultants(consultantMap) {
 // ============================================================
 // ACTIVITIES
 // ============================================================
-export async function uploadActivities(activities, periodId) {
+export async function uploadActivities(activities, periodId, defaultStatus = 'pending') {
     if (!isSupabaseConfigured()) return false;
 
     // First, look up consultant IDs
@@ -202,7 +202,7 @@ export async function uploadActivities(activities, periodId) {
             visit_date_raw: act.f,
             days: act.j || 1,
             group_chain: act.g || null,
-            status: 'pending'
+            status: defaultStatus
         };
     });
 
