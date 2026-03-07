@@ -1218,7 +1218,7 @@ function NewTripModal({ consultants, establishments, onSave, onClose }) {
   );
   const canSave = consultant && validVisits.length > 0;
 
-  const handleSave = () => {
+  const handleSave = (shouldBook = false) => {
     if (!canSave) return;
     const c = consultants[consultant];
     const items = validVisits.map(v => ({
@@ -1233,8 +1233,9 @@ function NewTripModal({ consultants, establishments, onSave, onClose }) {
       _isAdHoc: true, // Mark as ad-hoc trip
       _isOther: v.isCustom // Flag if it's "Otros" custom hotel
     }));
-    onSave(items);
+    onSave(items, shouldBook);
   };
+
 
   // Auto-fill dates: if first date set & others empty, suggest consecutive dates
   const suggestDates = () => {
@@ -1447,23 +1448,36 @@ function NewTripModal({ consultants, establishments, onSave, onClose }) {
           >
             Cancelar
           </button>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <span style={{ fontSize: 12, color: "#94A3B8" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ fontSize: 12, color: "#94A3B8", marginRight: 10 }}>
               {validVisits.length} {validVisits.length === 1 ? "visita válida" : "visitas válidas"}
             </span>
             <button
-              onClick={handleSave}
+              onClick={() => handleSave(false)}
+              disabled={!canSave}
+              style={{
+                background: "white", color: "#475569",
+                border: "1px solid #E2E8F0", padding: "10px 20px", borderRadius: 10,
+                fontSize: 13, fontWeight: 600, cursor: canSave ? "pointer" : "not-allowed"
+              }}
+            >
+              Solo Guardar
+            </button>
+            <button
+              onClick={() => handleSave(true)}
               disabled={!canSave}
               style={{
                 background: canSave ? "#0D4BD9" : "#94A3B8", color: "white",
-                border: "none", padding: "10px 28px", borderRadius: 10,
+                border: "none", padding: "10px 24px", borderRadius: 10,
                 fontSize: 13, fontWeight: 700, cursor: canSave ? "pointer" : "not-allowed",
-                display: "flex", alignItems: "center", gap: 8
+                display: "flex", alignItems: "center", gap: 8,
+                boxShadow: "0 4px 12px rgba(13, 75, 217, 0.2)"
               }}
             >
-              ✈️ Crear Viaje ({validVisits.length} {validVisits.length === 1 ? "visita" : "visitas"})
+              🚀 Guardar y Gestionar Reserva
             </button>
           </div>
+
         </div>
       </div>
     </div>
@@ -3682,7 +3696,8 @@ export default function HSConsultingTravelPlanner() {
   }, []);
 
   // Handler for creating ad-hoc trips from the modal
-  const handleSaveNewTrip = useCallback((items) => {
+  const handleSaveNewTrip = useCallback((items, shouldBook = false) => {
+
     // Deduplicate against existing activities
     const existingSeen = new Set(activities.map(a => `${a.e}|${a.f}|${a.a}`.toLowerCase()));
     const newItems = items.filter(item => {
@@ -3716,8 +3731,8 @@ export default function HSConsultingTravelPlanner() {
       setPendingNewEstablishments({ names: unmatchedNames, regionMap });
     }
 
-    // Automatically open booking modal for the new trip if it's a flight, train, or car
-    if (newItems.length > 0) {
+    // Automatically open booking modal if requested OR if it's a priority transport (vuelo/tren/auto) and we have items
+    if (newItems.length > 0 && (shouldBook || true)) {
       const firstItem = newItems[0];
       const consultantName = (firstItem.a || "").trim();
       const c = activeConsultants[consultantName];
@@ -3729,7 +3744,9 @@ export default function HSConsultingTravelPlanner() {
 
         const tType = getTransportType(c.region, firstItem.r, firstItem.e, c.pref, c.island, mergedClient.island, c.base, mergedClient.municipality, mergedClient);
 
-        if (["vuelo", "tren", "auto"].includes(tType)) {
+        // Open if user clicked "Guardar y Reservar" OR if it's definitely a flight/train/car (previous automation)
+        if (shouldBook || ["vuelo", "tren", "auto"].includes(tType)) {
+
           const activityToBook = {
             ...firstItem,
             startDate: firstItem.f,
