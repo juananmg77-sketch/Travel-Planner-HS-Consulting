@@ -5283,56 +5283,58 @@ export default function HSConsultingTravelPlanner() {
                                   </div>
 
                                   {/* Accommodation + Transport Bookings */}
+                                  {/* Integrated Logistics & Bookings (Ultra-Compressed) */}
+                                  {/* Ultra-Integrated Logistics Rows */}
+                                  {/* Ticket-Style Integrated Logistics */}
                                   {hasBookings && (
-                                    <div style={{ display: "grid", gridTemplateColumns: accomBooking && Object.keys(uniqueBookings).length > 0 ? "1fr 1fr" : "1fr", gap: 8 }}>
-                                      {/* Accommodation (Compressed) */}
+                                    <div style={{ background: "white", border: "1px solid #E2E8F0", borderRadius: 12, overflow: "hidden", marginTop: 6, boxShadow: "0 1px 2px rgba(0,0,0,0.05)" }}>
+                                      {/* Primary Acommodation Row */}
                                       {accomBooking && (
-                                        <div style={{ background: "#F0FDF4", border: "1px solid #86EFAC", borderRadius: 10, padding: 10 }}>
-                                          <div style={{ fontSize: 9, fontWeight: 800, color: "#16A34A", textTransform: "uppercase", marginBottom: 6 }}>🛏️ ALOJAMIENTO CONSULTOR</div>
-                                          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                                            <div style={{ width: 30, height: 30, background: "#DCFCE7", borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, flexShrink: 0 }}>🏨</div>
-                                            <div style={{ flex: 1, minWidth: 0 }}>
-                                              <div style={{ fontWeight: 800, fontSize: 12, color: "#15803D", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{accomBooking.hotel}</div>
-                                              <div style={{ fontSize: 10, color: "#16A34A", fontWeight: 600 }}>📍 {accomBooking.zona}</div>
+                                        <div style={{ padding: "8px 12px", background: "linear-gradient(to right, #F0FDF4, #FFFFFF)", display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: Object.keys(uniqueBookings).length > 0 ? "1px dashed #E2E8F0" : "none" }}>
+                                          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                                            <div style={{ width: 28, height: 28, borderRadius: 8, background: "#DCFCE7", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, border: "1px solid #BBF7D0" }}>🏨</div>
+                                            <div>
+                                              <div style={{ fontWeight: 800, fontSize: 12, color: "#166534" }}>{accomBooking.hotel}</div>
+                                              <div style={{ fontSize: 10, color: "#16A34A", fontWeight: 600 }}>📍 {accomBooking.zona} <span style={{ marginLeft: 6, background: "#DCFCE7", padding: "1px 4px", borderRadius: 4, fontSize: 8 }}>ALOJAMIENTO</span></div>
                                             </div>
-                                            {accomBooking.locator && (
-                                              <div style={{ background: "white", padding: "4px 8px", borderRadius: 6, border: "1px solid #BBF7D0", textAlign: "center" }}>
-                                                <div style={{ fontWeight: 900, fontSize: 12, color: "#0D4BD9", letterSpacing: 1 }}>{accomBooking.locator}</div>
-                                              </div>
-                                            )}
                                           </div>
+                                          {accomBooking.locator && (
+                                            <div style={{ background: "white", padding: "4px 10px", borderRadius: 6, border: "1px solid #BBF7D0", textAlign: "right", boxShadow: "0 1px 1px rgba(0,0,0,0.03)" }}>
+                                              <div style={{ fontSize: 8, color: "#15803D", fontWeight: 800, marginBottom: 1 }}>LOCATOR</div>
+                                              <div style={{ fontWeight: 900, fontSize: 12, color: "#2563EB", fontFamily: "monospace" }}>{accomBooking.locator}</div>
+                                            </div>
+                                          )}
                                         </div>
                                       )}
 
-                                      {/* Transport (Compressed) */}
+                                      {/* Secondary Transport Grid */}
                                       {Object.keys(uniqueBookings).length > 0 && (
-                                        <div style={{ background: "#F0F9FF", border: "1px solid #BAE6FD", borderRadius: 10, padding: 10 }}>
-                                          <div style={{ fontSize: 9, fontWeight: 800, color: "#0369A1", textTransform: "uppercase", marginBottom: 6 }}>🎫 RESERVAS TRANSPORTE</div>
-                                          <div style={{ display: "grid", gap: 6 }}>
-                                            {Object.values(uniqueBookings).map(({ url, data }, idx) => {
-                                              const segments = data?.segments || [{ type: data?.type || "ida", locator: data?.locator || data, date: data?.date || "" }];
-                                              return (
-                                                <div key={idx} style={{ background: "white", borderRadius: 6, padding: 6, border: "1px solid #E0F2FE" }}>
-                                                  <div style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 4 }}>
-                                                    <span style={{ fontSize: 12 }}>{getBookingIcon(url)}</span>
-                                                    <span style={{ fontWeight: 800, fontSize: 10, color: "#0369A1" }}>{getCompanyName(url)}</span>
-                                                  </div>
-                                                  <div style={{ display: "grid", gap: 3 }}>
-                                                    {segments.map((seg, si) => (
-                                                      <div key={si} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "3px 6px", background: "#F8FAFC", borderRadius: 4, fontSize: 10 }}>
-                                                        <span style={{ fontWeight: 600, color: "#64748B" }}>
-                                                          {seg.type === "ida" ? "🛫" : seg.type === "vuelta" ? "🛬" : seg.type === "recogida" ? "🏁" : seg.type === "devolución" ? "🔄" : "•"} {seg.type.charAt(0).toUpperCase() + seg.type.slice(1)}
-                                                        </span>
-                                                        <div>
-                                                          <span style={{ fontWeight: 800, color: "#0D4BD9" }}>{seg.locator}</span>
-                                                        </div>
-                                                      </div>
-                                                    ))}
+                                        <div style={{ padding: 8, background: "#F8FAFC", display: "grid", gridTemplateColumns: Object.values(uniqueBookings).length > 1 ? "1fr 1fr" : "1fr", gap: 6 }}>
+                                          {Object.values(uniqueBookings).map(({ url, data }, trIdx) => {
+                                            const segments = data?.segments || [{ type: data?.type || "ida", locator: data?.locator || data, date: data?.date || "" }];
+                                            const company = getCompanyName(url);
+                                            const icon = getBookingIcon(url);
+                                            return (
+                                              <div key={trIdx} style={{ background: "white", borderRadius: 8, padding: "6px 8px", border: "1px solid #E0F2FE", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+                                                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
+                                                  <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                                                    <span style={{ fontSize: 12 }}>{icon}</span>
+                                                    <span style={{ fontWeight: 800, fontSize: 9, color: "#0369A1", textTransform: "uppercase" }}>{company}</span>
                                                   </div>
                                                 </div>
-                                              );
-                                            })}
-                                          </div>
+                                                <div style={{ display: "grid", gridTemplateColumns: segments.length > 1 ? "1fr 1fr" : "1fr", gap: 4 }}>
+                                                  {segments.map((seg, si) => (
+                                                    <div key={si} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "2px 6px", background: "#F0F9FF", borderRadius: 4, fontSize: 9, minWidth: 0 }}>
+                                                      <span style={{ fontWeight: 700, color: "#0369A1", fontSize: 8, whiteSpace: "nowrap", marginRight: 4 }}>
+                                                        {seg.type === "ida" ? "🛫 IDA" : seg.type === "vuelta" ? "🛬 VLT" : seg.type === "recogida" ? "🏁 REC" : seg.type === "devolución" ? "🔄 DEV" : seg.type.toUpperCase()}
+                                                      </span>
+                                                      <span style={{ fontWeight: 900, color: "#2563EB", fontFamily: "monospace", overflow: "hidden", textOverflow: "ellipsis" }}>{seg.locator}</span>
+                                                    </div>
+                                                  ))}
+                                                </div>
+                                              </div>
+                                            );
+                                          })}
                                         </div>
                                       )}
                                     </div>
