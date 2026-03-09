@@ -81,30 +81,87 @@ const HS_COLORS = {
 // DATA & CONSTANTS
 // ============================================================
 const CONSULTANTS = {
-  "Ainhoa Rodriguez": { base: "Maria de la Salut", email: "", region: "Islas Baleares", pref: "auto", island: "Mallorca", airport: "PMI", station: null, address: "C/ San Alonso, Maria de la Salut, 07519, Mallorca" },
+  "Ainhoa Rodriguez": { base: "Maria de la Salut", email: "", region: "Islas Baleares", pref: "auto", island: "Mallorca", airport: "PMI", station: null, address: "C/ San Alonso, 15D, Maria de la Salut, 07519" },
   "Alejandra Rubilar": { base: "Alicante", email: "arubilar@hsconsulting.es", region: "Valencia", pref: "vehiculo", island: null, airport: "ALC", station: "Alicante", address: "Concejal Lorenzo Llaneras 1 Esc. 7, 7A, 03005 Alicante" },
-  "Alejandro Cardona Paz": { base: "Las Palmas de Gran Canaria", email: "acardona@hsconsulting.es", region: "Islas Canarias", pref: "auto", island: "Gran Canaria", airport: "LPA", station: null },
+  "Alejandro Cardona Paz": { base: "Las Palmas de Gran Canaria", email: "acardona@hsconsulting.es", region: "Islas Canarias", pref: "auto", island: "Gran Canaria", airport: "LPA", station: null, address: "C/ Dr. Enrique Nacher, 6, 4º O, Arucas, España" },
   "Alejandro Piñero": { base: "Madrid", email: "apinero@hsconsulting.es", region: "Madrid", pref: "tren", island: null, airport: "MAD", station: "Madrid-Puerta de Atocha", address: "Plaza General Maroto 1, 2B, 28045 Madrid" },
-  "Andrés Lorite": { base: "Algeciras", email: "alorite@hsconsulting.es", region: "Andalucía", pref: "vehiculo", island: null, airport: "AGP", station: "Algeciras", address: "Calle Cielo 288, 11207 Algeciras, Cádiz" },
-  "Arminda Navarro Perez": { base: "Firgas", email: "anavarro@hsconsulting.es", region: "Islas Canarias", pref: "auto", island: "Gran Canaria", airport: "LPA", station: null, address: "Firgas, Las Palmas" },
-  "Carmen Barrientos": { base: "Palma de Mallorca", email: "cbarrientos@hsconsulting.es", region: "Islas Baleares", pref: "auto", island: "Mallorca", airport: "PMI", station: null },
-  "Damaris Segura Bello": { base: "Calvià, Mallorca", email: "dsegura@hsconsulting.es", region: "Islas Baleares", pref: "auto", island: "Mallorca", airport: "PMI", station: null },
+  "Alondra Zorrilla": { base: "", email: "azorrilla@hsconsulting.es", region: null, pref: "auto", island: null, airport: null, station: null, address: "" },
+  "Analista 1": { base: "", email: "analista1@hsconsulting.es", region: null, pref: "auto", island: null, airport: null, station: null, address: "" },
+  "Analista 2": { base: "", email: "analista2@hsconsulting.es", region: null, pref: "auto", island: null, airport: null, station: null, address: "" },
+  "Analista 3": { base: "", email: "analista3@hsconsulting.es", region: null, pref: "auto", island: null, airport: null, station: null, address: "" },
+  "Analista4": { base: "", email: "analista4@hsconsulting.es", region: null, pref: "auto", island: null, airport: null, station: null, address: "" },
+  "Andrés Lorite": { base: "Algeciras", email: "alorite@hsconsulting.es", region: "Andalucía", pref: "vehiculo", island: null, airport: "AGP", station: "Algeciras", address: "Calle cielo 288, Algeciras, Cádiz" },
+  "Angibell Santana": { base: "", email: "asantana@hsconsulting.es", region: null, pref: "auto", island: null, airport: null, station: null, address: "" },
+  "Arminda Navarro Perez": { base: "Firgas", email: "anavarro@hsconsulting.es", region: "Islas Canarias", pref: "auto", island: "Gran Canaria", airport: "LPA", station: null, address: "Agaete, Gran Canaria" },
+  "Carmen Barrientos": { base: "Palma de Mallorca", email: "cbarrientos@hsconsulting.es", region: "Islas Baleares", pref: "auto", island: "Mallorca", airport: "PMI", station: null, address: "C/ Sementera, 21, 2a" },
+  "Claudia Arciniega Ing. Industrias Alimentarias": { base: "", email: "carciniega@hsconsulting.es", region: null, pref: "auto", island: null, airport: null, station: null, address: "" },
+  "Cristian Quezada Montero": { base: "", email: "cquezada@hsconsulting.es", region: null, pref: "auto", island: null, airport: null, station: null, address: "" },
+  "Cristobal Romero": { base: "", email: "cromero@hsconsulting.es", region: null, pref: "auto", island: null, airport: null, station: null, address: "" },
+  "Damaris Segura Bello": { base: "Calvià, Mallorca", email: "dsegura@hsconsulting.es", region: "Islas Baleares", pref: "auto", island: "Mallorca", airport: "PMI", station: null, address: "Gran vía 16, Calvià, El Toro, 07180" },
+  "Darielys Areche": { base: "", email: "darielys@hsconsulting.es", region: null, pref: "auto", island: null, airport: null, station: null, address: "" },
+  "Darielys Nataly Areche Santana": { base: "", email: "dareche@hsconsulting.es", region: null, pref: "auto", island: null, airport: null, station: null, address: "" },
+  "David Perez": { base: "", email: "dperez@hsconsulting.es", region: null, pref: "auto", island: null, airport: null, station: null, address: "" },
+  "Director Laboratorio": { base: "", email: "dirlab@hsconsulting.es", region: null, pref: "auto", island: null, airport: null, station: null, address: "" },
+  "Emilia Sánchez": { base: "San Martín / Alcudia, Mendoza / Mallorca", email: "", region: null, pref: "auto", island: null, airport: null, station: null, address: "San Martín / Alcudia, Mendoza / Mallorca" },
+  "Ena Estrada": { base: "", email: "eestrada@hsconsulting.es", region: null, pref: "auto", island: null, airport: null, station: null, address: "" },
+  "Fillipe Ferraz": { base: "", email: "fferraz@hsconsulting.es", region: null, pref: "auto", island: null, airport: null, station: null, address: "" },
+  "Francisco Corzo": { base: "", email: "fcorzo@hsconsulting.es", region: null, pref: "auto", island: null, airport: null, station: null, address: "" },
   "Froilán Cortés": { base: "Barcelona", email: "fcortes@hsconsulting.es", region: "Cataluña", pref: "vehiculo", island: null, airport: "BCN", station: "Barcelona-Sants", address: "C/ Horta 223 bajos 2º, 08032 Barcelona" },
   "Gorka Sanchez Ortega": { base: "Tenerife", email: "gsanchezortega@hsconsulting.es", region: "Islas Canarias", pref: "vehiculo", island: "Tenerife", airport: "TFN", station: null, address: "Tenerife" },
   "Guillem Exposito Flores": { base: "Mollet del Vallés", email: "gexposito@hsconsulting.es", region: "Cataluña", pref: "vehiculo", island: null, airport: "BCN", station: "Barcelona-Sants", address: "Pablo Picasso 52, 3B, Mollet del Vallés, Barcelona" },
-  "Iris Belver Prats": { base: "Porto Colom", email: "", region: "Islas Baleares", pref: "auto", island: "Mallorca", airport: "PMI", station: null, address: "Porto Colom - Felanitx, Mallorca" },
+  "HS LAB": { base: "", email: "lab@hsconsulting.es", region: null, pref: "auto", island: null, airport: null, station: null, address: "" },
+  "Henrry Concepción": { base: "", email: "hconcepcion@hsconsulting.es", region: null, pref: "auto", island: null, airport: null, station: null, address: "" },
+  "Heron Ernesto Montero": { base: "", email: "hmontero@hsconsulting.es", region: null, pref: "auto", island: null, airport: null, station: null, address: "" },
+  "Indira Hernández Esteve": { base: "Las Palmas de Gran Canaria, 35018", email: "", region: null, pref: "auto", island: null, airport: null, station: null, address: "Las Palmas de Gran Canaria, 35018" },
+  "Iris Belver Prats": { base: "Porto Colom", email: "", region: "Islas Baleares", pref: "auto", island: "Mallorca", airport: "PMI", station: null, address: "Porto Colom, Islas Baleares, 07670" },
   "Isabella Alejandra Baricot Varas": { base: "Santa Cruz de Tenerife", email: "ibaricot@hsconsulting.es", region: "Islas Canarias", pref: "auto", island: "Tenerife", airport: "TFN", station: null },
-  "José Martinez": { base: "San Miguel de Abona", email: "jmartinez@hsconsulting.es", region: "Islas Canarias", pref: "auto", island: "Tenerife", airport: "TFS", station: null, address: "Calle la Polka 22, puerta 41, Llano del Camello, San Miguel de Abona, Tenerife Sur" },
+  "Isamara Moo": { base: "", email: "isamara@hsconsulting.es", region: null, pref: "auto", island: null, airport: null, station: null, address: "" },
+  "Jabes Aneudys Acevedo Quiñones": { base: "", email: "jacevedo@hsconsulting.es", region: null, pref: "auto", island: null, airport: null, station: null, address: "" },
+  "Javier Laguna": { base: "", email: "laguna@hsconsulting.es", region: null, pref: "auto", island: null, airport: null, station: null, address: "" },
+  "Javier Méndez": { base: "", email: "jmendez@hsconsulting.es", region: null, pref: "auto", island: null, airport: null, station: null, address: "" },
+  "Jerolee Spence": { base: "", email: "jspence@hsconsulting.es", region: null, pref: "auto", island: null, airport: null, station: null, address: "" },
+  "Jonhatan Reyes": { base: "", email: "jreyes@hsconsulting.es", region: null, pref: "auto", island: null, airport: null, station: null, address: "" },
+  "José Martinez": { base: "San Miguel de Abona", email: "jmartinez@hsconsulting.es", region: "Islas Canarias", pref: "auto", island: "Tenerife", airport: "TFS", station: null, address: "Calle La Polka, N 22, La Quinta de Abona Puerta 41 Llano del Camello, San Miguel de Abona, 38639, España" },
+  "José María Berrio": { base: "Palma de Mallorca", email: "jmberrio@hsconsulting.es", region: null, pref: "auto", island: null, airport: null, station: null, address: "" },
+  "Juan Antonio Muñoz": { base: "Calvià, Mallorca", email: "jamunoz@hsconsulting.es", region: null, pref: "auto", island: null, airport: null, station: null, address: "" },
+  "Karla": { base: "", email: "operaciones@hsconsulting.es", region: null, pref: "auto", island: null, airport: null, station: null, address: "" },
+  "Lab Canarias": { base: "", email: "tecnicocanarias@hsconsulting.es", region: null, pref: "auto", island: null, airport: null, station: null, address: "" },
+  "Leopoldo Montoya ": { base: "México", email: "lmontoya@hsconsulting.es", region: null, pref: "auto", island: null, airport: null, station: null, address: "" },
   "Leyninger Perez": { base: "Madrid", email: "lperez@hsconsulting.es", region: "Madrid", pref: "tren", island: null, airport: "MAD", station: "Madrid-Puerta de Atocha", address: "Las Rosas, Madrid 28022" },
+  "Liliana Salcedo": { base: "", email: "lsalcedo@hsconsulting.es", region: null, pref: "auto", island: null, airport: null, station: null, address: "" },
+  "Lizzi Jimenez": { base: "", email: "ljimenez@hsconsulting.es", region: null, pref: "auto", island: null, airport: null, station: null, address: "" },
+  "Luis F. Gordillo": { base: "", email: "lfgordillo@hsconsulting.es", region: null, pref: "auto", island: null, airport: null, station: null, address: "" },
+  "Marcos Lopez": { base: "", email: "mlopez@hsconsulting.es", region: null, pref: "auto", island: null, airport: null, station: null, address: "" },
+  "Marcos López": { base: "", email: "contabilidad@hsconsulting.es", region: null, pref: "auto", island: null, airport: null, station: null, address: "" },
+  "Marina Jaume": { base: "Calle Águila, 8, Palma de Mallorca, 07015, España", email: "", region: null, pref: "auto", island: null, airport: null, station: null, address: "Calle Águila, 8, Palma de Mallorca, 07015, España" },
+  "María Álvarez": { base: "", email: "malvarez@hsconsulting.es", region: null, pref: "auto", island: null, airport: null, station: null, address: "" },
+  "Mauren Moguel": { base: "", email: "mmoguel@hsconsulting.es", region: null, pref: "auto", island: null, airport: null, station: null, address: "" },
   "Mercedes Hernandez Moyano": { base: "Las Palmas de Gran Canaria", email: "mhernandezmoyano@hsconsulting.es", region: "Islas Canarias", pref: "auto", island: "Gran Canaria", airport: "LPA", station: null, address: "Calle Tiziano 61, 35017 Las Palmas" },
-  "Miquel Nadal Calvó": { base: "Santa Margalida", email: "mnadal@hsconsulting.es", region: "Islas Baleares", pref: "auto", island: "Mallorca", airport: "PMI", station: null, address: "C/ De n March 20 1ºA, 07450 Santa Margalida, Mallorca" },
-  "Mireia Bei Sola Llabrés": { base: "Palma de Mallorca", email: "msola@hsconsulting.es", region: "Islas Baleares", pref: "auto", island: "Mallorca", airport: "PMI", station: null },
-  "Olalla Bartolomé Roselló": { base: "Ibiza", email: "", region: "Islas Baleares", pref: "auto", island: "Ibiza", airport: "IBZ", station: null, address: "C/ Pare Antoni Guasch 8 puerta 16, 07800 Ibiza" },
-  "Rita Artiles": { base: "San Bartolomé de Tirajana", email: "", region: "Islas Canarias", pref: "auto", island: "Gran Canaria", airport: "LPA", station: null, address: "San Bartolomé de Tirajana, Las Palmas" },
-  "Rocío Gálvez Mata": { base: "Las Palmas de Gran Canaria", email: "rgalvez@hsconsulting.es", region: "Islas Canarias", pref: "auto", island: "Gran Canaria", airport: "LPA", station: null },
+  "Miquel Nadal Calvó": { base: "Santa Margalida", email: "mnadal@hsconsulting.es", region: "Islas Baleares", pref: "auto", island: "Mallorca", airport: "PMI", station: null, address: "Can Picafort, Islas Baleares, 07458" },
+  "Mireia Bei Sola Llabrés": { base: "Palma de Mallorca", email: "msola@hsconsulting.es", region: "Islas Baleares", pref: "auto", island: "Mallorca", airport: "PMI", station: null, address: "Palma de Mallorca, Islas Baleares" },
+  "Miriam González González": { base: "San Juan, Telde, 35200", email: "", region: null, pref: "auto", island: null, airport: null, station: null, address: "San Juan, Telde, 35200" },
+  "Mohamed Benelfeki": { base: "", email: "mbenelkefi@hsconsulting.es", region: null, pref: "auto", island: null, airport: null, station: null, address: "" },
+  "Nikolaos": { base: "", email: "Nikolaos@hsconsulting.es", region: null, pref: "auto", island: null, airport: null, station: null, address: "" },
+  "Olalla Bartolomé Roselló": { base: "Ibiza", email: "", region: "Islas Baleares", pref: "auto", island: "Ibiza", airport: "IBZ", station: null, address: "C/ de Còrsega, 663, Barcelona, 08026" },
+  "Olga Escalante López": { base: "", email: "oescalante@hsconsulting.es", region: null, pref: "auto", island: null, airport: null, station: null, address: "" },
+  "Pedro Zapotecas": { base: "", email: "pzapotecas@hsconsulting.es", region: null, pref: "auto", island: null, airport: null, station: null, address: "" },
+  "Ramiro Cabrera": { base: "", email: "eramiro@hsconsulting.es", region: null, pref: "auto", island: null, airport: null, station: null, address: "" },
+  "Ricardo Barahona": { base: "", email: "rbarahona@hsconsulting.es", region: null, pref: "auto", island: null, airport: null, station: null, address: "" },
+  "Rita Artiles": { base: "San Bartolomé de Tirajana", email: "", region: "Islas Canarias", pref: "auto", island: "Gran Canaria", airport: "LPA", station: null, address: "C/ Bonsai 162, San Bartolomé de Tirajana" },
+  "Rocío Gálvez Mata": { base: "Las Palmas de Gran Canaria", email: "rgalvez@hsconsulting.es", region: "Islas Canarias", pref: "auto", island: "Gran Canaria", airport: "LPA", station: null, address: "La Carlota, Córdoba" },
+  "Rodrigo Sosa": { base: "", email: "rsosa@hsconsulting.es", region: null, pref: "auto", island: null, airport: null, station: null, address: "" },
+  "Rosa Fortunato": { base: "", email: "rfortunato@hsconsulting.es", region: null, pref: "auto", island: null, airport: null, station: null, address: "" },
   "Sergi Garcia Villaraco": { base: "Mallorca", email: "sgarcia@hsconsulting.es", region: "Islas Baleares", pref: "auto", island: "Mallorca", airport: "PMI", station: null },
-  "Álvaro Ramos González": { base: "Sevilla", email: "aramos@hsconsulting.es", region: "Andalucía", pref: "vehiculo", island: null, airport: "SVQ", station: "Sevilla-Santa Justa" },
+  "Sergio Alberto Monegro Mejía": { base: "", email: "smonegro@hsconsulting.es", region: null, pref: "auto", island: null, airport: null, station: null, address: "" },
+  "Shanice Ebanks": { base: "Jamaica", email: "sebanks@hsconsulting.es", region: null, pref: "auto", island: null, airport: null, station: null, address: "" },
+  "VALPE 21": { base: "", email: "info@valpe21.com", region: null, pref: "auto", island: null, airport: null, station: null, address: "" },
+  "Víctor Castro Carela": { base: "", email: "vcastro@hsconsulting.es", region: null, pref: "auto", island: null, airport: null, station: null, address: "" },
+  "Yair Arriola ": { base: "", email: "yarriola@hsconsulting.es", region: null, pref: "auto", island: null, airport: null, station: null, address: "" },
+  "Yolanda Crespo": { base: "", email: "laboratorio.bioquim@hotmail.com", region: null, pref: "auto", island: null, airport: null, station: null, address: "" },
+  "Yuleika Veloz": { base: "", email: "yveloz@hsconsulting.es", region: null, pref: "auto", island: null, airport: null, station: null, address: "" },
+  "Álvaro Ramos González": { base: "Sevilla", email: "aramos@hsconsulting.es", region: "Andalucía", pref: "vehiculo", island: null, airport: "SVQ", station: "Sevilla-Santa Justa", address: "Algeciras, Cádiz" },
 };
+
 
 const REGION_DEST = {
   "Islas Canarias": { airport: "LPA", city: "Las Palmas" },
@@ -3390,7 +3447,14 @@ export default function HSConsultingTravelPlanner() {
     const saved = localStorage.getItem("hs_travel_consultants");
     return saved ? JSON.parse(saved) : null;
   });
-  const activeConsultants = useMemo(() => customConsultants || CONSULTANTS, [customConsultants]);
+  const activeConsultants = useMemo(() => {
+    const raw = (customConsultants && Object.keys(customConsultants).length > 0) ? { ...CONSULTANTS, ...customConsultants } : CONSULTANTS;
+    const filtered = {};
+    for (const k in raw) {
+      if (!raw[k]._deleted) filtered[k] = raw[k];
+    }
+    return filtered;
+  }, [customConsultants]);
 
   const [approvedIds, setApprovedIds] = useState(() => {
     const saved = localStorage.getItem("hs_travel_approved");
@@ -4063,7 +4127,7 @@ export default function HSConsultingTravelPlanner() {
   const handleDeleteConsultant = useCallback(async (name) => {
     setCustomConsultants(prev => {
       const next = prev ? { ...prev } : { ...CONSULTANTS };
-      delete next[name];
+      next[name] = { _deleted: true };
       return next;
     });
     // Persist to Supabase
@@ -4136,19 +4200,10 @@ export default function HSConsultingTravelPlanner() {
       ? bookingTarget.selectedIds
       : [bookingTarget.activity.id];
 
-    // Seal the group if booking multiple items together or they don't have one
-    let assignedG = null;
-    if (idsToUpdate.length > 1) {
-      // Find if they already share a group
-      const existingGs = new Set(proposals.filter(p => idsToUpdate.includes(p.id)).map(p => p.g).filter(Boolean));
-      if (existingGs.size !== 1) {
-        assignedG = `SEAL-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
-      } else {
-        assignedG = Array.from(existingGs)[0];
-      }
-    }
+    // Assign a unique group seal for this transaction ensuring full isolation
+    const assignedG = `GRP-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
 
-    // Update internal activities state to apply the new group ID if needed
+    // Update internal activities state to apply the new group ID
     if (assignedG) {
       setActivities(prev => prev.map(a => {
         if (idsToUpdate.includes(a.id)) {
@@ -4199,7 +4254,7 @@ export default function HSConsultingTravelPlanner() {
   const updateConsultant = useCallback(async (name, updatedData) => {
     // If we are using valid customConsultants, update it. 
     // If we are using default CONSULTANTS, we need to clone it to custom first to avoid mutating constant.
-    let nextState = customConsultants ? { ...customConsultants } : { ...CONSULTANTS };
+    let nextState = (customConsultants && Object.keys(customConsultants).length > 0) ? { ...CONSULTANTS, ...customConsultants } : { ...CONSULTANTS };
 
     // Ensure we preserve fields that might not be in editForm but exist in original
     nextState[name] = { ...nextState[name], ...updatedData };
@@ -4328,17 +4383,17 @@ export default function HSConsultingTravelPlanner() {
       : selectedIds;
 
 
-    // Use Seal ID for any plural finalization to keep them unified
+    // Enforce an explicit Group ID for ANY size of managed status, isolating it
     let fallbackG = null;
-    if (isManaged && idsToProcess.size > 1) {
-      fallbackG = `SEAL-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
+    if (isManaged) {
+      fallbackG = `GRP-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
     }
 
 
     // Update internal activities state to apply the new group ID if needed
     if (isManaged && fallbackG) {
       setActivities(prev => prev.map(a => {
-        if (idsToProcess.has(a.id) && !a.g) {
+        if (idsToProcess.has(a.id)) {
           return { ...a, g: fallbackG };
         }
         return a;
@@ -4349,14 +4404,8 @@ export default function HSConsultingTravelPlanner() {
       if (view === "managed") next.delete(id);
       else next.add(id);
 
-      // Determine what group ID to send to DB
-      let gForDB = undefined;
-      if (isManaged) {
-        const item = activities.find(a => a.id === id);
-        // Use existing group if it has one, otherwise use the new fallbackG
-        gForDB = (item && item.g) ? item.g : fallbackG;
-      }
-
+      // FORCE New Group ID ALWAYS
+      let gForDB = isManaged ? fallbackG : undefined;
       updates.push({ id, isManaged, g: gForDB });
     });
 
@@ -4807,14 +4856,30 @@ export default function HSConsultingTravelPlanner() {
             const idsToUpdate = bookingTarget.selectedIds && bookingTarget.selectedIds.length > 0
               ? bookingTarget.selectedIds
               : [bookingTarget.activity.id];
+
+            const fallbackG = `GRP-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
+
+            setActivities(prev => prev.map(a => {
+              if (idsToUpdate.includes(a.id)) {
+                return { ...a, g: fallbackG };
+              }
+              return a;
+            }));
+
             const nextFinalized = new Set(finalizedIds);
             const managedUpdates = [];
             idsToUpdate.forEach(id => {
               nextFinalized.add(id);
-              managedUpdates.push({ id, isManaged: true });
+              managedUpdates.push({ id, isManaged: true, g: fallbackG });
             });
             setFinalizedIds(nextFinalized);
             if (managedUpdates.length > 0) bulkSetManagedStatus(managedUpdates);
+
+            setSelectedIds(prev => {
+              const remaining = new Set(prev);
+              idsToUpdate.forEach(id => remaining.delete(id));
+              return remaining;
+            });
           }}
         />
       )}
@@ -4933,7 +4998,8 @@ export default function HSConsultingTravelPlanner() {
                             lastDate: pDate,
                             firstDateStr: p.f,
                             lastDateStr: p.f,
-                            fPrints: [...pFPrints]
+                            fPrints: [...pFPrints],
+                            _g: p.g
                           };
                           expMap[key] = expObj;
                           expeditions.push(expObj);
@@ -4991,7 +5057,8 @@ export default function HSConsultingTravelPlanner() {
                               firstDateStr: p.f,
                               lastDateStr: p.f,
                               _bucketKey: bucketKey,
-                              fPrints: [...pFPrints]
+                              fPrints: [...pFPrints],
+                              _g: null
                             };
                             expeditions.push(expObj);
                           }
@@ -5014,6 +5081,8 @@ export default function HSConsultingTravelPlanner() {
                           if (!exB || !exB.fPrints || exB.fPrints.length === 0) continue;
                           // Must be the same consultant
                           if (exA.consultant !== exB.consultant) continue;
+                          // NO MERGE si alguno tiene un ID de grupo explícito (aislamiento total)
+                          if (exA._g || exB._g) continue;
                           // Check if they share any transport fingerprint
                           const shared = exA.fPrints.some(fp => exB.fPrints.includes(fp));
                           if (shared) {
@@ -5055,6 +5124,15 @@ export default function HSConsultingTravelPlanner() {
                           const exB = expeditions[j];
                           if (!exB) continue;
                           if (exA.consultant !== exB.consultant) continue;
+
+                          // NO MERGE si alguno tiene un ID de grupo explícito (aislamiento total)
+                          if (exA._g || exB._g) continue;
+
+                          // NO MERGE if they are too far apart in time (> 14 days)
+                          const gapDays = Math.abs(exA.firstDate - exB.lastDate) / (1000 * 60 * 60 * 24);
+                          const gapDays2 = Math.abs(exB.firstDate - exA.lastDate) / (1000 * 60 * 60 * 24);
+                          if (!isNaN(gapDays) && !isNaN(gapDays2) && Math.min(gapDays, gapDays2) > 14) continue;
+
                           // Get accommodation for exB
                           let sharedAccom = false;
                           exB.proposals.forEach(p => {
@@ -5326,7 +5404,7 @@ export default function HSConsultingTravelPlanner() {
                                                   {segments.map((seg, si) => (
                                                     <div key={si} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "2px 6px", background: "#F0F9FF", borderRadius: 4, fontSize: 9, minWidth: 0 }}>
                                                       <span style={{ fontWeight: 700, color: "#0369A1", fontSize: 8, whiteSpace: "nowrap", marginRight: 4 }}>
-                                                        {seg.type === "ida" ? "🛫 IDA" : seg.type === "vuelta" ? "🛬 VLT" : seg.type === "recogida" ? "🏁 REC" : seg.type === "devolución" ? "🔄 DEV" : seg.type.toUpperCase()}
+                                                        {seg.type === "ida" ? "🛫 IDA" : seg.type === "vuelta" ? "🛬 VLT" : seg.type === "recogida" ? "🏁 REC" : seg.type === "devolución" ? "🔄 DEV" : (seg.type ? String(seg.type).toUpperCase() : "🔀 OTR")}
                                                       </span>
                                                       <span style={{ fontWeight: 900, color: "#2563EB", fontFamily: "monospace", overflow: "hidden", textOverflow: "ellipsis" }}>{seg.locator}</span>
                                                     </div>
