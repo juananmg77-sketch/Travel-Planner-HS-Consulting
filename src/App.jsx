@@ -1582,7 +1582,7 @@ function BulkGeocodeModal({ onClose, customClientInfo, onValidate }) {
         if (results.length > 0) {
           const r = results[0];
           return {
-            address: r.display_name,
+            address: buildAddressFromNominatim(r) || r.display_name,
             municipality: r.address?.city || r.address?.town || r.address?.village || hotel.municipality
           };
         }
@@ -1996,6 +1996,23 @@ function toDisplayDate(dateStr) {
 // ====================================================================
 // CLIENT HOTEL DB PANEL — Listado y edición de hoteles/clientes
 // ====================================================================
+// Detecta y limpia el patrón Nominatim: "[Nombre lugar], [Número], [Calle…], …"
+// → "[Calle…] [Número], …"
+const STREET_KW = ['Calle','C/','Avenida','Av.','Avda.','Avinguda','Plaza','Pl.','Plaça','Paseo','P.º','Pz.','Rúa','Rua','Carrer','Carretera','Ctra.','Camino','Cami','Urbanización','Polígono','Bulevar','Travesía','Glorieta','Ronda','Vía','Via','Cjón.','Cjón','Calleja'];
+function cleanNominatimAddress(address) {
+  if (!address) return address;
+  const parts = address.split(',').map(s => s.trim());
+  if (parts.length < 3) return address;
+  const firstNotStreet = !STREET_KW.some(kw => parts[0].toLowerCase().startsWith(kw.toLowerCase()));
+  const firstNoDigit   = parts[0].length > 0 && !/^\d/.test(parts[0]);
+  const secondIsNumber = /^\d+[a-zA-Z]?$/.test(parts[1]);
+  const thirdIsStreet  = STREET_KW.some(kw => parts[2].toLowerCase().startsWith(kw.toLowerCase()));
+  if (firstNotStreet && firstNoDigit && secondIsNumber && thirdIsStreet) {
+    return [`${parts[2]} ${parts[1]}`, ...parts.slice(3)].join(', ');
+  }
+  return address;
+}
+
 function ClientHotelDBPanel({ onClose, allClients, customClientInfo, onSave }) {
   const [search, setSearch] = useState("");
   const [editingName, setEditingName] = useState(null);
@@ -2009,6 +2026,34 @@ function ClientHotelDBPanel({ onClose, allClients, customClientInfo, onSave }) {
   const showFlash = (msg, type = "ok") => {
     setFlash({ msg, type });
     setTimeout(() => setFlash(null), 4000);
+  };
+
+  // -------------------------------------------------------
+  // LIMPIAR DIRECCIONES CON FORMATO NOMINATIM INCORRECTO
+  // Detecta "[Nombre lugar], [Número], [Calle], …" y lo convierte
+  // en "[Calle] [Número], …"
+  // -------------------------------------------------------
+  const handleCleanAddresses = () => {
+    const allHotels = [...allClients.map(c => c.name), ...Object.keys(customClientInfo)];
+    const seen = new Set();
+    let cleaned = 0;
+    allHotels.forEach(name => {
+      if (seen.has(name)) return;
+      seen.add(name);
+      const info = customClientInfo[name] || {};
+      const raw = info.address || "";
+      const fixed = cleanNominatimAddress(raw);
+      if (fixed !== raw && raw) {
+        onSave(name, { ...info, address: fixed });
+        cleaned++;
+      }
+    });
+    showFlash(
+      cleaned > 0
+        ? `🧹 ${cleaned} dirección${cleaned > 1 ? "es" : ""} corregida${cleaned > 1 ? "s" : ""} (formato calle + número)`
+        : "✅ No se encontraron direcciones con formato incorrecto",
+      cleaned > 0 ? "ok" : "ok"
+    );
   };
 
   // -------------------------------------------------------
@@ -2225,6 +2270,18 @@ function ClientHotelDBPanel({ onClose, allClients, customClientInfo, onSave }) {
                 title="Enviar direcciones de Travel Planner → BBDD Maestra de Activos (Lovable)"
               >
                 ⬆️ Push a Lovable
+              </button>
+              <button
+                onClick={handleCleanAddresses}
+                style={{
+                  background: "linear-gradient(135deg, #059669, #047857)", color: "white", border: "none",
+                  padding: "9px 16px", borderRadius: 10, fontSize: 12, fontWeight: 700,
+                  cursor: "pointer", display: "flex", alignItems: "center", gap: 6,
+                  boxShadow: "0 4px 12px rgba(5,150,105,0.3)"
+                }}
+                title="Corrige el formato incorrecto de direcciones geocodificadas: [Nombre lugar, Nº, Calle] → [Calle Nº]"
+              >
+                🧹 Limpiar direcciones
               </button>
               <button onClick={onClose} style={{ background: "none", border: "none", fontSize: 22, cursor: "pointer", color: "#999" }}>✕</button>
             </div>
