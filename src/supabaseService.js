@@ -443,6 +443,20 @@ export async function upsertEstablishment(name, data) {
     return !error;
 }
 
+/**
+ * Elimina un establecimiento de Supabase por nombre.
+ * Usado al fusionar/eliminar duplicados.
+ */
+export async function deleteEstablishment(name) {
+    if (!isSupabaseConfigured()) return false;
+    const { error } = await supabase
+        .from('establishments')
+        .delete()
+        .eq('name', name);
+    if (error) console.error('Error deleting establishment:', error);
+    return !error;
+}
+
 // Bulk sync from clientData.json
 export async function syncEstablishments(clientDataArray) {
     if (!isSupabaseConfigured()) return false;

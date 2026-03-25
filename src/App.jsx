@@ -3,7 +3,7 @@ import Papa from "papaparse";
 import CLIENT_DATA from './clientData.json';
 import CLIENT_DATA_raw from './clientData.json';
 import { signIn, signOut, getCurrentSession, getUserProfile, onAuthStateChange } from './supabaseAuth';
-import { uploadActivities, upsertEstablishment, updateActivityAddress, updateActivityTransport, logAction, getAllDistances, upsertDistance, getValidatedEstablishments, getAllAccommodationHotels, syncAccommodationHotels, setActivityManagedStatus, bulkSetManagedStatus, getManagedActivityIds, getAllActivities as getAllActivitiesFromDB, saveBookingConfirmation, getAllBookingConfirmations, upsertConsultant, deleteConsultant as deleteConsultantDB, getAllConsultants } from './supabaseService';
+import { uploadActivities, upsertEstablishment, deleteEstablishment, updateActivityAddress, updateActivityTransport, logAction, getAllDistances, upsertDistance, getValidatedEstablishments, getAllAccommodationHotels, syncAccommodationHotels, setActivityManagedStatus, bulkSetManagedStatus, getManagedActivityIds, getAllActivities as getAllActivitiesFromDB, saveBookingConfirmation, getAllBookingConfirmations, upsertConsultant, deleteConsultant as deleteConsultantDB, getAllConsultants } from './supabaseService';
 import { fetchLovableHoteles, updateLovableHotel } from './lovableService';
 
 const CLIENT_LOOKUP = CLIENT_DATA.reduce((acc, client) => {
@@ -2712,21 +2712,19 @@ function ClientHotelDBPanel({ onClose, allClients, customClientInfo, onSave, onP
             const tgtRegion = (tgtData.region || baseMatch.region || "").trim();
             const bestRegion = srcRegion.length >= tgtRegion.length ? srcRegion : tgtRegion;
 
-            onSave(tgtName, {
-              ...tgtData,
-              address: bestAddress,
-              municipality: bestMuni,
-              region: bestRegion,
-              island: bestIsland,
-            });
-            if (onPersist && bestAddress) onPersist(tgtName, bestAddress, bestMuni);
-            // Delete the duplicate
-            onSave(srcName, null); // null = delete signal
-            showFlash(`✅ Fusionado "${srcName}" → "${tgtName}"`);
+            // 1. Guardar en estado local
+            onSave(tgtName, { ...tgtData, address: bestAddress, municipality: bestMuni, region: bestRegion, island: bestIsland });
+            // 2. Persistir en Supabase con TODOS los campos (incluida isla)
+            upsertEstablishment(tgtName, { address: bestAddress, municipality: bestMuni, region: bestRegion, island: bestIsland });
+            // 3. Eliminar duplicado de estado local Y de Supabase
+            onSave(srcName, null);
+            deleteEstablishment(srcName);
+            showFlash(`✅ Fusionado "${srcName}" → "${tgtName}" y guardado en Supabase`);
           }}
           onDelete={(name) => {
             onSave(name, null);
-            showFlash(`🗑 Eliminado "${name}"`);
+            deleteEstablishment(name);
+            showFlash(`🗑 Eliminado "${name}" de estado y Supabase`);
           }}
         />
       )}
