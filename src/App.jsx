@@ -2241,7 +2241,7 @@ function DuplicateDetectorPanel({ onClose, allClients, customClientInfo, onMerge
   );
 }
 
-function ClientHotelDBPanel({ onClose, allClients, customClientInfo, onSave, onPersist, onSync, syncStats, syncing }) {
+function ClientHotelDBPanel({ onClose, allClients, customClientInfo, onSave, onPersist, onSync, onClearStats, syncStats, syncing }) {
   const [search, setSearch] = useState("");
   const [editingName, setEditingName] = useState(null);
   const [editForm, setEditForm] = useState({});
@@ -2509,28 +2509,71 @@ function ClientHotelDBPanel({ onClose, allClients, customClientInfo, onSave, onP
             </div>
           </div>
 
-          {/* Resultado de la última sincronización */}
-          {syncStats && !syncStats.error && (
-            <div style={{ marginTop: 12, padding: "10px 16px", background: "#F0FDF4", border: "1px solid #86EFAC", borderRadius: 10, fontSize: 12 }}>
-              <div style={{ display: "flex", gap: 20, flexWrap: "wrap", marginBottom: syncStats.noAddress > 0 ? 8 : 0 }}>
-                <span>📊 <strong>{syncStats.total}</strong> en Lovable</span>
-                <span style={{ color: "#065F46" }}>✅ <strong>{syncStats.updated}</strong> actualizados</span>
-                {syncStats.newEntries > 0 && <span style={{ color: "#0369A1" }}>🆕 <strong>{syncStats.newEntries}</strong> nuevos importados</span>}
-                <span style={{ color: "#6B7280" }}>🔒 <strong>{syncStats.alreadyHas}</strong> ya tenían dirección</span>
-                {syncStats.noAddress > 0 && <span style={{ color: "#92400E" }}>📭 <strong>{syncStats.noAddress}</strong> sin dirección en Lovable</span>}
-                {syncStats.inactive > 0 && <span style={{ color: "#6B7280" }}>💤 <strong>{syncStats.inactive}</strong> inactivos</span>}
-                {syncStats.errors > 0 && <span style={{ color: "#991B1B" }}>❌ <strong>{syncStats.errors}</strong> errores</span>}
+          {/* Resultado de la última sincronización — modal cerrable */}
+          {syncStats && (
+            <div style={{
+              position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)",
+              display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999
+            }}>
+              <div style={{
+                background: "white", borderRadius: 16, padding: "28px 32px", maxWidth: 480, width: "90%",
+                boxShadow: "0 20px 60px rgba(0,0,0,0.25)", position: "relative"
+              }}>
+                <button
+                  onClick={() => onClearStats && onClearStats()}
+                  style={{ position: "absolute", top: 12, right: 14, background: "none", border: "none", fontSize: 20, cursor: "pointer", color: "#94A3B8" }}
+                >✕</button>
+                {syncStats.error ? (
+                  <>
+                    <div style={{ fontSize: 36, marginBottom: 12 }}>❌</div>
+                    <div style={{ fontWeight: 700, fontSize: 16, color: "#991B1B", marginBottom: 6 }}>Error de sincronización</div>
+                    <div style={{ fontSize: 13, color: "#6B7280" }}>{syncStats.error}</div>
+                  </>
+                ) : (
+                  <>
+                    <div style={{ fontSize: 36, marginBottom: 12 }}>🔄</div>
+                    <div style={{ fontWeight: 700, fontSize: 17, color: "#111827", marginBottom: 16 }}>Sincronización completada</div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 10, fontSize: 14 }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", padding: "8px 12px", background: "#F0FDF4", borderRadius: 8 }}>
+                        <span>✅ Actualizados</span><strong style={{ color: "#065F46" }}>{syncStats.updated}</strong>
+                      </div>
+                      {syncStats.newEntries > 0 && (
+                        <div style={{ display: "flex", justifyContent: "space-between", padding: "8px 12px", background: "#EFF6FF", borderRadius: 8 }}>
+                          <span>🆕 Nuevos importados</span><strong style={{ color: "#1D4ED8" }}>{syncStats.newEntries}</strong>
+                        </div>
+                      )}
+                      <div style={{ display: "flex", justifyContent: "space-between", padding: "8px 12px", background: "#F8FAFC", borderRadius: 8 }}>
+                        <span>🔒 Ya tenían dirección</span><strong style={{ color: "#6B7280" }}>{syncStats.alreadyHas}</strong>
+                      </div>
+                      {syncStats.noAddress > 0 && (
+                        <div style={{ display: "flex", justifyContent: "space-between", padding: "8px 12px", background: "#FFFBEB", borderRadius: 8 }}>
+                          <span>📭 Sin dirección en Lovable</span><strong style={{ color: "#92400E" }}>{syncStats.noAddress}</strong>
+                        </div>
+                      )}
+                      {syncStats.inactive > 0 && (
+                        <div style={{ display: "flex", justifyContent: "space-between", padding: "8px 12px", background: "#F8FAFC", borderRadius: 8 }}>
+                          <span>💤 Inactivos</span><strong style={{ color: "#9CA3AF" }}>{syncStats.inactive}</strong>
+                        </div>
+                      )}
+                      {syncStats.errors > 0 && (
+                        <div style={{ display: "flex", justifyContent: "space-between", padding: "8px 12px", background: "#FEF2F2", borderRadius: 8 }}>
+                          <span>❌ Errores</span><strong style={{ color: "#991B1B" }}>{syncStats.errors}</strong>
+                        </div>
+                      )}
+                    </div>
+                    <div style={{ marginTop: 12, fontSize: 11, color: "#94A3B8", textAlign: "right" }}>
+                      Total Lovable: {syncStats.total} registros
+                    </div>
+                  </>
+                )}
+                <button
+                  onClick={() => onClearStats && onClearStats()}
+                  style={{
+                    marginTop: 20, width: "100%", padding: "10px", background: "#0060AA", color: "white",
+                    border: "none", borderRadius: 10, fontSize: 14, fontWeight: 700, cursor: "pointer"
+                  }}
+                >Cerrar</button>
               </div>
-              {syncStats.noAddress > 0 && (
-                <div style={{ fontSize: 11, color: "#92400E", borderTop: "1px solid #FDE68A", paddingTop: 6 }}>
-                  ⚠️ <strong>{syncStats.noAddress}</strong> hoteles de Lovable aún no tienen dirección en la BBDD Maestra. Rellénala en la app HS Consulting para que sincronicen.
-                </div>
-              )}
-            </div>
-          )}
-          {syncStats?.error && (
-            <div style={{ marginTop: 12, padding: "10px 16px", background: "#FEF2F2", border: "1px solid #FCA5A5", borderRadius: 10, fontSize: 12, color: "#991B1B" }}>
-              ❌ {syncStats.error}
             </div>
           )}
 
@@ -2666,7 +2709,7 @@ function ClientHotelDBPanel({ onClose, allClients, customClientInfo, onSave, onP
                           Cancelar
                         </button>
                         <a
-                          href={`https://www.google.com/maps/search/${encodeURIComponent(editForm.address || h.name)}`}
+                          href={`https://www.google.com/maps/search/${encodeURIComponent([h.name, editForm.address].filter(Boolean).join(', '))}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           style={{ padding: "9px 14px", background: "#EEF2FF", color: "#4F46E5", border: "1.5px solid #A5B4FC", borderRadius: 8, fontSize: 13, fontWeight: 600, textDecoration: "none", whiteSpace: "nowrap" }}
@@ -6192,6 +6235,7 @@ export default function HSConsultingTravelPlanner() {
             }}
             onPersist={updateEstablishmentAddress}
             onSync={handleSyncFromLovable}
+            onClearStats={() => setSyncStats(null)}
             syncing={syncingLovable}
             syncStats={syncStats}
           />
