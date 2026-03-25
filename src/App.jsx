@@ -2036,7 +2036,7 @@ function ClientHotelDBPanel({ onClose, allClients, customClientInfo, onSave }) {
           byName[c.name.toLowerCase().trim()] = c.name;
         });
 
-        let matched = 0, updated = 0, skipped = 0, newEntries = 0;
+        let matched = 0, updated = 0, skipped = 0, newEntries = 0, alreadyHad = 0;
         const updates = {}; // { clientName: { address, municipality, region, island } }
 
         rows.forEach(row => {
@@ -2069,8 +2069,9 @@ function ClientHotelDBPanel({ onClose, allClients, customClientInfo, onSave }) {
           }
 
           if (!clientName) {
-            // No está en clientData — añadir como entrada nueva en customClientInfo
-            if (direccion) {
+            // No está en clientData — añadir como entrada nueva solo si TP no tiene nada
+            const existingNew = customClientInfo[nombre];
+            if (direccion && !(existingNew?.address || "").trim()) {
               updates[nombre] = {
                 address: direccion,
                 municipality: municipio,
@@ -2079,12 +2080,16 @@ function ClientHotelDBPanel({ onClose, allClients, customClientInfo, onSave }) {
                 _fromBBDD: true,
               };
               newEntries++;
+            } else if ((existingNew?.address || "").trim()) {
+              alreadyHad++;
             }
             return;
           }
 
           matched++;
-          if (direccion) {
+          const existingAddress = (customClientInfo[clientName]?.address || "").trim();
+          if (direccion && !existingAddress) {
+            // ✅ Solo importar si Travel Planner NO tiene dirección
             updates[clientName] = {
               ...(customClientInfo[clientName] || {}),
               address: direccion,
@@ -2094,6 +2099,9 @@ function ClientHotelDBPanel({ onClose, allClients, customClientInfo, onSave }) {
               _fromBBDD: true,
             };
             updated++;
+          } else if (existingAddress) {
+            // Ya tiene dirección en Travel Planner → respetar, no tocar
+            alreadyHad++;
           }
         });
 
@@ -2102,9 +2110,9 @@ function ClientHotelDBPanel({ onClose, allClients, customClientInfo, onSave }) {
           onSave(name, data);
         });
 
-        setImportStats({ matched, updated, skipped, newEntries, total: rows.length });
+        setImportStats({ matched, updated, skipped, newEntries, alreadyHad, total: rows.length });
         showFlash(
-          `✅ Sincronización completada: ${updated} direcciones actualizadas, ${newEntries} nuevas entradas, ${skipped} inactivos omitidos.`,
+          `✅ Pull completado: ${updated} direcciones importadas, ${newEntries} nuevas entradas, ${alreadyHad} ya tenían dirección (respetadas), ${skipped} inactivos omitidos.`,
           "ok"
         );
       },
@@ -2226,8 +2234,9 @@ function ClientHotelDBPanel({ onClose, allClients, customClientInfo, onSave }) {
           {importStats && (
             <div style={{ marginTop: 12, padding: "10px 16px", background: "#F0FDF4", border: "1px solid #86EFAC", borderRadius: 10, display: "flex", gap: 20, flexWrap: "wrap", fontSize: 12 }}>
               <span>📊 <strong>{importStats.total}</strong> filas procesadas</span>
-              <span style={{ color: "#065F46" }}>✅ <strong>{importStats.updated}</strong> direcciones actualizadas</span>
+              <span style={{ color: "#065F46" }}>✅ <strong>{importStats.updated}</strong> importadas</span>
               <span style={{ color: "#1D4ED8" }}>🆕 <strong>{importStats.newEntries}</strong> entradas nuevas</span>
+              <span style={{ color: "#6B7280" }}>🔒 <strong>{importStats.alreadyHad}</strong> ya tenían dirección (respetadas)</span>
               <span style={{ color: "#92400E" }}>⏭️ <strong>{importStats.skipped}</strong> inactivos omitidos</span>
             </div>
           )}
