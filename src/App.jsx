@@ -1760,118 +1760,38 @@ function Dashboard({ stats, summaryByAuditor, onNavigate, onTriggerPlanning, onT
           </div>
         </div>
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          <button
-            onClick={() => onNavigate("consultants")}
-            style={{
-              background: "white", color: "#334155", border: "1px solid #E2E8F0",
-              padding: "10px 16px", borderRadius: 10, fontSize: 12, fontWeight: 600,
-              cursor: "pointer", display: "flex", alignItems: "center", gap: 6,
-              transition: "all 0.2s ease", boxShadow: "0 1px 3px rgba(0,0,0,0.04)"
-            }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = "#94A3B8"; e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.08)"; e.currentTarget.style.transform = "translateY(-1px)"; }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = "#E2E8F0"; e.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.04)"; e.currentTarget.style.transform = "translateY(0)"; }}
-          >
-            <span style={{ fontSize: 16 }}>👥</span> Consultores
-          </button>
-          <button
-            onClick={onTriggerPlanning}
-            style={{
-              background: "linear-gradient(135deg, #0D4BD9 0%, #2563EB 100%)", color: "white", border: "none",
-              padding: "10px 18px", borderRadius: 10, fontSize: 12, fontWeight: 700,
-              cursor: "pointer", display: "flex", alignItems: "center", gap: 6,
-              boxShadow: "0 4px 14px rgba(13, 75, 217, 0.3)", transition: "all 0.2s ease"
-            }}
-            onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 6px 20px rgba(13, 75, 217, 0.4)"; e.currentTarget.style.transform = "translateY(-1px)"; }}
-            onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 4px 14px rgba(13, 75, 217, 0.3)"; e.currentTarget.style.transform = "translateY(0)"; }}
-          >
-            <span style={{ fontSize: 16 }}>📄</span> Importar CSV
-          </button>
-
-          <button
-            onClick={onTriggerNewTrip}
-            style={{
-              background: "linear-gradient(135deg, #10B981 0%, #059669 100%)", color: "white", border: "none",
-              padding: "10px 18px", borderRadius: 10, fontSize: 12, fontWeight: 700,
-              cursor: "pointer", display: "flex", alignItems: "center", gap: 6,
-              boxShadow: "0 4px 14px rgba(16, 185, 129, 0.3)", transition: "all 0.2s ease"
-            }}
-            onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 6px 20px rgba(16, 185, 129, 0.4)"; e.currentTarget.style.transform = "translateY(-1px)"; }}
-            onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 4px 14px rgba(16, 185, 129, 0.3)"; e.currentTarget.style.transform = "translateY(0)"; }}
-          >
-            <span style={{ fontSize: 16 }}>✈️</span> Nuevo Viaje
-          </button>
-
-          {onTriggerHotels && (
+          {/* Nuevo Viaje Manual */}
+          {onTriggerNewTrip && (
             <button
-              onClick={onTriggerHotels}
+              onClick={onTriggerNewTrip}
               style={{
-                background: accommodationHotelsCount > 0 ? "linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%)" : "white",
-                color: accommodationHotelsCount > 0 ? "#3730A3" : "#475569",
-                border: accommodationHotelsCount > 0 ? "1px solid #A5B4FC" : "1px solid #E2E8F0",
-                padding: "10px 16px", borderRadius: 10, fontSize: 12, fontWeight: 600,
+                background: "linear-gradient(135deg, #10B981 0%, #059669 100%)", color: "white", border: "none",
+                padding: "10px 18px", borderRadius: 10, fontSize: 12, fontWeight: 700,
                 cursor: "pointer", display: "flex", alignItems: "center", gap: 6,
-                transition: "all 0.2s ease", boxShadow: "0 1px 3px rgba(0,0,0,0.04)"
+                boxShadow: "0 4px 14px rgba(16, 185, 129, 0.3)", transition: "all 0.2s ease"
               }}
-              title={accommodationHotelsCount > 0 ? `${accommodationHotelsCount} zonas cargadas` : "Cargar hoteles de alojamiento"}
-              onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.08)"; }}
-              onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.04)"; }}
+              onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 6px 20px rgba(16, 185, 129, 0.4)"; e.currentTarget.style.transform = "translateY(-1px)"; }}
+              onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 4px 14px rgba(16, 185, 129, 0.3)"; e.currentTarget.style.transform = "translateY(0)"; }}
             >
-              <span style={{ fontSize: 16 }}>🏨</span> Alojamientos{accommodationHotelsCount > 0 ? <span style={{ background: "#4F46E5", color: "white", borderRadius: 99, padding: "1px 7px", fontSize: 10, fontWeight: 800, marginLeft: 2 }}>{accommodationHotelsCount}</span> : ""}
+              <span style={{ fontSize: 16 }}>✈️</span> Nuevo Viaje
             </button>
           )}
 
-          {onTriggerHotelDB && (
-            <button
-              onClick={onTriggerHotelDB}
-              style={{
-                background: "linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 100%)",
-                color: "#C2410C",
-                border: "1px solid #FDBA74",
-                padding: "10px 16px", borderRadius: 10, fontSize: 12, fontWeight: 600,
-                cursor: "pointer", display: "flex", alignItems: "center", gap: 6,
-                transition: "all 0.2s ease", boxShadow: "0 1px 3px rgba(0,0,0,0.04)"
-              }}
-              title={`${hotelDBCount || 0} hoteles/clientes en base de datos`}
-              onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.08)"; }}
-              onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.04)"; }}
-            >
-              <span style={{ fontSize: 16 }}>🗂️</span> BBDD Hoteles
-              {hotelDBCount > 0 && <span style={{ background: "#EA580C", color: "white", borderRadius: 99, padding: "1px 7px", fontSize: 10, fontWeight: 800, marginLeft: 2 }}>{hotelDBCount}</span>}
-            </button>
-          )}
-
-          <div style={{ width: 1, height: 28, background: "#E2E8F0", margin: "0 2px" }} />
-
+          {/* Papelera — limpiar planificación */}
           {onClearData && (
             <button
               onClick={() => setShowClearConfirm(true)}
               style={{
                 background: "white", color: "#94A3B8", border: "1px solid #E2E8F0",
-                padding: "8px 12px", borderRadius: 8, fontSize: 11, fontWeight: 600,
+                padding: "9px 13px", borderRadius: 10, fontSize: 14, fontWeight: 600,
                 cursor: "pointer", display: "flex", alignItems: "center", gap: 4,
-                transition: "all 0.2s ease"
+                transition: "all 0.2s ease", boxShadow: "0 1px 3px rgba(0,0,0,0.04)"
               }}
-              onMouseEnter={e => { e.currentTarget.style.background = "#FEF2F2"; e.currentTarget.style.color = "#DC2626"; e.currentTarget.style.borderColor = "#FCA5A5"; }}
-              onMouseLeave={e => { e.currentTarget.style.background = "white"; e.currentTarget.style.color = "#94A3B8"; e.currentTarget.style.borderColor = "#E2E8F0"; }}
-              title="Limpiar todos los datos"
+              onMouseEnter={e => { e.currentTarget.style.background = "#FEF2F2"; e.currentTarget.style.color = "#DC2626"; e.currentTarget.style.borderColor = "#FCA5A5"; e.currentTarget.style.transform = "translateY(-1px)"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "white"; e.currentTarget.style.color = "#94A3B8"; e.currentTarget.style.borderColor = "#E2E8F0"; e.currentTarget.style.transform = "translateY(0)"; }}
+              title="Eliminar planificación actual"
             >
               🗑️
-            </button>
-          )}
-          {onLogout && (
-            <button
-              onClick={onLogout}
-              style={{
-                background: "white", color: "#94A3B8", border: "1px solid #E2E8F0",
-                padding: "8px 12px", borderRadius: 8, fontSize: 11, fontWeight: 600,
-                cursor: "pointer", display: "flex", alignItems: "center", gap: 4,
-                transition: "all 0.2s ease"
-              }}
-              onMouseEnter={e => { e.currentTarget.style.background = "#F8FAFC"; e.currentTarget.style.color = "#475569"; e.currentTarget.style.borderColor = "#94A3B8"; }}
-              onMouseLeave={e => { e.currentTarget.style.background = "white"; e.currentTarget.style.color = "#94A3B8"; e.currentTarget.style.borderColor = "#E2E8F0"; }}
-              title="Cerrar sesión"
-            >
-              🚪
             </button>
           )}
         </div>
@@ -5076,7 +4996,8 @@ export default function HSConsultingTravelPlanner() {
           </div>
         </div>
 
-        <div style={{ flex: 1, padding: "10px 0" }}>
+        {/* NAVEGACIÓN PRINCIPAL */}
+        <div style={{ padding: "10px 0" }}>
           {[
             { id: "dashboard", label: "Dashboard", icon: "📊" },
             { id: "proposals", label: "Propuestas", icon: "📁" },
@@ -5097,6 +5018,39 @@ export default function HSConsultingTravelPlanner() {
               }}
             >
               <span>{item.icon}</span> {item.label}
+            </div>
+          ))}
+        </div>
+
+        {/* HERRAMIENTAS */}
+        <div style={{ borderTop: "1px solid #2d2d2d", padding: "10px 0", flex: 1 }}>
+          <div style={{ padding: "8px 20px 4px", fontSize: 10, fontWeight: 700, color: "#555", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+            Herramientas
+          </div>
+          {[
+            { label: "Importar CSV", icon: "📄", action: () => planningInputRef.current?.click(), badge: null },
+            { label: "Alojamientos", icon: "🏨", action: () => setShowHotelsManager(true), badge: Object.keys(accommodationHotels).length || null },
+            { label: "BBDD Hoteles", icon: "🗂️", action: () => setShowHotelDB(true), badge: CLIENT_DATA.length || null },
+          ].map(item => (
+            <div
+              key={item.label}
+              onClick={item.action}
+              style={{
+                padding: "10px 20px", cursor: "pointer",
+                color: "#aaa", borderLeft: "4px solid transparent",
+                display: "flex", alignItems: "center", gap: 12, fontSize: 13,
+                transition: "background 0.15s, color 0.15s"
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = "#222"; e.currentTarget.style.color = "white"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#aaa"; }}
+            >
+              <span style={{ fontSize: 15 }}>{item.icon}</span>
+              <span style={{ flex: 1 }}>{item.label}</span>
+              {item.badge > 0 && (
+                <span style={{ background: HS_COLORS.primary, color: "white", borderRadius: 99, padding: "1px 7px", fontSize: 10, fontWeight: 800 }}>
+                  {item.badge}
+                </span>
+              )}
             </div>
           ))}
         </div>
