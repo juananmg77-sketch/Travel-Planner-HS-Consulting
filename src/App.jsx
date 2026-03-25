@@ -2101,11 +2101,41 @@ function DuplicateDetectorPanel({ onClose, allClients, customClientInfo, onMerge
             </div>
             <button onClick={onClose} style={{ background: "none", border: "none", fontSize: 22, cursor: "pointer", color: "#999" }}>✕</button>
           </div>
-          <div style={{ marginTop: 10, display: "flex", gap: 12, fontSize: 12 }}>
-            <span style={{ background: "#FEF3C7", color: "#92400E", padding: "3px 10px", borderRadius: 6, fontWeight: 700 }}>
+          <div style={{ marginTop: 10, display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+            <span style={{ background: "#FEF3C7", color: "#92400E", padding: "3px 10px", borderRadius: 6, fontWeight: 700, fontSize: 12 }}>
               ⚠️ {visible.length} duplicados detectados
             </span>
-            {visible.length === 0 && <span style={{ background: "#ECFDF5", color: "#065F46", padding: "3px 10px", borderRadius: 6, fontWeight: 700 }}>✅ Sin duplicados</span>}
+            {visible.length === 0 && <span style={{ background: "#ECFDF5", color: "#065F46", padding: "3px 10px", borderRadius: 6, fontWeight: 700, fontSize: 12 }}>✅ Sin duplicados</span>}
+            {visible.length > 0 && (
+              <button
+                onClick={() => {
+                  visible.forEach(({ customName, customData, match }) => {
+                    onMerge(customName, match.name);
+                  });
+                  setDismissed(new Set(visible.map(v => v.customName)));
+                }}
+                style={{
+                  background: "linear-gradient(135deg, #059669, #047857)", color: "white",
+                  border: "none", padding: "6px 16px", borderRadius: 8,
+                  fontSize: 12, fontWeight: 700, cursor: "pointer",
+                  boxShadow: "0 2px 8px rgba(5,150,105,0.3)"
+                }}
+              >
+                ✅ Fusionar todos — se mantiene el registro oficial (HS-XXX)
+              </button>
+            )}
+            {visible.length > 0 && (
+              <button
+                onClick={() => setDismissed(new Set(visible.map(v => v.customName)))}
+                style={{
+                  background: "#F1F5F9", color: "#64748B",
+                  border: "none", padding: "6px 14px", borderRadius: 8,
+                  fontSize: 12, fontWeight: 600, cursor: "pointer"
+                }}
+              >
+                Ignorar todos
+              </button>
+            )}
           </div>
         </div>
 
