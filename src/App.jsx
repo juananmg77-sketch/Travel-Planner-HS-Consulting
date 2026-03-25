@@ -1997,14 +1997,117 @@ function toDisplayDate(dateStr) {
 // ====================================================================
 function ClientHotelDBPanel({ onClose, allClients, customClientInfo, onSave }) {
   const [search, setSearch] = useState("");
-  const [editingName, setEditingName] = useState(null); // nombre del hotel en edición
+  const [editingName, setEditingName] = useState(null);
   const [editForm, setEditForm] = useState({});
   const [flash, setFlash] = useState(null);
   const [filterStatus, setFilterStatus] = useState("all"); // "all" | "ok" | "pending"
+  const [importStats, setImportStats] = useState(null); // resultado de la última sincronización
+  const importRef = useRef(null);
 
   const showFlash = (msg, type = "ok") => {
     setFlash({ msg, type });
-    setTimeout(() => setFlash(null), 3000);
+    setTimeout(() => setFlash(null), 4000);
+  };
+
+  // -------------------------------------------------------
+  // IMPORTAR DESDE BBDD ACTIVOS (CSV de Lovable)
+  // Columnas clave: codigo_hotel, nombre_hotel, direccion_completa,
+  //                 municipio, ccaa, isla, activo
+  // -------------------------------------------------------
+  const handleImportCSV = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = "";
+
+    Papa.parse(file, {
+      header: true,
+      delimiter: ";",
+      skipEmptyLines: true,
+      complete: (results) => {
+        const rows = results.data;
+
+        // Construir índice de clientData por código HS y por nombre normalizado
+        const byCode = {};
+        const byName = {};
+        allClients.forEach(c => {
+          if (c.id) byCode[c.id.toUpperCase()] = c.name;
+          byName[c.name.toLowerCase().trim()] = c.name;
+        });
+
+        let matched = 0, updated = 0, skipped = 0, newEntries = 0;
+        const updates = {}; // { clientName: { address, municipality, region, island } }
+
+        rows.forEach(row => {
+          // Solo activos
+          const activo = (row.activo || "").toLowerCase();
+          if (activo === "false" || activo === "0" || activo === "no") {
+            skipped++;
+            return;
+          }
+
+          const codigo = (row.codigo_hotel || "").trim().toUpperCase();
+          const nombre = (row.nombre_hotel || "").trim();
+          const direccion = (row.direccion_completa || "").trim();
+          const municipio = (row.municipio || "").trim();
+          const ccaa = (row.ccaa || "").trim();
+          const isla = (row.isla || "").trim();
+
+          if (!nombre) return;
+
+          // Intentar encontrar el nombre en clientData
+          let clientName = byCode[codigo] || byName[nombre.toLowerCase()] || null;
+
+          // Si no hay match exacto, buscar coincidencia parcial por nombre
+          if (!clientName) {
+            const lowerNombre = nombre.toLowerCase();
+            const partialMatch = Object.keys(byName).find(key =>
+              key.includes(lowerNombre) || lowerNombre.includes(key)
+            );
+            if (partialMatch) clientName = byName[partialMatch];
+          }
+
+          if (!clientName) {
+            // No está en clientData — añadir como entrada nueva en customClientInfo
+            if (direccion) {
+              updates[nombre] = {
+                address: direccion,
+                municipality: municipio,
+                region: ccaa,
+                island: isla,
+                _fromBBDD: true,
+              };
+              newEntries++;
+            }
+            return;
+          }
+
+          matched++;
+          if (direccion) {
+            updates[clientName] = {
+              ...(customClientInfo[clientName] || {}),
+              address: direccion,
+              municipality: municipio || (customClientInfo[clientName]?.municipality || ""),
+              region: ccaa || (customClientInfo[clientName]?.region || ""),
+              island: isla || (customClientInfo[clientName]?.island || ""),
+              _fromBBDD: true,
+            };
+            updated++;
+          }
+        });
+
+        // Guardar todos los updates de una vez
+        Object.entries(updates).forEach(([name, data]) => {
+          onSave(name, data);
+        });
+
+        setImportStats({ matched, updated, skipped, newEntries, total: rows.length });
+        showFlash(
+          `✅ Sincronización completada: ${updated} direcciones actualizadas, ${newEntries} nuevas entradas, ${skipped} inactivos omitidos.`,
+          "ok"
+        );
+      },
+      error: () => showFlash("❌ Error al leer el archivo CSV.", "err"),
+    });
   };
 
   // Merge base clientData con overrides de customClientInfo
@@ -2078,15 +2181,42 @@ function ClientHotelDBPanel({ onClose, allClients, customClientInfo, onSave }) {
 
         {/* HEADER */}
         <div style={{ padding: "24px 28px 16px", borderBottom: "1px solid #F1F5F9", flexShrink: 0 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+          {/* Input oculto para importar CSV */}
+          <input ref={importRef} type="file" accept=".csv" style={{ display: "none" }} onChange={handleImportCSV} />
+
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
             <div>
               <h2 style={{ margin: 0, fontSize: 22, fontWeight: 800, color: "#111" }}>🏨 BBDD de Hoteles / Clientes</h2>
               <p style={{ margin: "4px 0 0", fontSize: 13, color: "#64748B" }}>
                 {hotels.length} establecimientos · <span style={{ color: "#10B981", fontWeight: 700 }}>{countOk} con dirección</span> · <span style={{ color: "#F59E0B", fontWeight: 700 }}>{countPending} pendientes</span>
               </p>
             </div>
-            <button onClick={onClose} style={{ background: "none", border: "none", fontSize: 22, cursor: "pointer", color: "#999" }}>✕</button>
+            <div style={{ display: "flex", gap: 8, alignItems: "center", flexShrink: 0 }}>
+              <button
+                onClick={() => importRef.current?.click()}
+                style={{
+                  background: "linear-gradient(135deg, #7C3AED, #6D28D9)", color: "white", border: "none",
+                  padding: "9px 16px", borderRadius: 10, fontSize: 12, fontWeight: 700,
+                  cursor: "pointer", display: "flex", alignItems: "center", gap: 6,
+                  boxShadow: "0 4px 12px rgba(124,58,237,0.3)"
+                }}
+                title="Importar CSV exportado desde la BBDD de Activos (Lovable)"
+              >
+                🔄 Sincronizar BBDD Activos
+              </button>
+              <button onClick={onClose} style={{ background: "none", border: "none", fontSize: 22, cursor: "pointer", color: "#999" }}>✕</button>
+            </div>
           </div>
+
+          {/* Resultado de la última importación */}
+          {importStats && (
+            <div style={{ marginTop: 12, padding: "10px 16px", background: "#F0FDF4", border: "1px solid #86EFAC", borderRadius: 10, display: "flex", gap: 20, flexWrap: "wrap", fontSize: 12 }}>
+              <span>📊 <strong>{importStats.total}</strong> filas procesadas</span>
+              <span style={{ color: "#065F46" }}>✅ <strong>{importStats.updated}</strong> direcciones actualizadas</span>
+              <span style={{ color: "#1D4ED8" }}>🆕 <strong>{importStats.newEntries}</strong> entradas nuevas</span>
+              <span style={{ color: "#92400E" }}>⏭️ <strong>{importStats.skipped}</strong> inactivos omitidos</span>
+            </div>
+          )}
 
           {flash && (
             <div style={{ marginTop: 10, padding: "8px 14px", background: flash.type === "err" ? "#FEF2F2" : "#ECFDF5", color: flash.type === "err" ? "#991B1B" : "#065F46", borderRadius: 8, fontSize: 13, fontWeight: 600 }}>
