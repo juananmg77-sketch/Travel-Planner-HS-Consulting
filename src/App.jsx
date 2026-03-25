@@ -2510,12 +2510,27 @@ function ClientHotelDBPanel({ onClose, allClients, customClientInfo, onSave, onP
           </div>
 
           {/* Resultado de la última sincronización */}
-          {syncStats && (
-            <div style={{ marginTop: 12, padding: "10px 16px", background: "#F0FDF4", border: "1px solid #86EFAC", borderRadius: 10, display: "flex", gap: 20, flexWrap: "wrap", fontSize: 12 }}>
-              <span>📊 <strong>{syncStats.total}</strong> registros procesados</span>
-              <span style={{ color: "#065F46" }}>✅ <strong>{syncStats.updated}</strong> actualizados</span>
-              <span style={{ color: "#6B7280" }}>🔒 <strong>{syncStats.skipped}</strong> ya tenían dirección (respetados)</span>
-              {syncStats.errors > 0 && <span style={{ color: "#991B1B" }}>❌ <strong>{syncStats.errors}</strong> errores</span>}
+          {syncStats && !syncStats.error && (
+            <div style={{ marginTop: 12, padding: "10px 16px", background: "#F0FDF4", border: "1px solid #86EFAC", borderRadius: 10, fontSize: 12 }}>
+              <div style={{ display: "flex", gap: 20, flexWrap: "wrap", marginBottom: syncStats.noMatch > 0 || syncStats.noAddress > 0 ? 8 : 0 }}>
+                <span>📊 <strong>{syncStats.total}</strong> en Lovable</span>
+                <span style={{ color: "#065F46" }}>✅ <strong>{syncStats.updated}</strong> importados ahora</span>
+                <span style={{ color: "#6B7280" }}>🔒 <strong>{syncStats.alreadyHas}</strong> ya tenían dirección</span>
+                {syncStats.noAddress > 0 && <span style={{ color: "#92400E" }}>📭 <strong>{syncStats.noAddress}</strong> sin dirección en Lovable</span>}
+                {syncStats.noMatch > 0 && <span style={{ color: "#1D4ED8" }}>🔍 <strong>{syncStats.noMatch}</strong> sin coincidencia en catálogo</span>}
+                {syncStats.inactive > 0 && <span style={{ color: "#6B7280" }}>💤 <strong>{syncStats.inactive}</strong> inactivos</span>}
+                {syncStats.errors > 0 && <span style={{ color: "#991B1B" }}>❌ <strong>{syncStats.errors}</strong> errores</span>}
+              </div>
+              {syncStats.noAddress > 0 && (
+                <div style={{ fontSize: 11, color: "#92400E", borderTop: "1px solid #FDE68A", paddingTop: 6 }}>
+                  ⚠️ <strong>{syncStats.noAddress}</strong> hoteles de Lovable aún no tienen dirección en la BBDD Maestra. Rellénala en la app HS Consulting para que sincronicen.
+                </div>
+              )}
+            </div>
+          )}
+          {syncStats?.error && (
+            <div style={{ marginTop: 12, padding: "10px 16px", background: "#FEF2F2", border: "1px solid #FCA5A5", borderRadius: 10, fontSize: 12, color: "#991B1B" }}>
+              ❌ {syncStats.error}
             </div>
           )}
 
@@ -5384,10 +5399,15 @@ export default function HSConsultingTravelPlanner() {
     setSyncingLovable(true);
     setSyncStats(null);
     try {
-      const { data: lovableHotels, error } = await fetchLovableHoteles();
+      // Fetch both sources in parallel — use fresh Supabase data (not stale React state)
+      // to avoid the closure capturing an old customClientInfo snapshot
+      const [{ data: lovableHotels, error }, freshEstablishments] = await Promise.all([
+        fetchLovableHoteles(),
+        getValidatedEstablishments(),
+      ]);
       if (error || !lovableHotels) throw error || new Error("Sin datos");
 
-      // Índice por código y por nombre
+      // Índice por código y por nombre (Travel Planner clientData.json)
       const byCode = {};
       const byName = {};
       CLIENT_DATA.forEach(c => {
@@ -5395,22 +5415,29 @@ export default function HSConsultingTravelPlanner() {
         byName[c.name.toLowerCase().trim()] = c.name;
       });
 
-      let updated = 0, skipped = 0, errors = 0;
+      // Detailed counters — each Lovable hotel falls into exactly one bucket
+      let updated = 0;       // imported successfully
+      let alreadyHas = 0;    // Travel Planner already had an address → respected
+      let noMatch = 0;       // no corresponding hotel in clientData.json
+      let noAddress = 0;     // Lovable row has no address to offer
+      let inactive = 0;      // row marked activo=false in Lovable
+      let errors = 0;
 
       for (const row of lovableHotels) {
         const activo = String(row.activo ?? "true").toLowerCase();
-        if (activo === "false" || activo === "0" || activo === "no") continue;
+        if (activo === "false" || activo === "0" || activo === "no") { inactive++; continue; }
 
-        const codigo  = (row.codigo_hotel || "").trim().toUpperCase();
-        const nombre  = (row.nombre_hotel || "").trim();
+        const codigo    = (row.codigo_hotel || "").trim().toUpperCase();
+        const nombre    = (row.nombre_hotel || "").trim();
         const direccion = cleanNominatimAddress((row.direccion_completa || "").trim());
         const municipio = (row.municipio || "").trim();
         const ccaa      = (row.ccaa || "").trim();
         const isla      = (row.isla || "").trim();
 
-        if (!nombre || !direccion) continue;
+        // Lovable row carries no address — nothing to import
+        if (!nombre || !direccion) { noAddress++; continue; }
 
-        // Intentar match
+        // Intentar match por código → nombre exacto → nombre parcial
         let clientName = byCode[codigo] || byName[nombre.toLowerCase()] || null;
         if (!clientName) {
           const lowerNombre = nombre.toLowerCase();
@@ -5418,29 +5445,32 @@ export default function HSConsultingTravelPlanner() {
           if (partial) clientName = byName[partial];
         }
         // Si no hay match NO crear entrada nueva — evitar duplicados
-        if (!clientName) { skipped++; continue; }
+        if (!clientName) { noMatch++; continue; }
 
-        // Solo actualizar si Travel Planner NO tiene dirección
-        const existing = customClientInfo[clientName]?.address || "";
-        if (existing.trim()) { skipped++; continue; }
+        // Solo actualizar si Travel Planner NO tiene dirección ya
+        // Read from freshEstablishments (direct Supabase snapshot) to avoid stale closure
+        const existingAddr = (freshEstablishments[clientName]?.address || "").trim();
+        if (existingAddr) { alreadyHas++; continue; }
 
         try {
+          // Update React state for immediate UI feedback
           setCustomClientInfo(prev => ({
             ...prev,
             [clientName]: { ...(prev[clientName] || {}), address: direccion, municipality: municipio, region: ccaa, island: isla }
           }));
+          // Persist to Supabase
           await upsertEstablishment(clientName, { address: direccion, municipality: municipio, region: ccaa, island: isla });
           updated++;
         } catch { errors++; }
       }
 
-      setSyncStats({ total: lovableHotels.length, updated, skipped, errors });
+      setSyncStats({ total: lovableHotels.length, updated, alreadyHas, noMatch, noAddress, inactive, errors });
     } catch (err) {
       setSyncStats({ error: err?.message || "Error de conexión con BBDD HS Consulting" });
     } finally {
       setSyncingLovable(false);
     }
-  }, [customClientInfo]);
+  }, []);
 
   const updateEstablishmentAddress = useCallback(async (establishmentName, newAddress, newMunicipality) => {
     // 1. Update local state (triggers immediate recalc via useMemo)
