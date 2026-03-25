@@ -5169,7 +5169,7 @@ export default function HSConsultingTravelPlanner() {
     } finally {
       setSyncingLovable(false);
     }
-  }, [customClientInfo, updateEstablishmentAddress]);
+  }, [customClientInfo]);
 
   const updateEstablishmentAddress = useCallback(async (establishmentName, newAddress, newMunicipality) => {
     // 1. Update local state (triggers immediate recalc via useMemo)
