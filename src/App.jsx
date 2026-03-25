@@ -1996,20 +1996,33 @@ function toDisplayDate(dateStr) {
 // ====================================================================
 // CLIENT HOTEL DB PANEL — Listado y edición de hoteles/clientes
 // ====================================================================
-// Detecta y limpia el patrón Nominatim: "[Nombre lugar], [Número], [Calle…], …"
-// → "[Calle…] [Número], …"
+// Detecta y limpia direcciones geocodificadas con nombre de lugar al inicio.
+// Patrón A: "[Nombre], [Nº], [Calle…], …"  → "[Calle…] [Nº], …"
+// Patrón B: "[Nombre], [Calle…], …"         → "[Calle…], …"
 const STREET_KW = ['Calle','C/','Avenida','Av.','Avda.','Avinguda','Plaza','Pl.','Plaça','Paseo','P.º','Pz.','Rúa','Rua','Carrer','Carretera','Ctra.','Camino','Cami','Urbanización','Polígono','Bulevar','Travesía','Glorieta','Ronda','Vía','Via','Cjón.','Cjón','Calleja'];
 function cleanNominatimAddress(address) {
   if (!address) return address;
   const parts = address.split(',').map(s => s.trim());
-  if (parts.length < 3) return address;
+  if (parts.length < 2) return address;
   const firstNotStreet = !STREET_KW.some(kw => parts[0].toLowerCase().startsWith(kw.toLowerCase()));
   const firstNoDigit   = parts[0].length > 0 && !/^\d/.test(parts[0]);
-  const secondIsNumber = /^\d+[a-zA-Z]?$/.test(parts[1]);
-  const thirdIsStreet  = STREET_KW.some(kw => parts[2].toLowerCase().startsWith(kw.toLowerCase()));
-  if (firstNotStreet && firstNoDigit && secondIsNumber && thirdIsStreet) {
-    return [`${parts[2]} ${parts[1]}`, ...parts.slice(3)].join(', ');
+  if (!firstNotStreet || !firstNoDigit) return address;
+
+  // Patrón A: [Nombre], [Número], [Calle…], … → [Calle…] [Número], …
+  if (parts.length >= 3) {
+    const secondIsNumber = /^\d+[a-zA-Z]?$/.test(parts[1]);
+    const thirdIsStreet  = STREET_KW.some(kw => parts[2].toLowerCase().startsWith(kw.toLowerCase()));
+    if (secondIsNumber && thirdIsStreet) {
+      return [`${parts[2]} ${parts[1]}`, ...parts.slice(3)].join(', ');
+    }
   }
+
+  // Patrón B: [Nombre], [Calle…], … → [Calle…], …
+  const secondIsStreet = STREET_KW.some(kw => parts[1].toLowerCase().startsWith(kw.toLowerCase()));
+  if (secondIsStreet) {
+    return parts.slice(1).join(', ');
+  }
+
   return address;
 }
 
