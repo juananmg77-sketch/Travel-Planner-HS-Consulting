@@ -11,6 +11,35 @@ const CLIENT_LOOKUP = CLIENT_DATA.reduce((acc, client) => {
   return acc;
 }, {});
 
+// Normalized lookup: strips trailing/leading spaces + diacritics for fuzzy name matching
+// Maps normalized form → canonical name (as stored in clientData.json)
+function normClientName(s) {
+  return (s || "").trim().toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, " ");
+}
+const CLIENT_LOOKUP_NORM = {};
+CLIENT_DATA.forEach(c => {
+  CLIENT_LOOKUP_NORM[normClientName(c.name)] = c.name;
+});
+// Also index by trimmed exact name so "Catalonia Born" hits "Catalonia Born " (trailing space)
+CLIENT_DATA.forEach(c => {
+  const trimmed = c.name.trim();
+  if (trimmed !== c.name) CLIENT_LOOKUP[trimmed] = c; // alias without trailing space
+});
+
+/**
+ * Resolves a hotel name coming from a CSV (may differ in spacing/accents)
+ * to its canonical name in clientData.json, or returns the original if not found.
+ */
+function resolveClientName(name) {
+  if (!name) return name;
+  if (CLIENT_LOOKUP[name]) return name;                         // exact match
+  const norm = normClientName(name);
+  const canonical = CLIENT_LOOKUP_NORM[norm];
+  return canonical || name;                                      // normalized match or original
+}
+
 const EXTRA_CLIENT_INFO = {
   "Hotel Emperador": { address: "C/ Gran Vía 53, 28013 Madrid" },
   "Hotel Emperador Madrid": { address: "C/ Gran Vía 53, 28013 Madrid" },
@@ -749,7 +778,7 @@ function UploadScreen({ onDataLoaded, onConsultantsLoaded, existingActivities = 
         id: Math.random().toString(36).substr(2, 9), // Use random IDs for new items
         a: (row["Auditor"] || row["auditor"] || row["Consultor"] || "").trim(),
         r: (row["Region"] || row["region"] || row["Región"] || "").trim(),
-        e: (row["Establecimiento"] || row["establecimiento"] || "").trim(),
+        e: resolveClientName((row["Establecimiento"] || row["establecimiento"] || "").trim()),
         d: (row["Actividad"] || row["actividad"] || "").trim(),
         f: (row["Fecha"] || row["fecha"] || "").trim(),
         j: parseFloat(row["Jornadas"] || row["jornadas"] || "0"),
@@ -5163,7 +5192,7 @@ export default function HSConsultingTravelPlanner() {
         id: Math.random().toString(36).substr(2, 9),
         a: (row["Auditor"] || row["auditor"] || row["Consultor"] || row["Nombre"] || "").trim(),
         r: (row["Region"] || row["region"] || row["Región"] || "").trim(),
-        e: (row["Establecimiento"] || row["establecimiento"] || row["Hotel"] || "").trim(),
+        e: resolveClientName((row["Establecimiento"] || row["establecimiento"] || row["Hotel"] || "").trim()),
         d: (row["Disciplina"] || row["disciplina"] || row["Actividad"] || row["actividad"] || row["Tarea"] || row["Tareas"] || "").trim(),
         f: (row["Fecha"] || row["fecha"] || row["Date"] || "").trim(),
         j: parseFloat((row["Jornada"] || row["jornada"] || row["Jornadas"] || row["jornadas"] || row["Duración"] || "0").replace(",", ".")),
@@ -5202,12 +5231,16 @@ export default function HSConsultingTravelPlanner() {
         setTimeout(() => setUploadFlash(null), 4000);
 
         // 3. Detect establishments NOT in the database
-        // Match is by EXACT NAME (case-sensitive, trimmed)
+        // Normalize names (strip trailing spaces & diacritics) before lookup
+        // so "Catalonia Born" matches "Catalonia Born " in clientData.json
         const allEstNames = new Set(newItems.map(i => i.e).filter(Boolean));
+        // Remap activity names to their canonical form in clientData.json
+        newItems.forEach(item => { if (item.e) item.e = resolveClientName(item.e); });
+        const allEstNamesResolved = new Set(newItems.map(i => i.e).filter(Boolean));
         const unmatchedNames = [];
         const regionMap = {};
         const consultantMap = {}; // Track which consultant visits which hotel
-        allEstNames.forEach(name => {
+        allEstNamesResolved.forEach(name => {
           const inClientData = !!CLIENT_LOOKUP[name];
           const inCustom = !!customClientInfo[name];
           if (!inClientData && !inCustom) {
