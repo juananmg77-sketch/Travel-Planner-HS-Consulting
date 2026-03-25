@@ -2026,7 +2026,7 @@ function cleanNominatimAddress(address) {
   return address;
 }
 
-function ClientHotelDBPanel({ onClose, allClients, customClientInfo, onSave }) {
+function ClientHotelDBPanel({ onClose, allClients, customClientInfo, onSave, onPersist }) {
   const [search, setSearch] = useState("");
   const [editingName, setEditingName] = useState(null);
   const [editForm, setEditForm] = useState({});
@@ -2046,10 +2046,11 @@ function ClientHotelDBPanel({ onClose, allClients, customClientInfo, onSave }) {
   // Detecta "[Nombre lugar], [Número], [Calle], …" y lo convierte
   // en "[Calle] [Número], …"
   // -------------------------------------------------------
-  const handleCleanAddresses = () => {
+  const handleCleanAddresses = async () => {
     const allHotels = [...allClients.map(c => c.name), ...Object.keys(customClientInfo)];
     const seen = new Set();
     let cleaned = 0;
+    const toUpdate = [];
     allHotels.forEach(name => {
       if (seen.has(name)) return;
       seen.add(name);
@@ -2058,9 +2059,16 @@ function ClientHotelDBPanel({ onClose, allClients, customClientInfo, onSave }) {
       const fixed = cleanNominatimAddress(raw);
       if (fixed !== raw && raw) {
         onSave(name, { ...info, address: fixed });
+        toUpdate.push({ name, data: { ...info, address: fixed } });
         cleaned++;
       }
     });
+    // Persistir también en Supabase para que no se sobreescriba en próximas cargas
+    if (onPersist && toUpdate.length > 0) {
+      for (const { name, data } of toUpdate) {
+        await onPersist(name, data.address, data.municipality);
+      }
+    }
     showFlash(
       cleaned > 0
         ? `🧹 ${cleaned} dirección${cleaned > 1 ? "es" : ""} corregida${cleaned > 1 ? "s" : ""} (formato calle + número)`
@@ -5797,6 +5805,7 @@ export default function HSConsultingTravelPlanner() {
             onSave={(name, data) => {
               setCustomClientInfo(prev => ({ ...prev, [name]: { ...(prev[name] || {}), ...data } }));
             }}
+            onPersist={updateEstablishmentAddress}
           />
         )}
         <AppLayout>
