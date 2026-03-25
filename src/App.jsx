@@ -2032,6 +2032,158 @@ function cleanNominatimAddress(address) {
   return address;
 }
 
+// ====================================================================
+// DUPLICATE DETECTOR PANEL
+// Detecta entradas en customClientInfo que son duplicados de allClients
+// ====================================================================
+function normForDedup(s) {
+  if (!s) return "";
+  let n = s.toLowerCase().trim();
+  // Quitar tildes
+  n = n.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  // Quitar prefijos comunes
+  for (const p of ["hotel ", "aparthotel ", "apartamentos ", "apartamento ", "hostal ", "resort "]) {
+    if (n.startsWith(p)) { n = n.slice(p.length); break; }
+  }
+  return n.replace(/[^a-z0-9 ]/g, " ").replace(/\s+/g, " ").trim();
+}
+
+function DuplicateDetectorPanel({ onClose, allClients, customClientInfo, onMerge, onDelete }) {
+  // Find _customOnly entries that look like duplicates of allClients
+  const candidates = useMemo(() => {
+    const clientNorms = {};
+    allClients.forEach(c => { clientNorms[normForDedup(c.name)] = c; });
+
+    return Object.entries(customClientInfo)
+      .filter(([name, data]) => data._customOnly || data._fromBBDD)
+      .map(([name, data]) => {
+        const n = normForDedup(name);
+        // Exact normalized match
+        if (clientNorms[n]) return { customName: name, customData: data, match: clientNorms[n], score: 1 };
+        // Partial match: one contains the other (min 8 chars)
+        if (n.length >= 8) {
+          for (const [k, c] of Object.entries(clientNorms)) {
+            if (k.length >= 8 && (k.includes(n) || n.includes(k))) {
+              return { customName: name, customData: data, match: c, score: 0.8 };
+            }
+          }
+        }
+        // Starts-with match (min 12 chars)
+        if (n.length >= 12) {
+          for (const [k, c] of Object.entries(clientNorms)) {
+            if (k.length >= 12 && (k.startsWith(n.slice(0, 12)) || n.startsWith(k.slice(0, 12)))) {
+              return { customName: name, customData: data, match: c, score: 0.6 };
+            }
+          }
+        }
+        return null;
+      })
+      .filter(Boolean)
+      .sort((a, b) => b.score - a.score);
+  }, [allClients, customClientInfo]);
+
+  const [dismissed, setDismissed] = useState(new Set());
+  const visible = candidates.filter(c => !dismissed.has(c.customName));
+
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", zIndex: 7000, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+      <div style={{ background: "white", borderRadius: 20, maxWidth: 860, width: "100%", maxHeight: "92vh", display: "flex", flexDirection: "column", boxShadow: "0 40px 100px rgba(0,0,0,0.4)" }}>
+
+        {/* Header */}
+        <div style={{ padding: "22px 28px 16px", borderBottom: "1px solid #F1F5F9", flexShrink: 0 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div>
+              <h2 style={{ margin: 0, fontSize: 20, fontWeight: 800, color: "#111" }}>🔍 Detector de Duplicados</h2>
+              <p style={{ margin: "4px 0 0", fontSize: 13, color: "#64748B" }}>
+                Entradas en customClientInfo que coinciden con un hotel ya registrado en la BBDD base.
+                Fusionar copia la dirección al registro oficial y elimina el duplicado.
+              </p>
+            </div>
+            <button onClick={onClose} style={{ background: "none", border: "none", fontSize: 22, cursor: "pointer", color: "#999" }}>✕</button>
+          </div>
+          <div style={{ marginTop: 10, display: "flex", gap: 12, fontSize: 12 }}>
+            <span style={{ background: "#FEF3C7", color: "#92400E", padding: "3px 10px", borderRadius: 6, fontWeight: 700 }}>
+              ⚠️ {visible.length} duplicados detectados
+            </span>
+            {visible.length === 0 && <span style={{ background: "#ECFDF5", color: "#065F46", padding: "3px 10px", borderRadius: 6, fontWeight: 700 }}>✅ Sin duplicados</span>}
+          </div>
+        </div>
+
+        {/* List */}
+        <div style={{ flex: 1, overflow: "auto", padding: "12px 28px 20px" }}>
+          {visible.length === 0 && (
+            <div style={{ textAlign: "center", color: "#94A3B8", padding: 40, fontSize: 14 }}>No se detectaron duplicados.</div>
+          )}
+          {visible.map(({ customName, customData, match, score }) => (
+            <div key={customName} style={{ border: "1.5px solid #E2E8F0", borderRadius: 14, padding: 16, marginBottom: 12, background: "#FAFAFA" }}>
+              <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+                {/* Custom entry */}
+                <div style={{ flex: 1, background: "#FFF7ED", border: "1px solid #FED7AA", borderRadius: 10, padding: 12 }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: "#C2410C", textTransform: "uppercase", marginBottom: 4 }}>📋 Entrada duplicada (custom)</div>
+                  <div style={{ fontWeight: 700, fontSize: 13, color: "#111" }}>{customName}</div>
+                  <div style={{ fontSize: 12, color: "#64748B", marginTop: 4 }}>{customData.address || <em>Sin dirección</em>}</div>
+                  {customData.municipality && <div style={{ fontSize: 11, color: "#94A3B8", marginTop: 2 }}>{customData.municipality} · {customData.region}</div>}
+                </div>
+
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, paddingTop: 20 }}>
+                  <span style={{ fontSize: 18 }}>⟷</span>
+                  <span style={{ fontSize: 10, color: score >= 1 ? "#059669" : score >= 0.8 ? "#D97706" : "#6B7280", fontWeight: 700 }}>
+                    {score >= 1 ? "exacto" : score >= 0.8 ? "parcial" : "similar"}
+                  </span>
+                </div>
+
+                {/* Official entry */}
+                <div style={{ flex: 1, background: "#F0FDF4", border: "1px solid #86EFAC", borderRadius: 10, padding: 12 }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: "#065F46", textTransform: "uppercase", marginBottom: 4 }}>✅ Registro oficial [{match.id}]</div>
+                  <div style={{ fontWeight: 700, fontSize: 13, color: "#111" }}>{match.name}</div>
+                  <div style={{ fontSize: 12, color: "#64748B", marginTop: 4 }}>
+                    {customClientInfo[match.name]?.address || <em style={{ color: "#F59E0B" }}>Sin dirección aún</em>}
+                  </div>
+                  {(customClientInfo[match.name]?.municipality || match.municipality) &&
+                    <div style={{ fontSize: 11, color: "#94A3B8", marginTop: 2 }}>{customClientInfo[match.name]?.municipality || match.municipality}</div>}
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div style={{ display: "flex", gap: 8, marginTop: 10, justifyContent: "flex-end" }}>
+                {customData.address && !customClientInfo[match.name]?.address && (
+                  <button
+                    onClick={() => { onMerge(customName, match.name); setDismissed(prev => new Set([...prev, customName])); }}
+                    style={{ background: "#059669", color: "white", border: "none", padding: "7px 14px", borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: "pointer" }}
+                  >
+                    ⟶ Fusionar (copiar dirección al oficial)
+                  </button>
+                )}
+                {customData.address && customClientInfo[match.name]?.address && (
+                  <button
+                    onClick={() => { onMerge(customName, match.name); setDismissed(prev => new Set([...prev, customName])); }}
+                    style={{ background: "#D97706", color: "white", border: "none", padding: "7px 14px", borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: "pointer" }}
+                    title="El registro oficial ya tiene dirección — esta la sobreescribirá"
+                  >
+                    ⟶ Fusionar (sobreescribir oficial)
+                  </button>
+                )}
+                <button
+                  onClick={() => { onDelete(customName); setDismissed(prev => new Set([...prev, customName])); }}
+                  style={{ background: "#EF4444", color: "white", border: "none", padding: "7px 14px", borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: "pointer" }}
+                >
+                  🗑 Eliminar duplicado
+                </button>
+                <button
+                  onClick={() => setDismissed(prev => new Set([...prev, customName]))}
+                  style={{ background: "#F1F5F9", color: "#64748B", border: "none", padding: "7px 14px", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer" }}
+                >
+                  Ignorar
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ClientHotelDBPanel({ onClose, allClients, customClientInfo, onSave, onPersist, onSync, syncStats, syncing }) {
   const [search, setSearch] = useState("");
   const [editingName, setEditingName] = useState(null);
@@ -2039,6 +2191,7 @@ function ClientHotelDBPanel({ onClose, allClients, customClientInfo, onSave, onP
   const [flash, setFlash] = useState(null);
   const [filterStatus, setFilterStatus] = useState("all"); // "all" | "ok" | "pending"
   const [showPushPanel, setShowPushPanel] = useState(false);
+  const [showDuplicates, setShowDuplicates] = useState(false);
   const importRef = useRef(null);
 
   const showFlash = (msg, type = "ok") => {
@@ -2283,6 +2436,18 @@ function ClientHotelDBPanel({ onClose, allClients, customClientInfo, onSave, onP
               >
                 {syncing ? "⏳ Sincronizando..." : "🔄 Sincronizar BBDD HS Consulting"}
               </button>
+              <button
+                onClick={() => setShowDuplicates(true)}
+                style={{
+                  background: "linear-gradient(135deg, #D97706, #B45309)", color: "white", border: "none",
+                  padding: "9px 14px", borderRadius: 10, fontSize: 12, fontWeight: 700,
+                  cursor: "pointer", display: "flex", alignItems: "center", gap: 6,
+                  boxShadow: "0 4px 12px rgba(217,119,6,0.3)"
+                }}
+                title="Detectar y fusionar entradas duplicadas"
+              >
+                🔍 Duplicados
+              </button>
               <button onClick={onClose} style={{ background: "none", border: "none", fontSize: 22, cursor: "pointer", color: "#999" }}>✕</button>
             </div>
           </div>
@@ -2462,6 +2627,33 @@ function ClientHotelDBPanel({ onClose, allClients, customClientInfo, onSave, onP
           onClose={() => setShowPushPanel(false)}
           allClients={allClients}
           customClientInfo={customClientInfo}
+        />
+      )}
+      {showDuplicates && (
+        <DuplicateDetectorPanel
+          onClose={() => setShowDuplicates(false)}
+          allClients={allClients}
+          customClientInfo={customClientInfo}
+          onMerge={(srcName, tgtName) => {
+            const srcData = customClientInfo[srcName] || {};
+            // Copy address/municipality/region/island from src to target
+            onSave(tgtName, {
+              ...(customClientInfo[tgtName] || {}),
+              address: srcData.address || customClientInfo[tgtName]?.address,
+              municipality: srcData.municipality || customClientInfo[tgtName]?.municipality,
+              region: srcData.region || customClientInfo[tgtName]?.region,
+              island: srcData.island || customClientInfo[tgtName]?.island,
+            });
+            // Also persist target to Supabase
+            if (onPersist && srcData.address) onPersist(tgtName, srcData.address, srcData.municipality);
+            // Delete the duplicate
+            onSave(srcName, null); // null = delete signal
+            showFlash(`✅ Fusionado "${srcName}" → "${tgtName}"`);
+          }}
+          onDelete={(name) => {
+            onSave(name, null);
+            showFlash(`🗑 Eliminado "${name}"`);
+          }}
         />
       )}
     </div>
@@ -5153,7 +5345,8 @@ export default function HSConsultingTravelPlanner() {
           const partial = Object.keys(byName).find(k => k.includes(lowerNombre) || lowerNombre.includes(k));
           if (partial) clientName = byName[partial];
         }
-        if (!clientName) clientName = nombre; // entrada nueva
+        // Si no hay match NO crear entrada nueva — evitar duplicados
+        if (!clientName) { skipped++; continue; }
 
         // Solo actualizar si Travel Planner NO tiene dirección
         const existing = customClientInfo[clientName]?.address || "";
@@ -5878,7 +6071,12 @@ export default function HSConsultingTravelPlanner() {
             allClients={CLIENT_DATA}
             customClientInfo={customClientInfo}
             onSave={(name, data) => {
-              setCustomClientInfo(prev => ({ ...prev, [name]: { ...(prev[name] || {}), ...data } }));
+              if (data === null) {
+                // Delete entry
+                setCustomClientInfo(prev => { const next = { ...prev }; delete next[name]; return next; });
+              } else {
+                setCustomClientInfo(prev => ({ ...prev, [name]: { ...(prev[name] || {}), ...data } }));
+              }
             }}
             onPersist={updateEstablishmentAddress}
             onSync={handleSyncFromLovable}
