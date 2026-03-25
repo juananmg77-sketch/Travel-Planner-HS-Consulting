@@ -5,19 +5,13 @@
  */
 import { createClient } from "@supabase/supabase-js";
 
-const LOVABLE_URL = import.meta.env.VITE_LOVABLE_SUPABASE_URL;
-const LOVABLE_ANON_KEY = import.meta.env.VITE_LOVABLE_SUPABASE_ANON_KEY;
+// Clave anon pública de Supabase (BBDD Maestra Lovable).
+// La clave anon es pública por diseño en Supabase — la seguridad
+// la gestionan las políticas RLS, no el secreto de esta clave.
+const LOVABLE_URL = "https://ltuukumhzmbyvtvicuze.supabase.co";
+const LOVABLE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx0dXVrdW1oem1ieXZ0dmljdXplIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk3ODkyNzAsImV4cCI6MjA4NTM2NTI3MH0.H9g9ZnQpiI6m2uOakv6QysxZ1TQrDsYW2HtVRvIi8OA";
 
-if (!LOVABLE_URL || !LOVABLE_ANON_KEY) {
-  console.warn(
-    "[lovableService] Faltan variables de entorno VITE_LOVABLE_SUPABASE_URL / VITE_LOVABLE_SUPABASE_ANON_KEY. " +
-      "Copia .env.example a .env.local y rellena los valores."
-  );
-}
-
-export const lovableClient = LOVABLE_URL && LOVABLE_ANON_KEY
-  ? createClient(LOVABLE_URL, LOVABLE_ANON_KEY)
-  : null;
+export const lovableClient = createClient(LOVABLE_URL, LOVABLE_ANON_KEY);
 
 /**
  * Descarga todos los registros de la tabla `hoteles` de la BBDD Maestra.
