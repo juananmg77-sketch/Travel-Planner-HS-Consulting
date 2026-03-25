@@ -1726,7 +1726,7 @@ function ConfirmClearModal({ onConfirm, onCancel }) {
   );
 }
 
-function Dashboard({ stats, summaryByAuditor, onNavigate, onTriggerPlanning, onTriggerConsultants, uploadFlash, onClearData, onLogout, onBulkGeocode, onTriggerHotels, accommodationHotelsCount, onTriggerNewTrip }) {
+function Dashboard({ stats, summaryByAuditor, onNavigate, onTriggerPlanning, onTriggerConsultants, uploadFlash, onClearData, onLogout, onBulkGeocode, onTriggerHotels, accommodationHotelsCount, onTriggerNewTrip, onTriggerHotelDB, hotelDBCount }) {
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const consultants = Object.entries(summaryByAuditor || {}).sort((a, b) => b[1].total - a[1].total);
 
@@ -1817,6 +1817,26 @@ function Dashboard({ stats, summaryByAuditor, onNavigate, onTriggerPlanning, onT
               onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.04)"; }}
             >
               <span style={{ fontSize: 16 }}>🏨</span> Alojamientos{accommodationHotelsCount > 0 ? <span style={{ background: "#4F46E5", color: "white", borderRadius: 99, padding: "1px 7px", fontSize: 10, fontWeight: 800, marginLeft: 2 }}>{accommodationHotelsCount}</span> : ""}
+            </button>
+          )}
+
+          {onTriggerHotelDB && (
+            <button
+              onClick={onTriggerHotelDB}
+              style={{
+                background: "linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 100%)",
+                color: "#C2410C",
+                border: "1px solid #FDBA74",
+                padding: "10px 16px", borderRadius: 10, fontSize: 12, fontWeight: 600,
+                cursor: "pointer", display: "flex", alignItems: "center", gap: 6,
+                transition: "all 0.2s ease", boxShadow: "0 1px 3px rgba(0,0,0,0.04)"
+              }}
+              title={`${hotelDBCount || 0} hoteles/clientes en base de datos`}
+              onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.08)"; }}
+              onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.04)"; }}
+            >
+              <span style={{ fontSize: 16 }}>🗂️</span> BBDD Hoteles
+              {hotelDBCount > 0 && <span style={{ background: "#EA580C", color: "white", borderRadius: 99, padding: "1px 7px", fontSize: 10, fontWeight: 800, marginLeft: 2 }}>{hotelDBCount}</span>}
             </button>
           )}
 
@@ -2053,6 +2073,264 @@ function toDisplayDate(dateStr) {
 }
 
 // ====================================================================
+// CLIENT HOTEL DB PANEL — Listado y edición de hoteles/clientes
+// ====================================================================
+function ClientHotelDBPanel({ onClose, allClients, customClientInfo, onSave }) {
+  const [search, setSearch] = useState("");
+  const [editingName, setEditingName] = useState(null); // nombre del hotel en edición
+  const [editForm, setEditForm] = useState({});
+  const [flash, setFlash] = useState(null);
+  const [filterStatus, setFilterStatus] = useState("all"); // "all" | "ok" | "pending"
+
+  const showFlash = (msg, type = "ok") => {
+    setFlash({ msg, type });
+    setTimeout(() => setFlash(null), 3000);
+  };
+
+  // Merge base clientData con overrides de customClientInfo
+  const hotels = useMemo(() => {
+    const map = {};
+    allClients.forEach(c => {
+      map[c.name] = {
+        ...c,
+        ...(customClientInfo[c.name] || {}),
+        originalName: c.name,
+      };
+    });
+    // Añadir también hoteles que están en customClientInfo pero no en clientData
+    Object.entries(customClientInfo).forEach(([name, data]) => {
+      if (!map[name]) {
+        map[name] = { name, originalName: name, ...data, _customOnly: true };
+      }
+    });
+    return Object.values(map).sort((a, b) => a.name.localeCompare(b.name, "es"));
+  }, [allClients, customClientInfo]);
+
+  const filtered = useMemo(() => {
+    return hotels.filter(h => {
+      const q = search.toLowerCase();
+      const matchSearch = !q || h.name.toLowerCase().includes(q) ||
+        (h.address || "").toLowerCase().includes(q) ||
+        (h.municipality || "").toLowerCase().includes(q) ||
+        (h.region || "").toLowerCase().includes(q);
+      const hasAddress = !!(h.address);
+      const matchFilter = filterStatus === "all" ||
+        (filterStatus === "ok" && hasAddress) ||
+        (filterStatus === "pending" && !hasAddress);
+      return matchSearch && matchFilter;
+    });
+  }, [hotels, search, filterStatus]);
+
+  const countOk = hotels.filter(h => !!h.address).length;
+  const countPending = hotels.length - countOk;
+
+  const startEdit = (h) => {
+    setEditingName(h.originalName);
+    setEditForm({
+      displayName: h.displayName || h.name || "",
+      address: h.address || "",
+      municipality: h.municipality || "",
+      region: h.region || "",
+      island: h.island || "",
+    });
+  };
+
+  const saveEdit = () => {
+    if (!editingName) return;
+    const updated = {
+      ...(customClientInfo[editingName] || {}),
+      address: editForm.address.trim(),
+      municipality: editForm.municipality.trim(),
+      region: editForm.region.trim(),
+      island: editForm.island.trim(),
+    };
+    if (editForm.displayName.trim() && editForm.displayName.trim() !== editingName) {
+      updated.displayName = editForm.displayName.trim();
+    }
+    onSave(editingName, updated);
+    setEditingName(null);
+    showFlash(`✅ "${editingName}" guardado`);
+  };
+
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.65)", zIndex: 6000, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+      <div style={{ background: "white", borderRadius: 24, maxWidth: 900, width: "100%", maxHeight: "94vh", display: "flex", flexDirection: "column", boxShadow: "0 40px 100px rgba(0,0,0,0.45)" }}>
+
+        {/* HEADER */}
+        <div style={{ padding: "24px 28px 16px", borderBottom: "1px solid #F1F5F9", flexShrink: 0 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+            <div>
+              <h2 style={{ margin: 0, fontSize: 22, fontWeight: 800, color: "#111" }}>🏨 BBDD de Hoteles / Clientes</h2>
+              <p style={{ margin: "4px 0 0", fontSize: 13, color: "#64748B" }}>
+                {hotels.length} establecimientos · <span style={{ color: "#10B981", fontWeight: 700 }}>{countOk} con dirección</span> · <span style={{ color: "#F59E0B", fontWeight: 700 }}>{countPending} pendientes</span>
+              </p>
+            </div>
+            <button onClick={onClose} style={{ background: "none", border: "none", fontSize: 22, cursor: "pointer", color: "#999" }}>✕</button>
+          </div>
+
+          {flash && (
+            <div style={{ marginTop: 10, padding: "8px 14px", background: flash.type === "err" ? "#FEF2F2" : "#ECFDF5", color: flash.type === "err" ? "#991B1B" : "#065F46", borderRadius: 8, fontSize: 13, fontWeight: 600 }}>
+              {flash.msg}
+            </div>
+          )}
+
+          {/* FILTROS */}
+          <div style={{ display: "flex", gap: 10, marginTop: 14, flexWrap: "wrap" }}>
+            <input
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="🔍 Buscar hotel, dirección, zona..."
+              style={{ flex: 1, minWidth: 200, padding: "9px 14px", borderRadius: 10, border: "1.5px solid #E2E8F0", fontSize: 13, outline: "none" }}
+            />
+            {["all", "ok", "pending"].map(f => (
+              <button
+                key={f}
+                onClick={() => setFilterStatus(f)}
+                style={{
+                  padding: "8px 14px", borderRadius: 10, fontSize: 12, fontWeight: 700, cursor: "pointer", border: "1.5px solid",
+                  background: filterStatus === f ? (f === "ok" ? "#ECFDF5" : f === "pending" ? "#FFFBEB" : "#EEF2FF") : "white",
+                  color: filterStatus === f ? (f === "ok" ? "#065F46" : f === "pending" ? "#92400E" : "#3730A3") : "#64748B",
+                  borderColor: filterStatus === f ? (f === "ok" ? "#6EE7B7" : f === "pending" ? "#FDE68A" : "#A5B4FC") : "#E2E8F0",
+                }}
+              >
+                {f === "all" ? `Todos (${hotels.length})` : f === "ok" ? `✅ Con dirección (${countOk})` : `⚠️ Pendientes (${countPending})`}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* LISTA */}
+        <div style={{ flex: 1, overflow: "auto", padding: "16px 28px" }}>
+          {filtered.length === 0 && (
+            <div style={{ textAlign: "center", padding: 40, color: "#94A3B8", fontSize: 14 }}>No hay resultados para "{search}"</div>
+          )}
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {filtered.map((h) => {
+              const isEditing = editingName === h.originalName;
+              const hasAddress = !!h.address;
+              return (
+                <div
+                  key={h.originalName}
+                  style={{
+                    borderRadius: 12, border: `1.5px solid ${isEditing ? "#3B82F6" : hasAddress ? "#D1FAE5" : "#FDE68A"}`,
+                    background: isEditing ? "#EFF6FF" : hasAddress ? "#F0FDF4" : "#FFFBEB",
+                    overflow: "hidden"
+                  }}
+                >
+                  {/* FILA NORMAL */}
+                  {!isEditing && (
+                    <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px" }}>
+                      <div style={{ fontSize: 18 }}>{hasAddress ? "✅" : "⚠️"}</div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontWeight: 700, fontSize: 14, color: "#1E293B", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                          {h.displayName || h.name}
+                          {h.displayName && h.displayName !== h.name && (
+                            <span style={{ fontSize: 11, color: "#94A3B8", fontWeight: 400, marginLeft: 8 }}>(orig: {h.name})</span>
+                          )}
+                        </div>
+                        <div style={{ fontSize: 12, color: hasAddress ? "#059669" : "#B45309", marginTop: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                          {hasAddress ? `📍 ${h.address}` : `📍 ${h.municipality || "—"} · ${normalizeRegion(h.region) || "Sin región"}`}
+                        </div>
+                      </div>
+                      <div style={{ fontSize: 11, color: "#94A3B8", whiteSpace: "nowrap", flexShrink: 0 }}>
+                        {normalizeRegion(h.region) || h.island || ""}
+                      </div>
+                      <button
+                        onClick={() => startEdit(h)}
+                        style={{ padding: "6px 14px", background: "white", border: "1.5px solid #CBD5E1", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer", color: "#475569", whiteSpace: "nowrap", flexShrink: 0 }}
+                      >
+                        ✏️ Editar
+                      </button>
+                    </div>
+                  )}
+
+                  {/* FORMULARIO DE EDICIÓN */}
+                  {isEditing && (
+                    <div style={{ padding: 16 }}>
+                      <div style={{ fontSize: 11, fontWeight: 800, color: "#1D4ED8", textTransform: "uppercase", marginBottom: 12 }}>✏️ Editando: {h.originalName}</div>
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 10 }}>
+                        <div style={{ gridColumn: "1 / -1" }}>
+                          <div style={{ fontSize: 11, color: "#64748B", marginBottom: 4, fontWeight: 600 }}>Nombre para mostrar (opcional)</div>
+                          <input
+                            value={editForm.displayName}
+                            onChange={e => setEditForm(f => ({ ...f, displayName: e.target.value }))}
+                            placeholder={h.originalName}
+                            style={{ width: "100%", padding: "8px 12px", borderRadius: 8, border: "1.5px solid #CBD5E1", fontSize: 13, boxSizing: "border-box" }}
+                          />
+                        </div>
+                        <div style={{ gridColumn: "1 / -1" }}>
+                          <div style={{ fontSize: 11, color: "#64748B", marginBottom: 4, fontWeight: 600 }}>📍 Dirección completa <span style={{ color: "#EF4444" }}>*</span></div>
+                          <input
+                            value={editForm.address}
+                            onChange={e => setEditForm(f => ({ ...f, address: e.target.value }))}
+                            placeholder="Calle, número, código postal, ciudad..."
+                            style={{ width: "100%", padding: "8px 12px", borderRadius: 8, border: `1.5px solid ${editForm.address ? "#10B981" : "#FDE68A"}`, fontSize: 13, boxSizing: "border-box", fontWeight: editForm.address ? 600 : 400 }}
+                          />
+                        </div>
+                        <div>
+                          <div style={{ fontSize: 11, color: "#64748B", marginBottom: 4, fontWeight: 600 }}>Municipio / Ciudad</div>
+                          <input
+                            value={editForm.municipality}
+                            onChange={e => setEditForm(f => ({ ...f, municipality: e.target.value }))}
+                            placeholder="Municipio..."
+                            style={{ width: "100%", padding: "8px 12px", borderRadius: 8, border: "1.5px solid #CBD5E1", fontSize: 13, boxSizing: "border-box" }}
+                          />
+                        </div>
+                        <div>
+                          <div style={{ fontSize: 11, color: "#64748B", marginBottom: 4, fontWeight: 600 }}>Región / CCAA</div>
+                          <input
+                            value={editForm.region}
+                            onChange={e => setEditForm(f => ({ ...f, region: e.target.value }))}
+                            placeholder="Comunidad Autónoma..."
+                            style={{ width: "100%", padding: "8px 12px", borderRadius: 8, border: "1.5px solid #CBD5E1", fontSize: 13, boxSizing: "border-box" }}
+                          />
+                        </div>
+                      </div>
+                      <div style={{ display: "flex", gap: 8 }}>
+                        <button
+                          onClick={saveEdit}
+                          style={{ flex: 1, padding: "9px", background: "linear-gradient(135deg, #10B981, #059669)", color: "white", border: "none", borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: "pointer" }}
+                        >
+                          💾 Guardar cambios
+                        </button>
+                        <button
+                          onClick={() => setEditingName(null)}
+                          style={{ padding: "9px 16px", background: "white", color: "#64748B", border: "1.5px solid #CBD5E1", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer" }}
+                        >
+                          Cancelar
+                        </button>
+                        <a
+                          href={`https://www.google.com/maps/search/${encodeURIComponent(editForm.address || h.name)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ padding: "9px 14px", background: "#EEF2FF", color: "#4F46E5", border: "1.5px solid #A5B4FC", borderRadius: 8, fontSize: 13, fontWeight: 600, textDecoration: "none", whiteSpace: "nowrap" }}
+                        >
+                          🗺️ Verificar en Maps
+                        </a>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* FOOTER */}
+        <div style={{ padding: "14px 28px", borderTop: "1px solid #F1F5F9", flexShrink: 0, background: "#F8FAFC", borderRadius: "0 0 24px 24px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div style={{ fontSize: 12, color: "#94A3B8" }}>
+            Los cambios se guardan en la base de datos y se usan para calcular rutas.
+          </div>
+          <button onClick={onClose} style={{ padding: "9px 20px", background: "#0060AA", color: "white", border: "none", borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+            Cerrar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ====================================================================
 // ACCOMMODATION HOTELS MANAGER MODAL
 // ====================================================================
 function AccommodationHotelsManager({ hotels, onClose, onUpdate, onImportCSV }) {
@@ -2275,6 +2553,8 @@ function BookingPanel({ consultant, activity, transportType, establishments, con
   const [dateVuelta, setDateVuelta] = useState("");
   const [isDualMode, setIsDualMode] = useState(false);
   const [submitAttempted, setSubmitAttempted] = useState(false);
+  const [priceModal, setPriceModal] = useState(""); // precio del transporte actual
+  const [accomPrice, setAccomPrice] = useState("");  // precio del hotel de alojamiento
 
   const c = (consultants || CONSULTANTS)[consultant] || {};
   const dest = REGION_DEST[activity.r] || {};
@@ -2332,6 +2612,7 @@ function BookingPanel({ consultant, activity, transportType, establishments, con
     setIsDualMode(dual);
     setLocatorIda("");
     setLocatorVuelta("");
+    setPriceModal("");
     // Convert to YYYY-MM-DD for the HTML date input
     setDateIda(toInputDate(panelStartDate));
     setDateVuelta(toInputDate(panelEndDate));
@@ -2341,6 +2622,7 @@ function BookingPanel({ consultant, activity, transportType, establishments, con
   const closeModal = () => {
     setActiveBookingUrl(null);
     setSubmitAttempted(false);
+    setPriceModal("");
   };
 
   const confirmBooking = () => {
@@ -2356,7 +2638,8 @@ function BookingPanel({ consultant, activity, transportType, establishments, con
       segments.push({ type: isCar ? "devolución" : "vuelta", date: toDisplayDate(dateVuelta) || panelEndDate, locator: locatorVuelta.trim() });
     }
 
-    if (onMarkBooked) onMarkBooked(activeBookingUrl, { locator: segments[0].locator, segments });
+    const priceVal = priceModal.trim() ? parseFloat(priceModal.replace(",", ".")) : null;
+    if (onMarkBooked) onMarkBooked(activeBookingUrl, { locator: segments[0].locator, segments, price: priceVal });
     closeModal();
   };
 
@@ -2439,13 +2722,15 @@ function BookingPanel({ consultant, activity, transportType, establishments, con
 
   const handleSaveAccom = () => {
     if (!selectedHotel) return;
+    const priceVal = accomPrice.trim() ? parseFloat(accomPrice.replace(",", ".")) : null;
     const data = {
       hotel: selectedHotel.hotel,
       zona: selectedHotel.zona,
       ubicacion: selectedHotel.ubicacion || "",
       locator: accomLocator.trim(),
       date: toDisplayDate(accomDate) || panelStartDate,
-      type: "alojamiento"
+      type: "alojamiento",
+      price: priceVal
     };
     if (onMarkBooked) onMarkBooked("__accom__", data);
   };
@@ -2526,6 +2811,25 @@ function BookingPanel({ consultant, activity, transportType, establishments, con
                   </div>
                 </div>
               )}
+
+              {/* PRECIO TOTAL DE ESTA RESERVA */}
+              <div style={{ background: "#FFFBEB", padding: 18, borderRadius: 16, border: "2px solid #FDE68A" }}>
+                <div style={{ fontSize: 10, fontWeight: 800, color: "#92400E", textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 }}>
+                  💶 Precio total de esta reserva (opcional)
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={priceModal}
+                    onChange={e => setPriceModal(e.target.value)}
+                    placeholder="0.00"
+                    style={{ flex: 1, padding: "10px 14px", borderRadius: 10, border: "2px solid #FDE68A", fontSize: 18, fontWeight: 800, textAlign: "center", background: "#111", color: "#FBBF24", boxSizing: "border-box" }}
+                  />
+                  <span style={{ fontWeight: 800, fontSize: 20, color: "#92400E" }}>€</span>
+                </div>
+              </div>
             </div>
 
             <button
@@ -2600,9 +2904,14 @@ function BookingPanel({ consultant, activity, transportType, establishments, con
                     <div style={{ fontWeight: 800, fontSize: 13, color: "#15803D" }}>{accomAlreadySaved.hotel}</div>
                     <div style={{ fontSize: 11, color: "#64748B" }}>{accomAlreadySaved.zona} · {accomAlreadySaved.date}</div>
                   </div>
-                  {accomAlreadySaved.locator && (
-                    <div style={{ fontWeight: 800, fontSize: 15, color: "#0D4BD9", letterSpacing: 2 }}>{accomAlreadySaved.locator}</div>
-                  )}
+                  <div style={{ display: "flex", flexDirection: "column", gap: 2, alignItems: "flex-end" }}>
+                    {accomAlreadySaved.locator && (
+                      <div style={{ fontWeight: 800, fontSize: 15, color: "#0D4BD9", letterSpacing: 2 }}>{accomAlreadySaved.locator}</div>
+                    )}
+                    {accomAlreadySaved.price != null && (
+                      <div style={{ fontWeight: 700, fontSize: 12, color: "#92400E", background: "#FFFBEB", padding: "2px 8px", borderRadius: 6 }}>💶 {accomAlreadySaved.price.toFixed(2)} €</div>
+                    )}
+                  </div>
                   {accomAlreadySaved.ubicacion && (
                     <a href={accomAlreadySaved.ubicacion} target="_blank" rel="noopener noreferrer"
                       style={{ fontSize: 11, color: "#0369A1", background: "#E0F2FE", padding: "4px 8px", borderRadius: 6, textDecoration: "none" }}
@@ -2788,31 +3097,45 @@ function BookingPanel({ consultant, activity, transportType, establishments, con
                     )}
                   </div>
 
-                  {/* Locator + date + save */}
+                  {/* Locator + date + price + save */}
                   {selectedHotel && (
-                    <div style={{ background: "white", borderRadius: 12, padding: "14px", border: "1px solid #DBEAFE", display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-                      <div style={{ flex: 1, minWidth: 140 }}>
-                        <div style={{ fontSize: 10, color: "#94A3B8", marginBottom: 4 }}>Fecha entrada</div>
-                        <input
-                          type="date"
-                          value={accomDate}
-                          onChange={e => setAccomDate(e.target.value)}
-                          style={{ width: "100%", padding: "7px 10px", borderRadius: 8, border: "1.5px solid #CBD5E1", fontSize: 12, fontWeight: 600, boxSizing: "border-box", background: "#111", color: "white" }}
-                        />
-                      </div>
-                      <div style={{ flex: 1, minWidth: 130 }}>
-                        <div style={{ fontSize: 10, color: "#94A3B8", marginBottom: 4 }}>Localizador (opcional)</div>
-                        <input
-                          type="text"
-                          value={accomLocator}
-                          onChange={e => setAccomLocator(e.target.value.toUpperCase())}
-                          placeholder="Nº reserva"
-                          style={{ width: "100%", padding: "7px 10px", borderRadius: 8, border: "1.5px solid #CBD5E1", fontSize: 14, fontWeight: 800, letterSpacing: 2, textAlign: "center", background: "#111", color: "white", boxSizing: "border-box" }}
-                        />
+                    <div style={{ background: "white", borderRadius: 12, padding: "14px", border: "1px solid #DBEAFE", display: "flex", flexDirection: "column", gap: 10 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                        <div style={{ flex: 1, minWidth: 130 }}>
+                          <div style={{ fontSize: 10, color: "#94A3B8", marginBottom: 4 }}>Fecha entrada</div>
+                          <input
+                            type="date"
+                            value={accomDate}
+                            onChange={e => setAccomDate(e.target.value)}
+                            style={{ width: "100%", padding: "7px 10px", borderRadius: 8, border: "1.5px solid #CBD5E1", fontSize: 12, fontWeight: 600, boxSizing: "border-box", background: "#111", color: "white" }}
+                          />
+                        </div>
+                        <div style={{ flex: 1, minWidth: 120 }}>
+                          <div style={{ fontSize: 10, color: "#94A3B8", marginBottom: 4 }}>Localizador (opcional)</div>
+                          <input
+                            type="text"
+                            value={accomLocator}
+                            onChange={e => setAccomLocator(e.target.value.toUpperCase())}
+                            placeholder="Nº reserva"
+                            style={{ width: "100%", padding: "7px 10px", borderRadius: 8, border: "1.5px solid #CBD5E1", fontSize: 14, fontWeight: 800, letterSpacing: 2, textAlign: "center", background: "#111", color: "white", boxSizing: "border-box" }}
+                          />
+                        </div>
+                        <div style={{ flex: 1, minWidth: 100 }}>
+                          <div style={{ fontSize: 10, color: "#94A3B8", marginBottom: 4 }}>💶 Precio (€)</div>
+                          <input
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            value={accomPrice}
+                            onChange={e => setAccomPrice(e.target.value)}
+                            placeholder="0.00"
+                            style={{ width: "100%", padding: "7px 10px", borderRadius: 8, border: "1.5px solid #FDE68A", fontSize: 14, fontWeight: 800, textAlign: "center", background: "#111", color: "#FBBF24", boxSizing: "border-box" }}
+                          />
+                        </div>
                       </div>
                       <button
                         onClick={handleSaveAccom}
-                        style={{ padding: "9px 18px", background: "linear-gradient(135deg, #0369A1, #0284C7)", color: "white", border: "none", borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0 }}
+                        style={{ padding: "9px 18px", background: "linear-gradient(135deg, #0369A1, #0284C7)", color: "white", border: "none", borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}
                       >
                         🏨 Guardar Hotel
                       </button>
@@ -2861,6 +3184,12 @@ function BookingPanel({ consultant, activity, transportType, establishments, con
                             <span style={{ fontWeight: 800, letterSpacing: 1 }}>{seg.locator}</span>
                           </div>
                         ))}
+                        {booking.price != null && (
+                          <div style={{ display: "flex", justifyContent: "space-between", color: "#92400E", fontSize: 11, marginTop: 4, borderTop: "1px solid #A7F3D0", paddingTop: 4 }}>
+                            <span>💶 Precio:</span>
+                            <span style={{ fontWeight: 800 }}>{booking.price.toFixed(2)} €</span>
+                          </div>
+                        )}
                         <button
                           onClick={(e) => { e.preventDefault(); openModal({ preventDefault: () => { } }, l); }}
                           style={{ marginTop: 6, background: "white", border: "1px solid #A7F3D0", borderRadius: 6, padding: "3px 8px", fontSize: 10, cursor: "pointer", color: "#065F46", width: "100%" }}
@@ -2887,6 +3216,37 @@ function BookingPanel({ consultant, activity, transportType, establishments, con
                 <div style={{ fontSize: 10, textAlign: "center", lineHeight: 1.4 }}>Proveedor externo / manual</div>
               </button>
             </div>
+
+            {/* RESUMEN DE PRECIOS */}
+            {(() => {
+              const allBookings = Object.entries(bookedLinks);
+              const withPrice = allBookings.filter(([, d]) => d?.price != null);
+              const totalPrice = withPrice.reduce((sum, [, d]) => sum + (d.price || 0), 0);
+              if (withPrice.length === 0) return null;
+              return (
+                <div style={{ background: "#FFFBEB", borderRadius: 14, padding: "14px 20px", border: "1px solid #FDE68A", marginBottom: 16 }}>
+                  <div style={{ fontSize: 11, fontWeight: 800, color: "#92400E", textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 }}>💶 Resumen de costes</div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                    {allBookings.map(([url, data]) => {
+                      if (!data || data.price == null) return null;
+                      const label = url === "__accom__"
+                        ? `🏨 ${data.hotel || "Alojamiento"}`
+                        : `${directLinks.find(l => l.url === url)?.icon || "🎫"} ${directLinks.find(l => l.url === url)?.label || "Reserva"}`;
+                      return (
+                        <div key={url} style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: "#78350F" }}>
+                          <span>{label}</span>
+                          <span style={{ fontWeight: 700 }}>{data.price.toFixed(2)} €</span>
+                        </div>
+                      );
+                    })}
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: 15, fontWeight: 800, color: "#92400E", borderTop: "2px solid #FDE68A", paddingTop: 8, marginTop: 4 }}>
+                      <span>TOTAL VIAJE</span>
+                      <span>{totalPrice.toFixed(2)} €</span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
 
             <div style={{ background: "#F8FAFC", padding: "16px 20px", borderRadius: 14, display: "flex", justifyContent: "space-between", alignItems: "center", border: "1px solid #E2E8F0" }}>
               <div style={{ fontSize: 13, color: "#555" }}>
@@ -3568,6 +3928,7 @@ export default function HSConsultingTravelPlanner() {
   const [bookingTarget, setBookingTarget] = useState(null);
   const [showBulkGeocode, setShowBulkGeocode] = useState(false);
   const [showHotelsManager, setShowHotelsManager] = useState(false);
+  const [showHotelDB, setShowHotelDB] = useState(false);
   const [pendingNewEstablishments, setPendingNewEstablishments] = useState(null); // { names: [...], regionMap: {...} }
   const [showNewTrip, setShowNewTrip] = useState(false);
   const [accommodationHotels, setAccommodationHotels] = useState(() => {
@@ -4809,6 +5170,16 @@ export default function HSConsultingTravelPlanner() {
             onImportCSV={handleHotelsCSV}
           />
         )}
+        {showHotelDB && (
+          <ClientHotelDBPanel
+            onClose={() => setShowHotelDB(false)}
+            allClients={CLIENT_DATA}
+            customClientInfo={customClientInfo}
+            onSave={(name, data) => {
+              setCustomClientInfo(prev => ({ ...prev, [name]: { ...(prev[name] || {}), ...data } }));
+            }}
+          />
+        )}
         <AppLayout>
           <Dashboard
             stats={stats}
@@ -4822,6 +5193,8 @@ export default function HSConsultingTravelPlanner() {
             onTriggerHotels={() => setShowHotelsManager(true)}
             accommodationHotelsCount={Object.keys(accommodationHotels).length}
             onTriggerNewTrip={() => setShowNewTrip(true)}
+            onTriggerHotelDB={() => setShowHotelDB(true)}
+            hotelDBCount={CLIENT_DATA.length}
           />
           <input type="file" ref={planningInputRef} style={{ display: "none" }} accept=".csv" onChange={onUploadPlanning} />
           <input type="file" ref={hotelsInputRef} style={{ display: "none" }} accept=".csv" onChange={e => handleHotelsCSV(e, 'replace')} />
