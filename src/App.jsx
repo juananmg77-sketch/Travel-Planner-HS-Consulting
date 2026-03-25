@@ -4,6 +4,7 @@ import CLIENT_DATA from './clientData.json';
 import CLIENT_DATA_raw from './clientData.json';
 import { signIn, signOut, getCurrentSession, getUserProfile, onAuthStateChange } from './supabaseAuth';
 import { uploadActivities, upsertEstablishment, updateActivityAddress, updateActivityTransport, logAction, getAllDistances, upsertDistance, getValidatedEstablishments, getAllAccommodationHotels, syncAccommodationHotels, setActivityManagedStatus, bulkSetManagedStatus, getManagedActivityIds, getAllActivities as getAllActivitiesFromDB, saveBookingConfirmation, getAllBookingConfirmations, upsertConsultant, deleteConsultant as deleteConsultantDB, getAllConsultants } from './supabaseService';
+import { fetchLovableHoteles, updateLovableHotel } from './lovableService';
 
 const CLIENT_LOOKUP = CLIENT_DATA.reduce((acc, client) => {
   acc[client.name] = client;
@@ -2002,6 +2003,7 @@ function ClientHotelDBPanel({ onClose, allClients, customClientInfo, onSave }) {
   const [flash, setFlash] = useState(null);
   const [filterStatus, setFilterStatus] = useState("all"); // "all" | "ok" | "pending"
   const [importStats, setImportStats] = useState(null); // resultado de la última sincronización
+  const [showPushPanel, setShowPushPanel] = useState(false);
   const importRef = useRef(null);
 
   const showFlash = (msg, type = "ok") => {
@@ -2200,9 +2202,21 @@ function ClientHotelDBPanel({ onClose, allClients, customClientInfo, onSave }) {
                   cursor: "pointer", display: "flex", alignItems: "center", gap: 6,
                   boxShadow: "0 4px 12px rgba(124,58,237,0.3)"
                 }}
-                title="Importar CSV exportado desde la BBDD de Activos (Lovable)"
+                title="Importar CSV exportado desde la BBDD de Activos (Lovable) → Travel Planner"
               >
-                🔄 Sincronizar BBDD Activos
+                ⬇️ Pull desde Lovable (CSV)
+              </button>
+              <button
+                onClick={() => setShowPushPanel(true)}
+                style={{
+                  background: "linear-gradient(135deg, #0EA5E9, #2563EB)", color: "white", border: "none",
+                  padding: "9px 16px", borderRadius: 10, fontSize: 12, fontWeight: 700,
+                  cursor: "pointer", display: "flex", alignItems: "center", gap: 6,
+                  boxShadow: "0 4px 12px rgba(14,165,233,0.35)"
+                }}
+                title="Enviar direcciones de Travel Planner → BBDD Maestra de Activos (Lovable)"
+              >
+                ⬆️ Push a Lovable
               </button>
               <button onClick={onClose} style={{ background: "none", border: "none", fontSize: 22, cursor: "pointer", color: "#999" }}>✕</button>
             </div>
@@ -2374,6 +2388,448 @@ function ClientHotelDBPanel({ onClose, allClients, customClientInfo, onSave }) {
           <button onClick={onClose} style={{ padding: "9px 20px", background: "#0060AA", color: "white", border: "none", borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
             Cerrar
           </button>
+        </div>
+      </div>
+
+      {/* PANEL DE PUSH → LOVABLE (se monta encima como overlay adicional) */}
+      {showPushPanel && (
+        <LovablePushPanel
+          onClose={() => setShowPushPanel(false)}
+          allClients={allClients}
+          customClientInfo={customClientInfo}
+        />
+      )}
+    </div>
+  );
+}
+
+// ====================================================================
+// LOVABLE PUSH PANEL
+// Empuja datos de Travel Planner → BBDD Maestra de Activos (Lovable)
+// Flujo en 3 pasos:
+//   1. Analiza y clasifica diferencias (auto / necesita aprobación / idéntico)
+//   2. Revisión con aprobación explícita por fila conflictiva
+//   3. Ejecución del push + resumen de resultados
+// ====================================================================
+function LovablePushPanel({ onClose, allClients, customClientInfo }) {
+  const FIELDS = [
+    { key: "address",      lovKey: "direccion_completa", label: "Dirección completa" },
+    { key: "municipality", lovKey: "municipio",          label: "Municipio"          },
+    { key: "region",       lovKey: "ccaa",               label: "CCAA / Región"      },
+    { key: "island",       lovKey: "isla",               label: "Isla"               },
+  ];
+
+  // step: "loading" | "review" | "executing" | "done"
+  const [step, setStep] = useState("loading");
+  const [loadError, setLoadError] = useState(null);
+
+  // Análisis resultado:
+  // autoRows    → Lovable vacío → se actualizará sin preguntar
+  // conflictRows → Lovable tiene valor distinto → necesita aprobación
+  // skipRows    → idénticos o Travel Planner no tiene dato → se omiten
+  const [autoRows, setAutoRows]       = useState([]); // [{ lovableId, lovableName, field, lovLabel, tpValue }]
+  const [conflictRows, setConflictRows] = useState([]); // [{ lovableId, lovableName, field, lovLabel, lovValue, tpValue }]
+  const [approved, setApproved]       = useState({}); // { rowKey: boolean }
+  const [skipCount, setSkipCount]     = useState(0);
+  const [unmatchedTP, setUnmatchedTP] = useState([]); // hoteles en TP sin match en Lovable
+
+  // Ejecución
+  const [progress, setProgress]   = useState({ done: 0, total: 0 });
+  const [execErrors, setExecErrors] = useState([]);
+  const [execSummary, setExecSummary] = useState(null);
+
+  // ── PASO 1: Cargar hoteles de Lovable y analizar diferencias ──────
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data: lovHotels, error } = await fetchLovableHoteles();
+      if (cancelled) return;
+      if (error) { setLoadError(error.message || String(error)); return; }
+
+      // Índices Lovable: por código HS y por nombre normalizado
+      const byCode = {}; // "HS-008" → lovRow
+      const byName = {}; // "nombre en minúsculas" → lovRow
+      lovHotels.forEach(r => {
+        if (r.codigo_hotel) byCode[r.codigo_hotel.trim().toUpperCase()] = r;
+        if (r.nombre_hotel) byName[r.nombre_hotel.toLowerCase().trim()] = r;
+      });
+
+      // Merge Travel Planner: CLIENT_DATA + customClientInfo
+      const tpMap = {};
+      allClients.forEach(c => {
+        tpMap[c.name] = { ...c, ...(customClientInfo[c.name] || {}) };
+      });
+      Object.entries(customClientInfo).forEach(([name, data]) => {
+        if (!tpMap[name]) tpMap[name] = { name, ...data };
+      });
+
+      const auto = [], conflict = [], unmatched = [];
+      let skipped = 0;
+
+      Object.values(tpMap).forEach(tp => {
+        // Buscar match en Lovable
+        const code = (tp.id || "").trim().toUpperCase();
+        const nameLow = (tp.displayName || tp.name || "").toLowerCase().trim();
+        let lovRow = byCode[code] || byName[nameLow] || null;
+
+        // Match parcial si no hubo exacto
+        if (!lovRow && nameLow) {
+          const partialKey = Object.keys(byName).find(k => k.includes(nameLow) || nameLow.includes(k));
+          if (partialKey) lovRow = byName[partialKey];
+        }
+
+        if (!lovRow) {
+          // ¿Travel Planner tiene datos propios?
+          const hasData = FIELDS.some(f => !!(tp[f.key] || "").trim());
+          if (hasData) unmatched.push(tp.displayName || tp.name);
+          return;
+        }
+
+        FIELDS.forEach(f => {
+          const tpVal = (tp[f.key] || "").trim();
+          const lovVal = (lovRow[f.lovKey] || "").trim();
+
+          if (!tpVal) { skipped++; return; } // TP no tiene dato → nada que aportar
+
+          const rowKey = `${lovRow.id}__${f.key}`;
+          if (!lovVal) {
+            // Lovable vacío → auto
+            auto.push({ lovableId: lovRow.id, lovableName: lovRow.nombre_hotel, lovKey: f.lovKey, lovLabel: f.label, tpValue: tpVal, rowKey });
+          } else if (lovVal.toLowerCase() === tpVal.toLowerCase()) {
+            skipped++; // idéntico
+          } else {
+            // Conflicto: Lovable ya tiene un valor distinto
+            conflict.push({ lovableId: lovRow.id, lovableName: lovRow.nombre_hotel, lovKey: f.lovKey, lovLabel: f.label, lovValue: lovVal, tpValue: tpVal, rowKey });
+          }
+        });
+      });
+
+      // Inicializar aprobaciones: todas a false (requiere acción explícita)
+      const initApproved = {};
+      conflict.forEach(r => { initApproved[r.rowKey] = false; });
+
+      setAutoRows(auto);
+      setConflictRows(conflict);
+      setApproved(initApproved);
+      setSkipCount(skipped);
+      setUnmatchedTP(unmatched);
+      setStep("review");
+    })();
+    return () => { cancelled = true; };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // ── PASO 3: Ejecutar el push ──────────────────────────────────────
+  const executePush = async () => {
+    // Agrupar cambios por lovableId
+    const byId = {};
+    autoRows.forEach(r => {
+      if (!byId[r.lovableId]) byId[r.lovableId] = {};
+      byId[r.lovableId][r.lovKey] = r.tpValue;
+    });
+    conflictRows.forEach(r => {
+      if (!approved[r.rowKey]) return;
+      if (!byId[r.lovableId]) byId[r.lovableId] = {};
+      byId[r.lovableId][r.lovKey] = r.tpValue;
+    });
+
+    const ids = Object.keys(byId);
+    if (ids.length === 0) {
+      setExecSummary({ updated: 0, errors: 0 });
+      setStep("done");
+      return;
+    }
+
+    setStep("executing");
+    setProgress({ done: 0, total: ids.length });
+    const errors = [];
+
+    for (let i = 0; i < ids.length; i++) {
+      const id = ids[i];
+      const { error } = await updateLovableHotel(id, byId[id]);
+      if (error) errors.push({ id, error: error.message || String(error) });
+      setProgress({ done: i + 1, total: ids.length });
+    }
+
+    setExecErrors(errors);
+    setExecSummary({ updated: ids.length - errors.length, errors: errors.length });
+    setStep("done");
+  };
+
+  const approvedCount = Object.values(approved).filter(Boolean).length;
+  const totalChanges = autoRows.length + approvedCount;
+
+  // ── RENDER ────────────────────────────────────────────────────────
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.72)", zIndex: 7000, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+      <div style={{ background: "white", borderRadius: 24, maxWidth: 960, width: "100%", maxHeight: "96vh", display: "flex", flexDirection: "column", boxShadow: "0 50px 120px rgba(0,0,0,0.5)" }}>
+
+        {/* CABECERA */}
+        <div style={{ padding: "22px 28px 18px", borderBottom: "1px solid #F1F5F9", flexShrink: 0 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+            <div>
+              <h2 style={{ margin: 0, fontSize: 21, fontWeight: 800, color: "#111" }}>
+                ⬆️ Push a BBDD Maestra de Activos
+              </h2>
+              <p style={{ margin: "4px 0 0", fontSize: 13, color: "#64748B" }}>
+                Envía datos de direcciones de Travel Planner → Lovable (BBDD Maestra). Los campos vacíos se rellenan automáticamente; los que ya tienen valor requieren tu aprobación explícita.
+              </p>
+            </div>
+            {step !== "executing" && (
+              <button onClick={onClose} style={{ background: "none", border: "none", fontSize: 22, cursor: "pointer", color: "#999", marginLeft: 16, flexShrink: 0 }}>✕</button>
+            )}
+          </div>
+
+          {/* Indicador de pasos */}
+          {(step === "review" || step === "executing" || step === "done") && (
+            <div style={{ display: "flex", gap: 8, marginTop: 14, flexWrap: "wrap" }}>
+              {[
+                { s: "review",    n: 1, label: "Revisión" },
+                { s: "executing", n: 2, label: "Ejecutando" },
+                { s: "done",      n: 3, label: "Completado" },
+              ].map(({ s, n, label }) => {
+                const active = step === s;
+                const done = (s === "review" && (step === "executing" || step === "done")) ||
+                             (s === "executing" && step === "done");
+                return (
+                  <div key={s} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <div style={{ width: 24, height: 24, borderRadius: "50%", background: done ? "#10B981" : active ? "#3B82F6" : "#E2E8F0", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700 }}>
+                      {done ? "✓" : n}
+                    </div>
+                    <span style={{ fontSize: 12, fontWeight: 600, color: done ? "#10B981" : active ? "#3B82F6" : "#94A3B8" }}>{label}</span>
+                    {n < 3 && <span style={{ color: "#CBD5E1", marginLeft: 4 }}>›</span>}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* CUERPO */}
+        <div style={{ flex: 1, overflow: "auto", padding: "20px 28px" }}>
+
+          {/* ── CARGANDO ── */}
+          {step === "loading" && !loadError && (
+            <div style={{ textAlign: "center", padding: 60, color: "#64748B" }}>
+              <div style={{ fontSize: 36, marginBottom: 12 }}>⏳</div>
+              <div style={{ fontWeight: 700, fontSize: 16 }}>Analizando diferencias entre ambas bases de datos…</div>
+              <div style={{ fontSize: 13, marginTop: 6, color: "#94A3B8" }}>Descargando hoteles de la BBDD Maestra (Lovable)</div>
+            </div>
+          )}
+
+          {/* ── ERROR DE CARGA ── */}
+          {loadError && (
+            <div style={{ background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: 12, padding: 24 }}>
+              <div style={{ fontWeight: 800, color: "#991B1B", marginBottom: 8 }}>❌ Error al conectar con la BBDD Maestra</div>
+              <div style={{ fontSize: 13, color: "#7F1D1D", fontFamily: "monospace", background: "#FEE2E2", padding: "10px 14px", borderRadius: 8 }}>{loadError}</div>
+              <div style={{ marginTop: 14, fontSize: 13, color: "#991B1B" }}>
+                <strong>Posibles causas:</strong>
+                <ul style={{ margin: "6px 0 0 18px", lineHeight: 1.8 }}>
+                  <li>Las políticas RLS de Supabase bloquean la lectura con la clave anon.</li>
+                  <li>Falta la variable <code>VITE_LOVABLE_SUPABASE_ANON_KEY</code> en <code>.env.local</code>.</li>
+                  <li>La tabla <code>hoteles</code> no existe o su nombre es distinto.</li>
+                </ul>
+              </div>
+            </div>
+          )}
+
+          {/* ── REVISIÓN ── */}
+          {step === "review" && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+
+              {/* RESUMEN RÁPIDO */}
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 10 }}>
+                {[
+                  { count: autoRows.length,     label: "Campos auto-update", desc: "Lovable vacío → se rellenará", color: "#10B981", bg: "#ECFDF5", icon: "🟢" },
+                  { count: conflictRows.length,  label: "Conflictos detectados", desc: "Lovable ya tiene dato distinto", color: "#F59E0B", bg: "#FFFBEB", icon: "🟡" },
+                  { count: skipCount,            label: "Sin cambios",          desc: "Idénticos o sin dato en TP",    color: "#6B7280", bg: "#F9FAFB", icon: "⚪" },
+                  { count: unmatchedTP.length,   label: "Sin match en Lovable", desc: "No se encontró hotel en BBDD Maestra", color: "#EF4444", bg: "#FEF2F2", icon: "🔴" },
+                ].map(({ count, label, desc, color, bg, icon }) => (
+                  <div key={label} style={{ background: bg, borderRadius: 12, padding: "14px 16px", border: `1px solid ${color}22` }}>
+                    <div style={{ fontSize: 22, fontWeight: 800, color }}>{icon} {count}</div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color, marginTop: 4 }}>{label}</div>
+                    <div style={{ fontSize: 11, color: "#64748B", marginTop: 2 }}>{desc}</div>
+                  </div>
+                ))}
+              </div>
+
+              {/* BLOQUE CONFLICTOS — el más importante, con aprobación explícita */}
+              {conflictRows.length > 0 && (
+                <div style={{ border: "2px solid #F59E0B", borderRadius: 16, overflow: "hidden" }}>
+                  <div style={{ background: "linear-gradient(135deg, #FFFBEB, #FEF3C7)", padding: "14px 18px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <div>
+                      <div style={{ fontWeight: 800, fontSize: 15, color: "#92400E" }}>
+                        ⚠️ CAMPOS CON DATOS EXISTENTES EN LA BBDD MAESTRA — REQUIEREN TU AUTORIZACIÓN EXPLÍCITA
+                      </div>
+                      <div style={{ fontSize: 12, color: "#78350F", marginTop: 3 }}>
+                        Estos campos ya tienen información en Lovable. Marca solo los que quieres sobreescribir. Los que no marques <strong>NO se tocarán</strong>.
+                      </div>
+                    </div>
+                    <div style={{ display: "flex", gap: 8, flexShrink: 0, marginLeft: 16 }}>
+                      <button
+                        onClick={() => setApproved(prev => { const n = {...prev}; conflictRows.forEach(r => { n[r.rowKey] = true; }); return n; })}
+                        style={{ padding: "7px 14px", background: "#F59E0B", color: "white", border: "none", borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: "pointer" }}
+                      >
+                        ✅ Aprobar todos
+                      </button>
+                      <button
+                        onClick={() => setApproved(prev => { const n = {...prev}; conflictRows.forEach(r => { n[r.rowKey] = false; }); return n; })}
+                        style={{ padding: "7px 14px", background: "white", color: "#92400E", border: "1.5px solid #F59E0B", borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: "pointer" }}
+                      >
+                        ❌ Rechazar todos
+                      </button>
+                    </div>
+                  </div>
+                  <div style={{ maxHeight: 340, overflowY: "auto" }}>
+                    {/* Cabecera tabla */}
+                    <div style={{ display: "grid", gridTemplateColumns: "36px 1fr 130px 1fr 1fr", gap: 0, borderBottom: "1px solid #FDE68A", background: "#FEF3C7", padding: "8px 16px" }}>
+                      <div style={{ fontSize: 11, fontWeight: 800, color: "#92400E" }}>✓</div>
+                      <div style={{ fontSize: 11, fontWeight: 800, color: "#92400E" }}>Hotel</div>
+                      <div style={{ fontSize: 11, fontWeight: 800, color: "#92400E" }}>Campo</div>
+                      <div style={{ fontSize: 11, fontWeight: 800, color: "#DC2626" }}>📍 Valor en Lovable (actual)</div>
+                      <div style={{ fontSize: 11, fontWeight: 800, color: "#1D4ED8" }}>⬆️ Nuevo valor (Travel Planner)</div>
+                    </div>
+                    {conflictRows.map(r => (
+                      <label key={r.rowKey} style={{ display: "grid", gridTemplateColumns: "36px 1fr 130px 1fr 1fr", gap: 0, padding: "10px 16px", borderBottom: "1px solid #FEF3C7", cursor: "pointer", background: approved[r.rowKey] ? "#FFFBEB" : "white", alignItems: "start" }}>
+                        <div style={{ paddingTop: 2 }}>
+                          <input
+                            type="checkbox"
+                            checked={!!approved[r.rowKey]}
+                            onChange={e => setApproved(prev => ({ ...prev, [r.rowKey]: e.target.checked }))}
+                            style={{ width: 16, height: 16, accentColor: "#F59E0B", cursor: "pointer" }}
+                          />
+                        </div>
+                        <div style={{ fontSize: 13, fontWeight: 600, color: "#374151", paddingRight: 8 }}>{r.lovableName}</div>
+                        <div style={{ fontSize: 11, color: "#64748B", background: "#F1F5F9", borderRadius: 6, padding: "3px 8px", display: "inline-block", alignSelf: "start" }}>{r.lovLabel}</div>
+                        <div style={{ fontSize: 12, color: "#DC2626", background: "#FEF2F2", borderRadius: 6, padding: "4px 10px", marginRight: 8, wordBreak: "break-word" }}>
+                          {r.lovValue}
+                        </div>
+                        <div style={{ fontSize: 12, color: "#1D4ED8", background: "#EFF6FF", borderRadius: 6, padding: "4px 10px", wordBreak: "break-word" }}>
+                          {r.tpValue}
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* BLOQUE AUTO-UPDATE */}
+              {autoRows.length > 0 && (
+                <div style={{ border: "1px solid #6EE7B7", borderRadius: 16, overflow: "hidden" }}>
+                  <div style={{ background: "#ECFDF5", padding: "12px 18px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <div>
+                      <div style={{ fontWeight: 800, fontSize: 14, color: "#065F46" }}>🟢 {autoRows.length} campos se actualizarán automáticamente</div>
+                      <div style={{ fontSize: 12, color: "#047857", marginTop: 2 }}>Estos campos están vacíos en Lovable. Se rellenarán sin necesidad de aprobación adicional.</div>
+                    </div>
+                  </div>
+                  <div style={{ maxHeight: 200, overflowY: "auto" }}>
+                    {autoRows.map(r => (
+                      <div key={r.rowKey} style={{ display: "grid", gridTemplateColumns: "1fr 130px 1fr", gap: 0, padding: "8px 16px", borderBottom: "1px solid #D1FAE5", fontSize: 12 }}>
+                        <div style={{ color: "#374151", fontWeight: 600 }}>{r.lovableName}</div>
+                        <div style={{ color: "#64748B", background: "#F1F5F9", borderRadius: 6, padding: "2px 8px", display: "inline-block", alignSelf: "center", fontSize: 11 }}>{r.lovLabel}</div>
+                        <div style={{ color: "#065F46" }}>→ <strong>{r.tpValue}</strong></div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Sin match */}
+              {unmatchedTP.length > 0 && (
+                <div style={{ border: "1px solid #FECACA", borderRadius: 12, padding: "12px 16px", background: "#FEF2F2" }}>
+                  <div style={{ fontWeight: 700, fontSize: 13, color: "#991B1B", marginBottom: 6 }}>🔴 {unmatchedTP.length} hoteles de Travel Planner sin match en Lovable (no se modificará nada)</div>
+                  <div style={{ fontSize: 12, color: "#7F1D1D", lineHeight: 1.7 }}>{unmatchedTP.join(" · ")}</div>
+                </div>
+              )}
+
+              {/* Sin nada que hacer */}
+              {autoRows.length === 0 && conflictRows.length === 0 && (
+                <div style={{ textAlign: "center", padding: 40, background: "#F9FAFB", borderRadius: 16 }}>
+                  <div style={{ fontSize: 36 }}>✅</div>
+                  <div style={{ fontWeight: 700, fontSize: 16, marginTop: 8, color: "#374151" }}>Las dos bases de datos están sincronizadas</div>
+                  <div style={{ fontSize: 13, color: "#6B7280", marginTop: 6 }}>No hay diferencias que enviar a Lovable.</div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ── EJECUTANDO ── */}
+          {step === "executing" && (
+            <div style={{ textAlign: "center", padding: 60 }}>
+              <div style={{ fontSize: 36, marginBottom: 16 }}>⏳</div>
+              <div style={{ fontWeight: 700, fontSize: 18, color: "#374151", marginBottom: 10 }}>
+                Actualizando BBDD Maestra… {progress.done} / {progress.total}
+              </div>
+              <div style={{ background: "#E2E8F0", borderRadius: 20, overflow: "hidden", height: 12, maxWidth: 400, margin: "0 auto" }}>
+                <div style={{ height: "100%", background: "linear-gradient(90deg, #3B82F6, #6D28D9)", width: `${progress.total ? (progress.done / progress.total) * 100 : 0}%`, transition: "width 0.3s ease", borderRadius: 20 }} />
+              </div>
+            </div>
+          )}
+
+          {/* ── HECHO ── */}
+          {step === "done" && execSummary && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+              <div style={{ textAlign: "center", padding: "30px 20px", background: execSummary.errors === 0 ? "#ECFDF5" : "#FFFBEB", borderRadius: 16, border: `1px solid ${execSummary.errors === 0 ? "#6EE7B7" : "#FDE68A"}` }}>
+                <div style={{ fontSize: 42 }}>{execSummary.errors === 0 ? "🎉" : "⚠️"}</div>
+                <div style={{ fontWeight: 800, fontSize: 20, color: execSummary.errors === 0 ? "#065F46" : "#92400E", marginTop: 8 }}>
+                  {execSummary.errors === 0 ? "Push completado con éxito" : "Push completado con algunos errores"}
+                </div>
+                <div style={{ fontSize: 14, color: "#64748B", marginTop: 6 }}>
+                  <strong>{execSummary.updated}</strong> hoteles actualizados en la BBDD Maestra
+                  {execSummary.errors > 0 && <> · <span style={{ color: "#DC2626" }}><strong>{execSummary.errors}</strong> errores</span></>}
+                </div>
+              </div>
+              {execErrors.length > 0 && (
+                <div style={{ background: "#FEF2F2", borderRadius: 12, padding: "14px 18px", border: "1px solid #FECACA" }}>
+                  <div style={{ fontWeight: 700, color: "#991B1B", marginBottom: 8, fontSize: 13 }}>❌ Errores (posiblemente restricciones RLS en Supabase):</div>
+                  {execErrors.map((e, i) => (
+                    <div key={i} style={{ fontSize: 12, color: "#7F1D1D", fontFamily: "monospace", marginBottom: 4 }}>ID {e.id}: {e.error}</div>
+                  ))}
+                  <div style={{ marginTop: 10, fontSize: 12, color: "#991B1B", background: "#FEE2E2", padding: "8px 12px", borderRadius: 8 }}>
+                    💡 Si ves errores de permisos, la clave <code>anon</code> puede no tener acceso de escritura. Configura una política RLS UPDATE en Supabase para el rol <code>anon</code>, o usa la <code>service_role</code> key (nunca en producción sin seguridad).
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* PIE CON BOTONES DE ACCIÓN */}
+        <div style={{ padding: "16px 28px", borderTop: "1px solid #F1F5F9", display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0 }}>
+          <div style={{ fontSize: 12, color: "#94A3B8" }}>
+            {step === "review" && autoRows.length + conflictRows.length > 0 && (
+              <>
+                Se enviarán: <strong style={{ color: "#10B981" }}>{autoRows.length} auto</strong>
+                {" + "}
+                <strong style={{ color: approvedCount > 0 ? "#F59E0B" : "#94A3B8" }}>{approvedCount} conflictos aprobados</strong>
+                {" = "}
+                <strong>{totalChanges} campos en total</strong>
+              </>
+            )}
+          </div>
+          <div style={{ display: "flex", gap: 10 }}>
+            {(step === "review" || step === "done") && (
+              <button
+                onClick={onClose}
+                style={{ padding: "10px 20px", background: "white", border: "1.5px solid #CBD5E1", borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: "pointer", color: "#475569" }}
+              >
+                {step === "done" ? "Cerrar" : "Cancelar"}
+              </button>
+            )}
+            {step === "review" && (autoRows.length > 0 || approvedCount > 0) && (
+              <button
+                onClick={executePush}
+                style={{ padding: "10px 24px", background: "linear-gradient(135deg, #3B82F6, #6D28D9)", color: "white", border: "none", borderRadius: 10, fontSize: 13, fontWeight: 800, cursor: "pointer", boxShadow: "0 4px 14px rgba(59,130,246,0.4)" }}
+              >
+                ⬆️ Ejecutar Push ({totalChanges} campos)
+              </button>
+            )}
+            {step === "review" && autoRows.length === 0 && conflictRows.length === 0 && (
+              <button onClick={onClose} style={{ padding: "10px 24px", background: "#10B981", color: "white", border: "none", borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+                ✓ Cerrar
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>
