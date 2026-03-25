@@ -2512,12 +2512,12 @@ function ClientHotelDBPanel({ onClose, allClients, customClientInfo, onSave, onP
           {/* Resultado de la última sincronización */}
           {syncStats && !syncStats.error && (
             <div style={{ marginTop: 12, padding: "10px 16px", background: "#F0FDF4", border: "1px solid #86EFAC", borderRadius: 10, fontSize: 12 }}>
-              <div style={{ display: "flex", gap: 20, flexWrap: "wrap", marginBottom: syncStats.noMatch > 0 || syncStats.noAddress > 0 ? 8 : 0 }}>
+              <div style={{ display: "flex", gap: 20, flexWrap: "wrap", marginBottom: syncStats.noAddress > 0 ? 8 : 0 }}>
                 <span>📊 <strong>{syncStats.total}</strong> en Lovable</span>
-                <span style={{ color: "#065F46" }}>✅ <strong>{syncStats.updated}</strong> importados ahora</span>
+                <span style={{ color: "#065F46" }}>✅ <strong>{syncStats.updated}</strong> actualizados</span>
+                {syncStats.newEntries > 0 && <span style={{ color: "#0369A1" }}>🆕 <strong>{syncStats.newEntries}</strong> nuevos importados</span>}
                 <span style={{ color: "#6B7280" }}>🔒 <strong>{syncStats.alreadyHas}</strong> ya tenían dirección</span>
                 {syncStats.noAddress > 0 && <span style={{ color: "#92400E" }}>📭 <strong>{syncStats.noAddress}</strong> sin dirección en Lovable</span>}
-                {syncStats.noMatch > 0 && <span style={{ color: "#1D4ED8" }}>🔍 <strong>{syncStats.noMatch}</strong> sin coincidencia en catálogo</span>}
                 {syncStats.inactive > 0 && <span style={{ color: "#6B7280" }}>💤 <strong>{syncStats.inactive}</strong> inactivos</span>}
                 {syncStats.errors > 0 && <span style={{ color: "#991B1B" }}>❌ <strong>{syncStats.errors}</strong> errores</span>}
               </div>
@@ -5416,9 +5416,9 @@ export default function HSConsultingTravelPlanner() {
       });
 
       // Detailed counters — each Lovable hotel falls into exactly one bucket
-      let updated = 0;       // imported successfully
+      let updated = 0;       // address filled for an existing catalogue hotel
+      let newEntries = 0;    // hotel not in clientData.json → created from Lovable
       let alreadyHas = 0;    // Travel Planner already had an address → respected
-      let noMatch = 0;       // no corresponding hotel in clientData.json
       let noAddress = 0;     // Lovable row has no address to offer
       let inactive = 0;      // row marked activo=false in Lovable
       let errors = 0;
@@ -5444,8 +5444,11 @@ export default function HSConsultingTravelPlanner() {
           const partial = Object.keys(byName).find(k => k.includes(lowerNombre) || lowerNombre.includes(k));
           if (partial) clientName = byName[partial];
         }
-        // Si no hay match NO crear entrada nueva — evitar duplicados
-        if (!clientName) { noMatch++; continue; }
+
+        // Si no hay match en clientData.json, usamos el nombre de Lovable directamente
+        // (se importa como entrada nueva marcada _fromBBDD)
+        const isNewEntry = !clientName;
+        if (isNewEntry) clientName = nombre;
 
         // Solo actualizar si Travel Planner NO tiene dirección ya
         // Read from freshEstablishments (direct Supabase snapshot) to avoid stale closure
@@ -5453,18 +5456,25 @@ export default function HSConsultingTravelPlanner() {
         if (existingAddr) { alreadyHas++; continue; }
 
         try {
+          const entryData = {
+            address: direccion,
+            municipality: municipio,
+            region: ccaa,
+            island: isla,
+            ...(isNewEntry ? { _fromBBDD: true, id: codigo || null } : {}),
+          };
           // Update React state for immediate UI feedback
           setCustomClientInfo(prev => ({
             ...prev,
-            [clientName]: { ...(prev[clientName] || {}), address: direccion, municipality: municipio, region: ccaa, island: isla }
+            [clientName]: { ...(prev[clientName] || {}), ...entryData }
           }));
           // Persist to Supabase
           await upsertEstablishment(clientName, { address: direccion, municipality: municipio, region: ccaa, island: isla });
-          updated++;
+          if (isNewEntry) newEntries++; else updated++;
         } catch { errors++; }
       }
 
-      setSyncStats({ total: lovableHotels.length, updated, alreadyHas, noMatch, noAddress, inactive, errors });
+      setSyncStats({ total: lovableHotels.length, updated, newEntries, alreadyHas, noAddress, inactive, errors });
     } catch (err) {
       setSyncStats({ error: err?.message || "Error de conexión con BBDD HS Consulting" });
     } finally {
@@ -6056,7 +6066,7 @@ export default function HSConsultingTravelPlanner() {
           {[
             { label: "Importar Agenda",     icon: "↑", action: () => planningInputRef.current?.click(), badge: null },
             { label: "Alojamientos",        icon: "⌂", action: () => setShowHotelsManager(true), badge: Object.keys(accommodationHotels).length || null },
-            { label: "BBDD Hoteles",        icon: "◫", action: () => setShowHotelDB(true), badge: CLIENT_DATA.length || null },
+            { label: "BBDD Hoteles",        icon: "◫", action: () => { setShowHotelDB(true); setSyncStats(null); }, badge: CLIENT_DATA.length || null },
             { label: syncingLovable ? "Sincronizando…" : "Sincronizar BBDD HS", icon: "↻", action: () => handleSyncFromLovable(), badge: null },
           ].map(item => (
             <div
@@ -6199,7 +6209,7 @@ export default function HSConsultingTravelPlanner() {
             onTriggerHotels={() => setShowHotelsManager(true)}
             accommodationHotelsCount={Object.keys(accommodationHotels).length}
             onTriggerNewTrip={() => setShowNewTrip(true)}
-            onTriggerHotelDB={() => setShowHotelDB(true)}
+            onTriggerHotelDB={() => { setShowHotelDB(true); setSyncStats(null); }}
             hotelDBCount={CLIENT_DATA.length}
           />
           <input type="file" ref={planningInputRef} style={{ display: "none" }} accept=".csv" onChange={onUploadPlanning} />
