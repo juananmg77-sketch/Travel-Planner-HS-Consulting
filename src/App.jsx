@@ -2189,8 +2189,15 @@ function DuplicateDetectorPanel({ onClose, allClients, customClientInfo, onMerge
                   <div style={{ fontSize: 12, color: "#64748B", marginTop: 4 }}>
                     {customClientInfo[match.name]?.address || <em style={{ color: "#F59E0B" }}>Sin dirección aún</em>}
                   </div>
-                  {(customClientInfo[match.name]?.municipality || match.municipality) &&
-                    <div style={{ fontSize: 11, color: "#94A3B8", marginTop: 2 }}>{customClientInfo[match.name]?.municipality || match.municipality}</div>}
+                  {/* Municipio + isla del base clientData (relevante para rutas) */}
+                  <div style={{ fontSize: 11, color: "#94A3B8", marginTop: 2 }}>
+                    {[customClientInfo[match.name]?.municipality || match.municipality, match.island].filter(Boolean).join(" · ")}
+                  </div>
+                  {match.island && (
+                    <div style={{ marginTop: 4, display: "inline-flex", alignItems: "center", gap: 4, background: "#DBEAFE", color: "#1E40AF", borderRadius: 6, padding: "2px 8px", fontSize: 10, fontWeight: 700 }}>
+                      ✈️ Isla: {match.island}
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -2686,16 +2693,33 @@ function ClientHotelDBPanel({ onClose, allClients, customClientInfo, onSave, onP
           customClientInfo={customClientInfo}
           onMerge={(srcName, tgtName) => {
             const srcData = customClientInfo[srcName] || {};
-            // Copy address/municipality/region/island from src to target
+            const tgtData = customClientInfo[tgtName] || {};
+            const baseMatch = allClients.find(c => c.name === tgtName) || {};
+
+            // Dirección: la más larga/completa gana
+            const srcAddr = (srcData.address || "").trim();
+            const tgtAddr = (tgtData.address || "").trim();
+            const bestAddress = srcAddr.length >= tgtAddr.length ? srcAddr : tgtAddr;
+
+            // Isla: preservar siempre — prioridad: custom (Travel Planner) > official custom > clientData base
+            const bestIsland = srcData.island || tgtData.island || baseMatch.island || "";
+            // Municipio: el más específico (más largo) o el que exista
+            const srcMuni = (srcData.municipality || "").trim();
+            const tgtMuni = (tgtData.municipality || baseMatch.municipality || "").trim();
+            const bestMuni = srcMuni.length >= tgtMuni.length ? srcMuni : tgtMuni;
+            // Región: ídem
+            const srcRegion = (srcData.region || "").trim();
+            const tgtRegion = (tgtData.region || baseMatch.region || "").trim();
+            const bestRegion = srcRegion.length >= tgtRegion.length ? srcRegion : tgtRegion;
+
             onSave(tgtName, {
-              ...(customClientInfo[tgtName] || {}),
-              address: srcData.address || customClientInfo[tgtName]?.address,
-              municipality: srcData.municipality || customClientInfo[tgtName]?.municipality,
-              region: srcData.region || customClientInfo[tgtName]?.region,
-              island: srcData.island || customClientInfo[tgtName]?.island,
+              ...tgtData,
+              address: bestAddress,
+              municipality: bestMuni,
+              region: bestRegion,
+              island: bestIsland,
             });
-            // Also persist target to Supabase
-            if (onPersist && srcData.address) onPersist(tgtName, srcData.address, srcData.municipality);
+            if (onPersist && bestAddress) onPersist(tgtName, bestAddress, bestMuni);
             // Delete the duplicate
             onSave(srcName, null); // null = delete signal
             showFlash(`✅ Fusionado "${srcName}" → "${tgtName}"`);
