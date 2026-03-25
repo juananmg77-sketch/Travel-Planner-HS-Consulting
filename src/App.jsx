@@ -3374,6 +3374,42 @@ function ConsultantList({ consultants, onUpdate, onDelete }) {
 // MAIN APP
 // ============================================================
 export default function HSConsultingTravelPlanner() {
+  // DARK MODE — detecta preferencia del sistema
+  const [isDarkMode, setIsDarkMode] = useState(
+    () => window.matchMedia("(prefers-color-scheme: dark)").matches
+  );
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    const handler = (e) => setIsDarkMode(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+
+  // Colores adaptativos según modo
+  const DK = isDarkMode ? {
+    bg: "#0f172a",
+    cardBg: "#1e293b",
+    cardBorder: "#334155",
+    text: "#e2e8f0",
+    textMuted: "#94a3b8",
+    inputBg: "#1e293b",
+    inputBorder: "#475569",
+    hoverBg: "#334155",
+    whiteBg: "#1e293b",
+    lightGrayBg: "#334155",
+  } : {
+    bg: HS_COLORS.bg,
+    cardBg: "white",
+    cardBorder: "#E2E8F0",
+    text: "#333333",
+    textMuted: "#666666",
+    inputBg: "white",
+    inputBorder: "#E2E8F0",
+    hoverBg: "#F1F5F9",
+    whiteBg: "white",
+    lightGrayBg: "#F1F5F9",
+  };
+
   // AUTH STATE
   const [authUser, setAuthUser] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
@@ -4666,8 +4702,8 @@ export default function HSConsultingTravelPlanner() {
 
   // SIDEBAR + LAYOUT WRAPPER
   const AppLayout = ({ children }) => (
-    <div style={{ display: "flex", minHeight: "100vh", fontFamily: "Arial, sans-serif" }}>
-      {/* SIDEBAR */}
+    <div data-theme={isDarkMode ? "dark" : "light"} style={{ display: "flex", minHeight: "100vh", fontFamily: "Arial, sans-serif", background: DK.bg, color: DK.text }}>
+      {/* SIDEBAR — ya es oscuro, se mantiene igual */}
       <div style={{ width: 250, background: HS_COLORS.sidebar, color: "#ccc", display: "flex", flexDirection: "column" }}>
         <div style={{ padding: "20px", borderBottom: "1px solid #333", display: "flex", alignItems: "center", gap: 10 }}>
           <div style={{ width: 30, height: 30, background: HS_COLORS.primary, borderRadius: "50% 50% 50% 0", transform: "rotate(-45deg)", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -4675,7 +4711,7 @@ export default function HSConsultingTravelPlanner() {
           </div>
           <div style={{ lineHeight: 1 }}>
             <div style={{ color: "white", fontWeight: "bold", fontSize: 14 }}>HS CONSULTING</div>
-            <div style={{ fontSize: 10, color: "#999" }}>Health & Safey</div>
+            <div style={{ fontSize: 10, color: "#999" }}>Health & Safety</div>
           </div>
         </div>
 
@@ -4704,14 +4740,14 @@ export default function HSConsultingTravelPlanner() {
           ))}
         </div>
 
-        <div style={{ padding: 20, borderTop: "1px solid #333", fontSize: 12, color: "#666" }}>
+        <div style={{ padding: 20, borderTop: "1px solid #333", fontSize: 12, color: "#999" }}>
           {userProfile?.full_name || authUser?.email}
-          <div onClick={handleLogout} style={{ color: "#999", cursor: "pointer", marginTop: 4 }}>Cerrar Sesión</div>
+          <div onClick={handleLogout} style={{ color: "#94a3b8", cursor: "pointer", marginTop: 4 }}>Cerrar Sesión</div>
         </div>
       </div>
 
       {/* MAIN CONTENT */}
-      <div style={{ flex: 1, background: HS_COLORS.bg, display: "flex", flexDirection: "column" }}>
+      <div style={{ flex: 1, background: DK.bg, display: "flex", flexDirection: "column" }}>
         {/* TOP BAR */}
         <div style={{ background: HS_COLORS.primary, padding: "10px 20px", color: "white", display: "flex", justifyContent: "space-between", alignItems: "center", boxShadow: "0 2px 4px rgba(0,0,0,0.1)" }}>
           <div style={{ fontSize: 18, fontWeight: "bold" }}>Portal de Logística</div>

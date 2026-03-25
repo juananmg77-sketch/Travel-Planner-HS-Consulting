@@ -18,3 +18,174 @@ body {
   min-width: 320px;
   min-height: 100vh;
 }
+
+/* ================================================================
+   DARK MODE — Fixes de contraste en formularios y tarjetas
+   El !important es necesario para sobreescribir los estilos inline
+   ================================================================ */
+@media (prefers-color-scheme: dark) {
+
+  /* --- Variables base --- */
+  :root {
+    background-color: #0f172a;
+    color: #e2e8f0;
+  }
+
+  body {
+    background-color: #0f172a;
+  }
+
+  /* -------------------------------------------------------
+     INPUTS, SELECTS y TEXTAREAS — Fix principal del bug
+     El navegador ponía texto claro sobre fondo blanco (inline)
+  ------------------------------------------------------- */
+  input,
+  input[type="text"],
+  input[type="date"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="search"],
+  input[type="tel"],
+  input[type="url"],
+  textarea {
+    background-color: #1e293b !important;
+    color: #e2e8f0 !important;
+    border-color: #475569 !important;
+    color-scheme: dark;
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: #94a3b8 !important;
+    opacity: 1 !important;
+  }
+
+  /* Select box */
+  select {
+    background-color: #1e293b !important;
+    color: #e2e8f0 !important;
+    border-color: #475569 !important;
+    color-scheme: dark;
+  }
+
+  /* Opciones del dropdown — esto es lo que "perdía contraste" */
+  option {
+    background-color: #1e293b;
+    color: #e2e8f0;
+  }
+
+  option:hover,
+  option:focus,
+  option:checked {
+    background-color: #0060aa;
+    color: #ffffff;
+  }
+
+  /* -------------------------------------------------------
+     TARJETAS / MODALES con background blanco inline
+  ------------------------------------------------------- */
+
+  /* Modales (position fixed con fondo blanco) */
+  [style*="background: white"],
+  [style*="background:white"],
+  [style*="background-color: white"],
+  [style*="background-color:white"] {
+    background-color: #1e293b !important;
+    color: #e2e8f0 !important;
+  }
+
+  /* Tarjetas con fondo blanco */
+  [style*="background: \"white\""] {
+    background-color: #1e293b !important;
+  }
+
+  /* -------------------------------------------------------
+     TEXTOS — colores hardcodeados oscuros que desaparecen
+  ------------------------------------------------------- */
+
+  /* Textos grises oscuros que desaparecen en dark mode */
+  [style*="color: #333"],
+  [style*="color:#333"],
+  [style*="color: #111"],
+  [style*="color:#111"],
+  [style*="color: #1E293B"],
+  [style*="color: #444"] {
+    color: #e2e8f0 !important;
+  }
+
+  [style*="color: #666"],
+  [style*="color:#666"],
+  [style*="color: #555"],
+  [style*="color: #475569"],
+  [style*="color: #64748B"],
+  [style*="color: #6B7280"] {
+    color: #94a3b8 !important;
+  }
+
+  /* -------------------------------------------------------
+     BOTONES con fondo claro
+  ------------------------------------------------------- */
+  [style*="background: #F1F5F9"],
+  [style*="background: #F8FAFC"],
+  [style*="background: #EEF2FF"],
+  [style*="background: #F3F4F6"],
+  [style*="background: #E8E8E8"],
+  [style*="background: #EDEEF0"],
+  [style*="background-color: #F1F5F9"],
+  [style*="background-color: #F8FAFC"] {
+    background-color: #334155 !important;
+    color: #e2e8f0 !important;
+  }
+
+  /* Bordes claros */
+  [style*="border: 1px solid #E2E8F0"],
+  [style*="border: 1.5px solid #E2E8F0"],
+  [style*="border-color: #E2E8F0"],
+  [style*="border: 1px solid #ddd"],
+  [style*="border: 1px solid #eee"] {
+    border-color: #475569 !important;
+  }
+
+  /* -------------------------------------------------------
+     TARJETAS y PANELES dentro del layout dark
+  ------------------------------------------------------- */
+  [data-theme="dark"] [style*="background: white"],
+  [data-theme="dark"] [style*="background:white"] {
+    background-color: #1e293b !important;
+    color: #e2e8f0 !important;
+  }
+
+  [data-theme="dark"] [style*="boxShadow"],
+  [data-theme="dark"] [style*="box-shadow"] {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4) !important;
+  }
+
+  /* Títulos h2/h3 con colores hardcodeados */
+  [data-theme="dark"] h2,
+  [data-theme="dark"] h3,
+  [data-theme="dark"] h4 {
+    color: #e2e8f0 !important;
+  }
+
+  /* -------------------------------------------------------
+     SCROLLBARS en dark mode
+  ------------------------------------------------------- */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #1e293b;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #475569;
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #64748b;
+  }
+}
