@@ -2026,13 +2026,12 @@ function cleanNominatimAddress(address) {
   return address;
 }
 
-function ClientHotelDBPanel({ onClose, allClients, customClientInfo, onSave, onPersist }) {
+function ClientHotelDBPanel({ onClose, allClients, customClientInfo, onSave, onPersist, onSync, syncStats, syncing }) {
   const [search, setSearch] = useState("");
   const [editingName, setEditingName] = useState(null);
   const [editForm, setEditForm] = useState({});
   const [flash, setFlash] = useState(null);
   const [filterStatus, setFilterStatus] = useState("all"); // "all" | "ok" | "pending"
-  const [importStats, setImportStats] = useState(null); // resultado de la última sincronización
   const [showPushPanel, setShowPushPanel] = useState(false);
   const importRef = useRef(null);
 
@@ -2257,9 +2256,6 @@ function ClientHotelDBPanel({ onClose, allClients, customClientInfo, onSave, onP
 
         {/* HEADER */}
         <div style={{ padding: "24px 28px 16px", borderBottom: "1px solid #F1F5F9", flexShrink: 0 }}>
-          {/* Input oculto para importar CSV */}
-          <input ref={importRef} type="file" accept=".csv" style={{ display: "none" }} onChange={handleImportCSV} />
-
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
             <div>
               <h2 style={{ margin: 0, fontSize: 22, fontWeight: 800, color: "#111" }}>🏨 BBDD de Hoteles / Clientes</h2>
@@ -2269,53 +2265,29 @@ function ClientHotelDBPanel({ onClose, allClients, customClientInfo, onSave, onP
             </div>
             <div style={{ display: "flex", gap: 8, alignItems: "center", flexShrink: 0 }}>
               <button
-                onClick={() => importRef.current?.click()}
+                onClick={onSync}
+                disabled={syncing}
                 style={{
-                  background: "linear-gradient(135deg, #7C3AED, #6D28D9)", color: "white", border: "none",
-                  padding: "9px 16px", borderRadius: 10, fontSize: 12, fontWeight: 700,
-                  cursor: "pointer", display: "flex", alignItems: "center", gap: 6,
-                  boxShadow: "0 4px 12px rgba(124,58,237,0.3)"
+                  background: syncing ? "#94a3b8" : "linear-gradient(135deg, #0060aa, #004d8a)", color: "white", border: "none",
+                  padding: "9px 18px", borderRadius: 10, fontSize: 12, fontWeight: 700,
+                  cursor: syncing ? "not-allowed" : "pointer", display: "flex", alignItems: "center", gap: 6,
+                  boxShadow: syncing ? "none" : "0 4px 12px rgba(0,96,170,0.3)"
                 }}
-                title="Importar CSV exportado desde la BBDD de Activos (Lovable) → Travel Planner"
+                title="Sincronizar direcciones desde la BBDD Maestra de HS Consulting"
               >
-                ⬇️ Pull desde Lovable (CSV)
-              </button>
-              <button
-                onClick={() => setShowPushPanel(true)}
-                style={{
-                  background: "linear-gradient(135deg, #0EA5E9, #2563EB)", color: "white", border: "none",
-                  padding: "9px 16px", borderRadius: 10, fontSize: 12, fontWeight: 700,
-                  cursor: "pointer", display: "flex", alignItems: "center", gap: 6,
-                  boxShadow: "0 4px 12px rgba(14,165,233,0.35)"
-                }}
-                title="Enviar direcciones de Travel Planner → BBDD Maestra de Activos (Lovable)"
-              >
-                ⬆️ Push a Lovable
-              </button>
-              <button
-                onClick={handleCleanAddresses}
-                style={{
-                  background: "linear-gradient(135deg, #059669, #047857)", color: "white", border: "none",
-                  padding: "9px 16px", borderRadius: 10, fontSize: 12, fontWeight: 700,
-                  cursor: "pointer", display: "flex", alignItems: "center", gap: 6,
-                  boxShadow: "0 4px 12px rgba(5,150,105,0.3)"
-                }}
-                title="Corrige el formato incorrecto de direcciones geocodificadas: [Nombre lugar, Nº, Calle] → [Calle Nº]"
-              >
-                🧹 Limpiar direcciones
+                {syncing ? "⏳ Sincronizando..." : "🔄 Sincronizar BBDD HS Consulting"}
               </button>
               <button onClick={onClose} style={{ background: "none", border: "none", fontSize: 22, cursor: "pointer", color: "#999" }}>✕</button>
             </div>
           </div>
 
-          {/* Resultado de la última importación */}
-          {importStats && (
+          {/* Resultado de la última sincronización */}
+          {syncStats && (
             <div style={{ marginTop: 12, padding: "10px 16px", background: "#F0FDF4", border: "1px solid #86EFAC", borderRadius: 10, display: "flex", gap: 20, flexWrap: "wrap", fontSize: 12 }}>
-              <span>📊 <strong>{importStats.total}</strong> filas procesadas</span>
-              <span style={{ color: "#065F46" }}>✅ <strong>{importStats.updated}</strong> importadas</span>
-              <span style={{ color: "#1D4ED8" }}>🆕 <strong>{importStats.newEntries}</strong> entradas nuevas</span>
-              <span style={{ color: "#6B7280" }}>🔒 <strong>{importStats.alreadyHad}</strong> ya tenían dirección (respetadas)</span>
-              <span style={{ color: "#92400E" }}>⏭️ <strong>{importStats.skipped}</strong> inactivos omitidos</span>
+              <span>📊 <strong>{syncStats.total}</strong> registros procesados</span>
+              <span style={{ color: "#065F46" }}>✅ <strong>{syncStats.updated}</strong> actualizados</span>
+              <span style={{ color: "#6B7280" }}>🔒 <strong>{syncStats.skipped}</strong> ya tenían dirección (respetados)</span>
+              {syncStats.errors > 0 && <span style={{ color: "#991B1B" }}>❌ <strong>{syncStats.errors}</strong> errores</span>}
             </div>
           )}
 
@@ -4522,6 +4494,8 @@ export default function HSConsultingTravelPlanner() {
   const [showBulkGeocode, setShowBulkGeocode] = useState(false);
   const [showHotelsManager, setShowHotelsManager] = useState(false);
   const [showHotelDB, setShowHotelDB] = useState(false);
+  const [syncingLovable, setSyncingLovable] = useState(false);
+  const [syncStats, setSyncStats] = useState(null);
   const [pendingNewEstablishments, setPendingNewEstablishments] = useState(null); // { names: [...], regionMap: {...} }
   const [showNewTrip, setShowNewTrip] = useState(false);
   const [accommodationHotels, setAccommodationHotels] = useState(() => {
@@ -5132,6 +5106,71 @@ export default function HSConsultingTravelPlanner() {
 
 
   // Centralized address update: local state + Supabase sync + logistics recalc
+  // -------------------------------------------------------
+  // SINCRONIZAR DESDE BBDD MAESTRA HS CONSULTING (Lovable Supabase)
+  // Lee la tabla hoteles y rellena solo campos vacíos en Travel Planner
+  // -------------------------------------------------------
+  const handleSyncFromLovable = useCallback(async () => {
+    setSyncingLovable(true);
+    setSyncStats(null);
+    try {
+      const { data: lovableHotels, error } = await fetchLovableHoteles();
+      if (error || !lovableHotels) throw error || new Error("Sin datos");
+
+      // Índice por código y por nombre
+      const byCode = {};
+      const byName = {};
+      CLIENT_DATA.forEach(c => {
+        if (c.id) byCode[c.id.toUpperCase()] = c.name;
+        byName[c.name.toLowerCase().trim()] = c.name;
+      });
+
+      let updated = 0, skipped = 0, errors = 0;
+
+      for (const row of lovableHotels) {
+        const activo = String(row.activo ?? "true").toLowerCase();
+        if (activo === "false" || activo === "0" || activo === "no") continue;
+
+        const codigo  = (row.codigo_hotel || "").trim().toUpperCase();
+        const nombre  = (row.nombre_hotel || "").trim();
+        const direccion = cleanNominatimAddress((row.direccion_completa || "").trim());
+        const municipio = (row.municipio || "").trim();
+        const ccaa      = (row.ccaa || "").trim();
+        const isla      = (row.isla || "").trim();
+
+        if (!nombre || !direccion) continue;
+
+        // Intentar match
+        let clientName = byCode[codigo] || byName[nombre.toLowerCase()] || null;
+        if (!clientName) {
+          const lowerNombre = nombre.toLowerCase();
+          const partial = Object.keys(byName).find(k => k.includes(lowerNombre) || lowerNombre.includes(k));
+          if (partial) clientName = byName[partial];
+        }
+        if (!clientName) clientName = nombre; // entrada nueva
+
+        // Solo actualizar si Travel Planner NO tiene dirección
+        const existing = customClientInfo[clientName]?.address || "";
+        if (existing.trim()) { skipped++; continue; }
+
+        try {
+          setCustomClientInfo(prev => ({
+            ...prev,
+            [clientName]: { ...(prev[clientName] || {}), address: direccion, municipality: municipio, region: ccaa, island: isla }
+          }));
+          await upsertEstablishment(clientName, { address: direccion, municipality: municipio, region: ccaa, island: isla });
+          updated++;
+        } catch { errors++; }
+      }
+
+      setSyncStats({ total: lovableHotels.length, updated, skipped, errors });
+    } catch (err) {
+      setSyncStats({ error: err?.message || "Error de conexión con BBDD HS Consulting" });
+    } finally {
+      setSyncingLovable(false);
+    }
+  }, [customClientInfo, updateEstablishmentAddress]);
+
   const updateEstablishmentAddress = useCallback(async (establishmentName, newAddress, newMunicipality) => {
     // 1. Update local state (triggers immediate recalc via useMemo)
     setCustomClientInfo(prev => ({
@@ -5701,9 +5740,10 @@ export default function HSConsultingTravelPlanner() {
             Herramientas
           </div>
           {[
-            { label: "Importar CSV", icon: "📄", action: () => planningInputRef.current?.click(), badge: null },
+            { label: "Importar Agenda Consultores", icon: "📄", action: () => planningInputRef.current?.click(), badge: null },
             { label: "Alojamientos", icon: "🏨", action: () => setShowHotelsManager(true), badge: Object.keys(accommodationHotels).length || null },
             { label: "BBDD Hoteles", icon: "🗂️", action: () => setShowHotelDB(true), badge: CLIENT_DATA.length || null },
+            { label: syncingLovable ? "Sincronizando..." : "Sincronizar BBDD HS", icon: "🔄", action: () => handleSyncFromLovable(), badge: null },
           ].map(item => (
             <div
               key={item.label}
@@ -5806,6 +5846,9 @@ export default function HSConsultingTravelPlanner() {
               setCustomClientInfo(prev => ({ ...prev, [name]: { ...(prev[name] || {}), ...data } }));
             }}
             onPersist={updateEstablishmentAddress}
+            onSync={handleSyncFromLovable}
+            syncing={syncingLovable}
+            syncStats={syncStats}
           />
         )}
         <AppLayout>
