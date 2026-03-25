@@ -2036,46 +2036,66 @@ function cleanNominatimAddress(address) {
 // DUPLICATE DETECTOR PANEL
 // Detecta entradas en customClientInfo que son duplicados de allClients
 // ====================================================================
+// Palabras genéricas que NO sirven para distinguir hoteles
+const GENERIC_WORDS = new Set([
+  "hotel","gran","grand","the","royal","palace","resort","apartamentos",
+  "aparthotel","hostal","suites","suite","club","beach","playa","park",
+  "garden","gardens","spa","collection","autograph","marriott","by","de",
+  "la","el","los","las","del","al","es","y","and","i"
+]);
+
 function normForDedup(s) {
   if (!s) return "";
   let n = s.toLowerCase().trim();
-  // Quitar tildes
   n = n.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-  // Quitar prefijos comunes
-  for (const p of ["hotel ", "aparthotel ", "apartamentos ", "apartamento ", "hostal ", "resort "]) {
-    if (n.startsWith(p)) { n = n.slice(p.length); break; }
-  }
-  return n.replace(/[^a-z0-9 ]/g, " ").replace(/\s+/g, " ").trim();
+  n = n.replace(/[^a-z0-9 ]/g, " ").replace(/\s+/g, " ").trim();
+  return n;
+}
+
+// Extrae las palabras "significativas" (no genéricas, longitud >= 4)
+function sigWords(norm) {
+  return norm.split(" ").filter(w => w.length >= 4 && !GENERIC_WORDS.has(w));
 }
 
 function DuplicateDetectorPanel({ onClose, allClients, customClientInfo, onMerge, onDelete }) {
-  // Find _customOnly entries that look like duplicates of allClients
   const candidates = useMemo(() => {
     const clientNorms = {};
     allClients.forEach(c => { clientNorms[normForDedup(c.name)] = c; });
 
     return Object.entries(customClientInfo)
-      .filter(([name, data]) => data._customOnly || data._fromBBDD)
+      .filter(([, data]) => data._customOnly || data._fromBBDD)
       .map(([name, data]) => {
         const n = normForDedup(name);
-        // Exact normalized match
+
+        // 1. Coincidencia exacta normalizada
         if (clientNorms[n]) return { customName: name, customData: data, match: clientNorms[n], score: 1 };
-        // Partial match: one contains the other (min 8 chars)
-        if (n.length >= 8) {
+
+        // 2. Una contiene a la otra COMPLETA (min 18 chars para evitar falsos positivos)
+        if (n.length >= 18) {
           for (const [k, c] of Object.entries(clientNorms)) {
-            if (k.length >= 8 && (k.includes(n) || n.includes(k))) {
-              return { customName: name, customData: data, match: c, score: 0.8 };
+            if (k.length >= 18 && (k === n || k.includes(n) || n.includes(k))) {
+              return { customName: name, customData: data, match: c, score: 0.85 };
             }
           }
         }
-        // Starts-with match (min 12 chars)
-        if (n.length >= 12) {
+
+        // 3. Palabras significativas: deben coincidir >= 2 palabras únicas de >= 5 chars
+        const nSig = sigWords(n).filter(w => w.length >= 5);
+        if (nSig.length >= 2) {
           for (const [k, c] of Object.entries(clientNorms)) {
-            if (k.length >= 12 && (k.startsWith(n.slice(0, 12)) || n.startsWith(k.slice(0, 12)))) {
-              return { customName: name, customData: data, match: c, score: 0.6 };
+            const kSig = sigWords(k).filter(w => w.length >= 5);
+            const common = nSig.filter(w => kSig.includes(w));
+            // Exigimos al menos 2 palabras significativas comunes Y que representen
+            // la mayoría de las palabras de ambos nombres (evita cadenas largas comunes)
+            if (common.length >= 2) {
+              const coverage = common.length / Math.max(nSig.length, kSig.length);
+              if (coverage >= 0.6) {
+                return { customName: name, customData: data, match: c, score: 0.7 };
+              }
             }
           }
         }
+
         return null;
       })
       .filter(Boolean)
