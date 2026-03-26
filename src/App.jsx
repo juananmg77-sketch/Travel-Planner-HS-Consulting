@@ -5058,12 +5058,21 @@ export default function HSConsultingTravelPlanner() {
     return ranges;
   }, [activities]);
 
+  // Normaliza texto: quita acentos, minúsculas, espacios extremos
+  const normName = (s) => (s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+  // Extrae "nombre + primer apellido" (primeras dos palabras)
+  const firstTwo = (s) => normName(s).split(/\s+/).slice(0, 2).join(" ");
+
   const proposals = useMemo(() => {
     return activities.map(activity => {
       const auditorName = (activity.a || "").trim();
-      // Exact match first, then case-insensitive fallback (handles trailing spaces / capitalización)
+      // Nivel 1: coincidencia exacta
+      // Nivel 2: case-insensitive + trim
+      // Nivel 3: nombre + primer apellido, sin acentos ni mayúsculas
+      const entries = Object.entries(activeConsultants);
       const c = activeConsultants[auditorName]
-        || Object.entries(activeConsultants).find(([k]) => k.trim().toLowerCase() === auditorName.toLowerCase())?.[1];
+        || entries.find(([k]) => k.trim().toLowerCase() === auditorName.toLowerCase())?.[1]
+        || entries.find(([k]) => firstTwo(k) === firstTwo(auditorName))?.[1];
 
       const clientName = activity.e;
       const baseClient = CLIENT_LOOKUP[clientName] || {};
@@ -5799,7 +5808,11 @@ export default function HSConsultingTravelPlanner() {
 
     // Automaticaly recalculate and persist transport for all affected activities
     const c = nextState[effectiveName];
-    const affectedActivities = activities.filter(a => (a.a || "").trim() === name || (isRename && (a.a || "").trim() === effectiveName));
+    const affectedActivities = activities.filter(a => {
+      const an = (a.a || "").trim();
+      return an === name || an.toLowerCase() === name.toLowerCase() || firstTwo(an) === firstTwo(name)
+        || (isRename && (an === effectiveName || an.toLowerCase() === effectiveName.toLowerCase() || firstTwo(an) === firstTwo(effectiveName)));
+    });
     let updateCount = 0;
 
     for (const act of affectedActivities) {
