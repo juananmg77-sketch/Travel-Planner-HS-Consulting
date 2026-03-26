@@ -4963,6 +4963,13 @@ export default function HSConsultingTravelPlanner() {
     return saved ? JSON.parse(saved) : {};
   });
   const [calculatingDistances, setCalculatingDistances] = useState(false);
+  const [manualKm, setManualKm] = useState(() => {
+    const saved = localStorage.getItem("hs_travel_manual_km");
+    return saved ? JSON.parse(saved) : {};
+  });
+  useEffect(() => {
+    localStorage.setItem("hs_travel_manual_km", JSON.stringify(manualKm));
+  }, [manualKm]);
 
   useEffect(() => {
     localStorage.setItem("hs_travel_real_distances", JSON.stringify(realDistances));
@@ -6027,94 +6034,108 @@ export default function HSConsultingTravelPlanner() {
 
   const calculateDistances = async () => {
     setCalculatingDistances(true);
-    setUploadFlash("⏳ Calculando distancias reales (esto puede tardar unos segundos)...");
 
-    // Identify routes needing calculation
+    // Solo rutas en vehículo propio
     const routesToCalc = [];
     const seen = new Set();
-
     filtered.forEach(p => {
-      const destForGeo = p.destGeoAddress || p.destAddress;
-      const key = `${p.originAddress}|${destForGeo}`;
-      if ((p.tType === "vehiculo" || p.tType === "auto" || p.tType === "local") && !realDistances[key]) {
-        if (!seen.has(key)) {
-          seen.add(key);
-          routesToCalc.push({ key, origin: p.originAddress, dest: destForGeo });
-        }
+      if (p.tType !== "vehiculo" && p.tType !== "auto") return;
+      if (!p.originAddress || p.originAddress === "N/A") return;
+      const dest = p.destGeoAddress || p.destAddress;
+      const key = `${p.originAddress}|${dest}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        routesToCalc.push({ key, origin: p.originAddress, dest, consultant: p.cName, hotel: p.e });
       }
     });
 
     if (routesToCalc.length === 0) {
       setCalculatingDistances(false);
-      setUploadFlash("✅ Todas las distancias están actualizadas.");
+      setUploadFlash("✅ Todas las distancias de vehículo propio ya están calculadas.");
       setTimeout(() => setUploadFlash(null), 3000);
       return;
     }
 
-    const newDistances = {};
-    const COORDINATE_CACHE = {}; // Ephemeral cache for this batch
+    // Geocodificación: Nominatim (más fiable para España) con fallback a Photon
+    const COORD_CACHE = {};
+    const geocode = async (address) => {
+      const cacheKey = address.trim().toLowerCase();
+      if (COORD_CACHE[cacheKey]) return COORD_CACHE[cacheKey];
 
-    const getCoordinates = async (address) => {
-      // Clean address key
-      const key = address.trim().toLowerCase();
-      if (COORDINATE_CACHE[key]) return COORDINATE_CACHE[key];
+      const withCountry = address.toLowerCase().includes("españa") ? address : `${address}, España`;
 
-      // Fetch
-      await new Promise(r => setTimeout(r, 600)); // Respect Rate Limits
+      // Intento 1: Nominatim
       try {
-        const res = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(address)}&limit=1`);
+        await new Promise(r => setTimeout(r, 1100)); // Nominatim: 1 req/s
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(withCountry)}&format=json&limit=1&countrycodes=es`,
+          { headers: { "Accept-Language": "es-ES,es", "User-Agent": "HSConsultingTravelPlanner/1.0" } }
+        );
         const data = await res.json();
-        if (data && data.features && data.features.length > 0) {
-          const coords = {
-            lat: data.features[0].geometry.coordinates[1],
-            lon: data.features[0].geometry.coordinates[0]
-          };
-          COORDINATE_CACHE[key] = coords;
+        if (data[0]) {
+          const coords = { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) };
+          COORD_CACHE[cacheKey] = coords;
           return coords;
         }
-      } catch (e) {
-        console.error("Geocode error", e);
-      }
+      } catch (e) { /* fallback */ }
+
+      // Intento 2: Photon
+      try {
+        await new Promise(r => setTimeout(r, 400));
+        const res = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(address)}&limit=1`);
+        const data = await res.json();
+        if (data?.features?.[0]) {
+          const [lon, lat] = data.features[0].geometry.coordinates;
+          const coords = { lat, lon };
+          COORD_CACHE[cacheKey] = coords;
+          return coords;
+        }
+      } catch (e) { /* sin resultado */ }
+
       return null;
     };
 
-    // Process in sequence to respect API limits
-    let index = 0;
-    for (const route of routesToCalc) {
-      index++;
-      setUploadFlash(`⏳ Calculando ruta ${index} de ${routesToCalc.length}...`);
+    let success = 0;
+    const failed = [];
+
+    for (let i = 0; i < routesToCalc.length; i++) {
+      const route = routesToCalc[i];
+      setUploadFlash(`⏳ Ruta ${i + 1}/${routesToCalc.length}: ${route.consultant} → ${route.hotel}`);
 
       try {
-        // 1. Geocode Origin (Cached)
-        const coordsO = await getCoordinates(route.origin);
-        if (!coordsO) continue;
+        const co = await geocode(route.origin);
+        if (!co) { failed.push(`${route.consultant} (origen no encontrado)`); continue; }
 
-        // 2. Geocode Dest (Cached)
-        const coordsD = await getCoordinates(route.dest);
-        if (!coordsD) continue;
+        const cd = await geocode(route.dest);
+        if (!cd) { failed.push(`${route.hotel} (destino no encontrado)`); continue; }
 
-        // 3. OSRM Route (Driving)
-        // OSRM is fast, no heavy rate limit needed usually, but small delay is polite
-        const resRoute = await fetch(`https://router.project-osrm.org/route/v1/driving/${coordsO.lon},${coordsO.lat};${coordsD.lon},${coordsD.lat}?overview=false`);
-        const dataRoute = await resRoute.json();
+        const routeRes = await fetch(
+          `https://router.project-osrm.org/route/v1/driving/${co.lon},${co.lat};${cd.lon},${cd.lat}?overview=false`
+        );
+        const routeData = await routeRes.json();
 
-        if (dataRoute.routes && dataRoute.routes[0]) {
-          const distKm = parseFloat((dataRoute.routes[0].distance / 1000).toFixed(1));
-          newDistances[route.key] = distKm;
-          // Partial update to show progress
-          setRealDistances(prev => ({ ...prev, [route.key]: distKm }));
-
-          // Save to Supabase (Background)
-          upsertDistance(route.key, distKm);
+        if (routeData.routes?.[0]) {
+          // Guardamos distancia ida (×2 se calcula al mostrar)
+          const oneWayKm = parseFloat((routeData.routes[0].distance / 1000).toFixed(1));
+          setRealDistances(prev => ({ ...prev, [route.key]: oneWayKm }));
+          upsertDistance(route.key, oneWayKm);
+          success++;
+        } else {
+          failed.push(route.hotel);
         }
       } catch (err) {
-        console.error("Error calculating distance for", route.key, err);
+        console.error("Error ruta", route.key, err);
+        failed.push(route.hotel);
       }
     }
 
     setCalculatingDistances(false);
-    setUploadFlash(`✅ Se han actualizado ${Object.keys(newDistances).length} distancias.`);
-    setTimeout(() => setUploadFlash(null), 3000);
+    if (failed.length > 0) {
+      setUploadFlash(`✅ ${success} rutas calculadas. ⚠ Sin datos: ${failed.slice(0, 3).join(", ")}${failed.length > 3 ? ` (+${failed.length - 3} más)` : ""}`);
+    } else {
+      setUploadFlash(`✅ ${success} rutas calculadas (ida y vuelta).`);
+    }
+    setTimeout(() => setUploadFlash(null), 6000);
   };
 
   // RENDER
@@ -7090,9 +7111,43 @@ export default function HSConsultingTravelPlanner() {
                                   {p.g ? <span style={{ fontSize: 10, color: "#7C3AED", background: "#F3E8FF", padding: "2px 6px", borderRadius: 4 }}>{p.g}</span> : ""}
 
                                 </div>
-                                <div style={{ fontSize: 11, color: "#666" }}>
-                                  {p.routeLabel}
-                                  {p.km > 0 && <span style={{ fontWeight: 700, color: "#111", marginLeft: 8 }}>📍 {p.km} km</span>}
+                                <div style={{ fontSize: 11, color: "#666", display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+                                  <span>{p.routeLabel}</span>
+                                  {(p.tType === "vehiculo" || p.tType === "auto") && (() => {
+                                    const override = manualKm[p.id];
+                                    const oneWay = override != null ? override : p.km;
+                                    const roundTrip = oneWay > 0 ? parseFloat((oneWay * 2).toFixed(1)) : 0;
+                                    return (
+                                      <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                                        {roundTrip > 0
+                                          ? <span style={{ fontWeight: 700, color: "#059669", background: "#ECFDF5", padding: "1px 8px", borderRadius: 10, border: "1px solid #6EE7B7", fontSize: 11 }}>
+                                              🚗 {roundTrip} km i/v
+                                            </span>
+                                          : <span style={{ color: "#EAB308", fontSize: 10, fontWeight: 600 }}>sin km</span>}
+                                        <input
+                                          type="number"
+                                          min="0"
+                                          placeholder="km manual"
+                                          value={override != null ? override : ""}
+                                          onClick={e => e.stopPropagation()}
+                                          onChange={e => {
+                                            const v = e.target.value === "" ? undefined : parseFloat(e.target.value);
+                                            setManualKm(prev => {
+                                              const next = { ...prev };
+                                              if (v == null) delete next[p.id];
+                                              else next[p.id] = v;
+                                              return next;
+                                            });
+                                          }}
+                                          style={{ width: 72, padding: "1px 6px", borderRadius: 6, border: "1px solid #D1D5DB", fontSize: 11, color: "#374151" }}
+                                          title="Introduce km de ida manualmente (se calculará ida y vuelta)"
+                                        />
+                                      </span>
+                                    );
+                                  })()}
+                                  {p.tType === "local" && p.km > 0 && (
+                                    <span style={{ fontWeight: 700, color: "#111", fontSize: 11 }}>📍 {p.km} km</span>
+                                  )}
                                 </div>
                                 <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 4, flexWrap: "wrap" }}>
                                   {(() => {
