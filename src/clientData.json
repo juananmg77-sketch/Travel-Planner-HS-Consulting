@@ -3026,9 +3026,9 @@
   {
     "id": "HS-433",
     "name": "Iberostar Waves Alcudia Park",
-    "island": "Tenerife",
-    "municipality": "Playa de",
-    "region": "Baleares- Mallorca"
+    "island": "Mallorca",
+    "municipality": "Alcudia",
+    "region": "Islas Baleares"
   },
   {
     "id": "HS-434",
@@ -3040,9 +3040,9 @@
   {
     "id": "HS-435",
     "name": "Iberostar Waves Bahía de Palma",
-    "island": "Tenerife",
-    "municipality": "Playa de",
-    "region": "Baleares- Mallorca"
+    "island": "Mallorca",
+    "municipality": "Palma de Mallorca",
+    "region": "Islas Baleares"
   },
   {
     "id": "HS-436",

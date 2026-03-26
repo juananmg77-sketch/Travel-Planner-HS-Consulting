@@ -5078,7 +5078,13 @@ export default function HSConsultingTravelPlanner() {
       // Prioritize data from clientData.json over inference (inference is fallback only)
       const destCCAA = normalizeRegion(client.region || inferRegionFromMuni(destMuni) || activity.r);
       const isDestIsland = ISLAND_REGIONS.includes(destCCAA);
-      const destIsland = client.island || inferIslandFromMuni(destMuni);
+      // Validar que la isla del hotel sea coherente con su región
+      // Ej: island="Tenerife" pero region="Islas Baleares" → inconsistente → inferir de municipio
+      const rawDestIsland = client.island || inferIslandFromMuni(destMuni);
+      const islandCCAA = rawDestIsland ? REGION_MAP[rawDestIsland] : null;
+      const destIsland = (islandCCAA && islandCCAA !== destCCAA && destCCAA !== "Desconocido")
+        ? (inferIslandFromMuni(destMuni) || null)
+        : rawDestIsland;
       const destDisplay = isDestIsland ? (destIsland || destCCAA) : destCCAA;
 
       const routeLabel = tType === "local" ? "Transporte Local" : `${originMuni} / ${originDisplay} → ${destMuni} / ${destDisplay}`;
