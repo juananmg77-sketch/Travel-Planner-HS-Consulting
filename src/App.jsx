@@ -4624,82 +4624,102 @@ function ConsultantList({ consultants, onUpdate, onDelete }) {
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
           <thead style={{ background: "#f8f9fa", borderBottom: "1px solid #eee" }}>
             <tr>
-              <th style={{ padding: "12px 16px", textAlign: "left", color: "#666", width: "20%" }}>Nombre</th>
-              <th style={{ padding: "12px 16px", textAlign: "left", color: "#666", width: "25%" }}>Dirección</th>
-              <th style={{ padding: "12px 16px", textAlign: "left", color: "#666", width: "25%" }}>Región / Isla</th>
-              <th style={{ padding: "12px 16px", textAlign: "left", color: "#666", width: "20%" }}>Mail</th>
-              <th style={{ padding: "12px 16px", textAlign: "center", color: "#666", width: "10%" }}>Acciones</th>
+              <th style={{ padding: "10px 12px", textAlign: "left", color: "#666", fontSize: 11, fontWeight: 700, whiteSpace: "nowrap" }}>Nombre</th>
+              <th style={{ padding: "10px 12px", textAlign: "left", color: "#666", fontSize: 11, fontWeight: 700 }}>Dirección</th>
+              <th style={{ padding: "10px 12px", textAlign: "left", color: "#666", fontSize: 11, fontWeight: 700 }}>Ciudad</th>
+              <th style={{ padding: "10px 12px", textAlign: "left", color: "#666", fontSize: 11, fontWeight: 700 }}>CCAA</th>
+              <th style={{ padding: "10px 12px", textAlign: "left", color: "#666", fontSize: 11, fontWeight: 700 }}>Isla</th>
+              <th style={{ padding: "10px 12px", textAlign: "left", color: "#666", fontSize: 11, fontWeight: 700 }}>Mail</th>
+              <th style={{ padding: "10px 12px", textAlign: "center", color: "#666", fontSize: 11, fontWeight: 700 }}>Acciones</th>
             </tr>
           </thead>
           <tbody>
-            {filtered.map(([name, data]) => (
-              <tr key={name} style={{ borderBottom: "1px solid #f0f0f0", background: editingId === name ? "#F9FAFB" : "white" }}>
-                <td style={{ padding: "12px 16px", fontWeight: 600, color: "#111" }}>{name}</td>
+            {filtered.map(([name, data]) => {
+              const inp = { width: "100%", padding: "5px 7px", borderRadius: 4, border: "1px solid #CBD5E1", boxSizing: "border-box", fontSize: 12 };
+              const isEditing = editingId === name;
+              return (
+                <tr key={name} style={{ borderBottom: "1px solid #f0f0f0", background: isEditing ? "#F0F9FF" : "white" }}>
+                  {/* Nombre */}
+                  <td style={{ padding: "10px 12px", fontWeight: 700, color: "#111", fontSize: 13, whiteSpace: "nowrap" }}>{name}</td>
 
-                {editingId === name ? (
-                  <>
-                    <td style={{ padding: 8 }}>
-                      <input style={{ width: "100%", padding: 6, borderRadius: 4, border: "1px solid #ddd", marginBottom: 4, boxSizing: "border-box" }} value={editForm.address || ""} onChange={e => setEditForm({ ...editForm, address: e.target.value })} placeholder="Dirección completa (calle, nº, CP, ciudad)..." />
-                      <input style={{ width: "100%", padding: 6, borderRadius: 4, border: "1px solid #ddd", boxSizing: "border-box", fontSize: 11, color: "#6B7280" }} value={editForm.base || ""} onChange={e => setEditForm({ ...editForm, base: e.target.value })} placeholder="Ciudad / municipio base..." />
-                    </td>
-                    <td style={{ padding: 8 }}>
-                      <select style={{ width: "100%", padding: 6, borderRadius: 4, border: "1px solid #ddd", marginBottom: 4, boxSizing: "border-box" }} value={editForm.region || ""} onChange={e => setEditForm({ ...editForm, region: e.target.value })}>
-                        <option value="">— Región —</option>
-                        <option value="Madrid">Madrid</option>
-                        <option value="Islas Canarias">Islas Canarias</option>
-                        <option value="Islas Baleares">Islas Baleares</option>
-                        <option value="Cataluña">Cataluña</option>
-                        <option value="Andalucía">Andalucía</option>
-                        <option value="Valencia">Valencia</option>
-                        <option value="Murcia">Murcia</option>
-                        <option value="País Vasco">País Vasco</option>
-                        <option value="Galicia">Galicia</option>
-                        <option value="Asturias">Asturias</option>
-                        <option value="Castilla y León">Castilla y León</option>
-                        <option value="Desconocido">Otro</option>
-                      </select>
-                      <input
-                        style={{ width: "100%", padding: 6, borderRadius: 4, border: "1px solid #ddd", boxSizing: "border-box", fontSize: 11 }}
-                        placeholder="Isla (si aplica: Mallorca, Tenerife…)"
-                        value={editForm.island || ""}
-                        onChange={e => setEditForm({ ...editForm, island: e.target.value })}
-                      />
-                    </td>
-                    <td style={{ padding: 8 }}><input style={{ width: "100%", padding: 6, borderRadius: 4, border: "1px solid #ddd", boxSizing: "border-box" }} value={editForm.email || ""} onChange={e => setEditForm({ ...editForm, email: e.target.value })} placeholder="email@hsconsulting.es" /></td>
-                    <td style={{ padding: 8, textAlign: "center" }}>
+                  {/* Dirección */}
+                  <td style={{ padding: isEditing ? 6 : "10px 12px", fontSize: 12, color: "#374151", minWidth: 160 }}>
+                    {isEditing
+                      ? <input style={inp} value={editForm.address || ""} onChange={e => setEditForm({ ...editForm, address: e.target.value })} placeholder="Calle, nº, CP…" />
+                      : <span>{data.address || <span style={{ color: "#D1D5DB" }}>—</span>}</span>}
+                  </td>
+
+                  {/* Ciudad */}
+                  <td style={{ padding: isEditing ? 6 : "10px 12px", fontSize: 12, color: "#374151", minWidth: 120 }}>
+                    {isEditing
+                      ? <input style={inp} value={editForm.base || ""} onChange={e => setEditForm({ ...editForm, base: e.target.value })} placeholder="Municipio…" />
+                      : <span>{data.base || <span style={{ color: "#D1D5DB" }}>—</span>}</span>}
+                  </td>
+
+                  {/* CCAA */}
+                  <td style={{ padding: isEditing ? 6 : "10px 12px", minWidth: 130 }}>
+                    {isEditing
+                      ? (
+                        <select style={inp} value={editForm.region || ""} onChange={e => setEditForm({ ...editForm, region: e.target.value })}>
+                          <option value="">— CCAA —</option>
+                          <option value="Madrid">Madrid</option>
+                          <option value="Islas Canarias">Islas Canarias</option>
+                          <option value="Islas Baleares">Islas Baleares</option>
+                          <option value="Cataluña">Cataluña</option>
+                          <option value="Andalucía">Andalucía</option>
+                          <option value="Valencia">Valencia</option>
+                          <option value="Murcia">Murcia</option>
+                          <option value="País Vasco">País Vasco</option>
+                          <option value="Galicia">Galicia</option>
+                          <option value="Asturias">Asturias</option>
+                          <option value="Cantabria">Cantabria</option>
+                          <option value="Castilla y León">Castilla y León</option>
+                          <option value="Castilla-La Mancha">Castilla-La Mancha</option>
+                          <option value="Aragón">Aragón</option>
+                          <option value="Extremadura">Extremadura</option>
+                          <option value="Navarra">Navarra</option>
+                          <option value="La Rioja">La Rioja</option>
+                          <option value="Desconocido">Otra / Internacional</option>
+                        </select>
+                      )
+                      : data.region
+                        ? <span style={{ padding: "2px 8px", borderRadius: 10, background: "#EFF6FF", color: "#1D4ED8", fontSize: 11, fontWeight: 600 }}>{data.region}</span>
+                        : <span style={{ color: "#FCA5A5", fontSize: 11, fontWeight: 600 }}>⚠ falta</span>}
+                  </td>
+
+                  {/* Isla */}
+                  <td style={{ padding: isEditing ? 6 : "10px 12px", minWidth: 100 }}>
+                    {isEditing
+                      ? <input style={inp} value={editForm.island || ""} onChange={e => setEditForm({ ...editForm, island: e.target.value })} placeholder="Mallorca…" />
+                      : data.island
+                        ? <span style={{ fontSize: 11 }}>🏝️ {data.island}</span>
+                        : <span style={{ color: "#D1D5DB" }}>—</span>}
+                  </td>
+
+                  {/* Mail */}
+                  <td style={{ padding: isEditing ? 6 : "10px 12px", fontSize: 12, color: "#374151", minWidth: 160 }}>
+                    {isEditing
+                      ? <input style={inp} type="email" value={editForm.email || ""} onChange={e => setEditForm({ ...editForm, email: e.target.value })} placeholder="email@hsconsulting.es" />
+                      : <span>{data.email || <span style={{ color: "#D1D5DB" }}>—</span>}</span>}
+                  </td>
+
+                  {/* Acciones */}
+                  <td style={{ padding: isEditing ? 6 : "10px 12px", textAlign: "center", whiteSpace: "nowrap" }}>
+                    {isEditing ? (
                       <div style={{ display: "flex", gap: 5, justifyContent: "center" }}>
-                        <button onClick={saveEdit} style={{ background: "#10B981", color: "white", border: "none", padding: "6px 8px", borderRadius: 4, cursor: "pointer" }}>💾</button>
-                        <button onClick={cancelEdit} style={{ background: "#6B7280", color: "white", border: "none", padding: "6px 8px", borderRadius: 4, cursor: "pointer" }}>✕</button>
+                        <button onClick={saveEdit} style={{ background: "#10B981", color: "white", border: "none", padding: "6px 10px", borderRadius: 4, cursor: "pointer", fontWeight: 700 }}>💾 Guardar</button>
+                        <button onClick={cancelEdit} style={{ background: "#F3F4F6", color: "#6B7280", border: "1px solid #D1D5DB", padding: "6px 8px", borderRadius: 4, cursor: "pointer" }}>✕</button>
                       </div>
-                    </td>
-                  </>
-                ) : (
-                  <>
-                    <td style={{ padding: "12px 16px", fontSize: 12, color: "#374151" }}>
-                      {data.address
-                        ? <span>{data.address}</span>
-                        : data.base
-                          ? <span style={{ color: "#6B7280" }}>📍 {data.base}</span>
-                          : <span style={{ color: "#D1D5DB" }}>-</span>}
-                    </td>
-                    <td style={{ padding: "12px 16px" }}>
-                      <div style={{ padding: "2px 8px", borderRadius: 12, background: "#f3f4f6", fontSize: 11, fontWeight: 500, display: "inline-block" }}>{data.region || "-"}</div>
-                      {data.island && <div style={{ fontSize: 10, color: "#6B7280", marginTop: 4 }}>🏝️ {data.island}</div>}
-                    </td>
-
-                    <td style={{ padding: "12px 16px", color: "#374151", fontSize: 12 }}>
-                      {data.email || "-"}
-                    </td>
-                    <td style={{ padding: "12px 16px", textAlign: "center" }}>
+                    ) : (
                       <div style={{ display: "flex", gap: 6, justifyContent: "center" }}>
-                        <button onClick={() => startEdit(name, data)} style={{ background: "white", color: "#4B5563", border: "1px solid #D1D5DB", padding: "6px 12px", borderRadius: 6, cursor: "pointer", fontSize: 12 }}>✏️ Editar</button>
-                        <button onClick={() => setDeleteTarget(name)} style={{ background: "white", color: "#EF4444", border: "1px solid #FEE2E2", padding: "6px 12px", borderRadius: 6, cursor: "pointer", fontSize: 12, fontWeight: 600 }}>🗑️ Eliminar</button>
+                        <button onClick={() => startEdit(name, data)} style={{ background: "white", color: "#4B5563", border: "1px solid #D1D5DB", padding: "5px 10px", borderRadius: 6, cursor: "pointer", fontSize: 12 }}>✏️ Editar</button>
+                        <button onClick={() => setDeleteTarget(name)} style={{ background: "white", color: "#EF4444", border: "1px solid #FEE2E2", padding: "5px 10px", borderRadius: 6, cursor: "pointer", fontSize: 12, fontWeight: 600 }}>🗑️</button>
                       </div>
-                    </td>
-                  </>
-                )}
-              </tr>
-            ))}
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
