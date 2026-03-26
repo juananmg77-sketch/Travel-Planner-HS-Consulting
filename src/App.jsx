@@ -7302,7 +7302,6 @@ export default function HSConsultingTravelPlanner() {
                                   {p._isAdHoc && (
                                     <div style={{ fontSize: 10, background: "#DBEAFE", color: "#1D4ED8", padding: "2px 8px", borderRadius: 4, fontWeight: 800 }}>✨ AD-HOC</div>
                                   )}
-                                  {p.g ? <span style={{ fontSize: 10, color: "#7C3AED", background: "#F3E8FF", padding: "2px 6px", borderRadius: 4 }}>{p.g}</span> : ""}
 
                                 </div>
                                 <div style={{ fontSize: 11, color: "#666", display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
@@ -7481,13 +7480,6 @@ export default function HSConsultingTravelPlanner() {
                                 </div>
                               </div>
                               <div style={{ paddingTop: 16, display: "flex", flexWrap: "wrap", gap: 16, fontSize: 13, color: "#444", alignItems: "center" }}>
-                                <div style={{ display: "flex", alignItems: "center", gap: 6, background: "#f8f9fa", padding: "6px 12px", borderRadius: 20, border: "1px solid #eee" }}>
-                                  <span style={{ fontSize: 14 }}>🏷️</span>
-                                  <div>
-                                    <span style={{ fontSize: 10, textTransform: "uppercase", color: "#999", fontWeight: 700, marginRight: 4 }}>Grupo</span>
-                                    <span style={{ fontWeight: 600 }}>{p.g || "-"}</span>
-                                  </div>
-                                </div>
                                 <div style={{ display: "flex", alignItems: "center", gap: 6, background: "#f8f9fa", padding: "6px 12px", borderRadius: 20, border: "1px solid #eee" }}>
                                   <span style={{ fontSize: 14 }}>📋</span>
                                   <div>
