@@ -6238,95 +6238,84 @@ export default function HSConsultingTravelPlanner() {
   }
 
   // SIDEBAR + LAYOUT WRAPPER
+  const VIEW_META = {
+    dashboard:   { label: "Dashboard",            icon: "📊" },
+    proposals:   { label: "Propuestas",           icon: "📋" },
+    managed:     { label: "Gestionados",          icon: "✅" },
+    calendar:    { label: "Calendario",           icon: "📅" },
+    consultants: { label: "Consultores",          icon: "👥" },
+    upload:      { label: "Importar",             icon: "📥" },
+    summary:     { label: "Resumen",              icon: "📈" },
+  };
+
+  const SidebarItem = ({ id, label, icon, onClick, active, badge }) => (
+    <div
+      onClick={onClick || (() => setView(id))}
+      style={{
+        margin: "2px 10px", padding: "9px 12px", borderRadius: 8, cursor: "pointer",
+        background: active ? "#1D4ED8" : "transparent",
+        color: active ? "white" : "#9CA3AF",
+        display: "flex", alignItems: "center", gap: 10,
+        fontSize: 13, fontWeight: active ? 600 : 400,
+        transition: "background 0.15s, color 0.15s",
+      }}
+      onMouseEnter={e => { if (!active) { e.currentTarget.style.background = "#1F2937"; e.currentTarget.style.color = "white"; }}}
+      onMouseLeave={e => { if (!active) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#9CA3AF"; }}}
+    >
+      <span style={{ fontSize: 16, width: 20, textAlign: "center", flexShrink: 0 }}>{icon}</span>
+      <span style={{ flex: 1 }}>{label}</span>
+      {badge > 0 && (
+        <span style={{ background: active ? "rgba(255,255,255,0.2)" : "#1D3A5C", color: active ? "white" : "#93C5FD", borderRadius: 99, padding: "1px 7px", fontSize: 10, fontWeight: 700 }}>
+          {badge > 999 ? `${Math.floor(badge/1000)}k` : badge}
+        </span>
+      )}
+    </div>
+  );
+
   const AppLayout = ({ children }) => (
-    <div data-theme={isDarkMode ? "dark" : "light"} style={{ display: "flex", minHeight: "100vh", fontFamily: HS_FONT, background: DK.bg, color: DK.text }}>
+    <div data-theme={isDarkMode ? "dark" : "light"} style={{ display: "flex", minHeight: "100vh", fontFamily: HS_FONT, background: "#F1F5F9", color: DK.text }}>
 
       {/* ── SIDEBAR ── */}
-      <div style={{ width: 256, background: HS_COLORS.sidebar, color: "#9CA3AF", display: "flex", flexDirection: "column", flexShrink: 0 }}>
+      <div style={{ width: 240, background: "#111827", color: "#9CA3AF", display: "flex", flexDirection: "column", flexShrink: 0, position: "sticky", top: 0, height: "100vh" }}>
 
         {/* Logo */}
-        <div style={{ padding: "20px 20px 16px", borderBottom: "1px solid #1F2937", display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{ width: 32, height: 32, background: HS_COLORS.primary, borderRadius: "50% 50% 50% 0", transform: "rotate(-45deg)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-            <span style={{ transform: "rotate(45deg)", color: "white", fontSize: 11, fontWeight: 900, letterSpacing: "-0.5px" }}>HS</span>
-          </div>
-          <div style={{ lineHeight: 1.2 }}>
-            <div style={{ color: "white", fontWeight: 700, fontSize: 13, letterSpacing: "0.02em" }}>HS CONSULTING</div>
-            <div style={{ fontSize: 10, color: "#6B7280", marginTop: 1 }}>Travel Planner</div>
+        <div style={{ padding: "18px 16px 14px", borderBottom: "1px solid #1F2937" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{ width: 36, height: 36, background: HS_COLORS.primary, borderRadius: "50% 50% 50% 0", transform: "rotate(-45deg)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 2px 8px rgba(13,75,217,0.4)" }}>
+              <span style={{ transform: "rotate(45deg)", color: "white", fontSize: 12, fontWeight: 900 }}>HS</span>
+            </div>
+            <div style={{ lineHeight: 1.3 }}>
+              <div style={{ color: "white", fontWeight: 700, fontSize: 13, letterSpacing: "0.02em" }}>HS CONSULTING</div>
+              <div style={{ fontSize: 10, color: "#6B7280" }}>Travel Planner</div>
+            </div>
           </div>
         </div>
 
-        {/* Navegación principal */}
-        <nav style={{ padding: "8px 0" }}>
-          <div style={{ padding: "6px 16px 4px", fontSize: 10, fontWeight: 600, color: "#4B5563", textTransform: "uppercase", letterSpacing: "0.08em" }}>
-            Navegación
+        {/* Navegación */}
+        <nav style={{ padding: "12px 0 4px" }}>
+          <div style={{ padding: "0 16px 6px", fontSize: 10, fontWeight: 700, color: "#4B5563", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+            Planificación
           </div>
-          {[
-            { id: "dashboard",   label: "Dashboard",   icon: "▦" },
-            { id: "proposals",   label: "Propuestas",  icon: "◫" },
-            { id: "managed",     label: "Gestionados", icon: "◉" },
-            { id: "calendar",    label: "Calendario",  icon: "▤" },
-            { id: "consultants", label: "Consultores", icon: "◎" },
-          ].map(item => {
-            const active = view === item.id;
-            return (
-              <div
-                key={item.id}
-                onClick={() => setView(item.id)}
-                style={{
-                  padding: "9px 16px", cursor: "pointer",
-                  background: active ? HS_COLORS.sidebarActive : "transparent",
-                  color: active ? "white" : "#9CA3AF",
-                  borderLeft: `3px solid ${active ? HS_COLORS.primary : "transparent"}`,
-                  display: "flex", alignItems: "center", gap: 10,
-                  fontSize: 13, fontWeight: active ? 600 : 400,
-                  transition: "background 0.15s, color 0.15s",
-                }}
-                onMouseEnter={e => { if (!active) { e.currentTarget.style.background = HS_COLORS.sidebarHover; e.currentTarget.style.color = "white"; }}}
-                onMouseLeave={e => { if (!active) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#9CA3AF"; }}}
-              >
-                <span style={{ fontSize: 14, opacity: 0.7 }}>{item.icon}</span>
-                {item.label}
-              </div>
-            );
-          })}
+          <SidebarItem id="dashboard"   label="Dashboard"   icon="📊" active={view === "dashboard"} />
+          <SidebarItem id="proposals"   label="Propuestas"  icon="📋" active={view === "proposals"}  badge={proposals.filter(p => !finalizedIds.has(p.id)).length} />
+          <SidebarItem id="managed"     label="Gestionados" icon="✅" active={view === "managed"}    badge={finalizedIds.size || null} />
+          <SidebarItem id="calendar"    label="Calendario"  icon="📅" active={view === "calendar"} />
+          <SidebarItem id="consultants" label="Consultores" icon="👥" active={view === "consultants"} />
         </nav>
 
         {/* Herramientas */}
-        <div style={{ borderTop: "1px solid #1F2937", padding: "8px 0", flex: 1 }}>
-          <div style={{ padding: "6px 16px 4px", fontSize: 10, fontWeight: 600, color: "#4B5563", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+        <div style={{ borderTop: "1px solid #1F2937", padding: "12px 0 4px" }}>
+          <div style={{ padding: "0 16px 6px", fontSize: 10, fontWeight: 700, color: "#4B5563", textTransform: "uppercase", letterSpacing: "0.1em" }}>
             Herramientas
           </div>
-          {[
-            { label: "Importar Agenda Consultores", icon: "↑", action: () => planningInputRef.current?.click(), badge: null },
-            { label: "Alojamientos",               icon: "⌂", action: () => setShowHotelsManager(true), badge: Object.keys(accommodationHotels).length || null },
-            { label: "BBDD Hoteles",               icon: "◫", action: () => { setShowHotelDB(true); setSyncStats(null); }, badge: CLIENT_DATA.length || null },
-          ].map(item => (
-            <div
-              key={item.label}
-              onClick={item.action}
-              style={{
-                padding: "8px 16px", cursor: "pointer",
-                color: "#9CA3AF", borderLeft: "3px solid transparent",
-                display: "flex", alignItems: "center", gap: 10, fontSize: 13,
-                transition: "background 0.15s, color 0.15s",
-              }}
-              onMouseEnter={e => { e.currentTarget.style.background = HS_COLORS.sidebarHover; e.currentTarget.style.color = "white"; }}
-              onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#9CA3AF"; }}
-            >
-              <span style={{ fontSize: 13, opacity: 0.6, width: 16, textAlign: "center" }}>{item.icon}</span>
-              <span style={{ flex: 1 }}>{item.label}</span>
-              {item.badge > 0 && (
-                <span style={{ background: "#1D3A5C", color: "#93C5FD", borderRadius: 99, padding: "1px 7px", fontSize: 10, fontWeight: 700 }}>
-                  {item.badge}
-                </span>
-              )}
-            </div>
-          ))}
+          <SidebarItem id="import"   label="Importar Agenda" icon="📥" onClick={() => planningInputRef.current?.click()} />
+          <SidebarItem id="hotels"   label="Alojamientos"    icon="🛏️" onClick={() => setShowHotelsManager(true)} badge={Object.keys(accommodationHotels).length || null} />
+          <SidebarItem id="hoteldb"  label="BBDD Hoteles"    icon="🏨" onClick={() => { setShowHotelDB(true); setSyncStats(null); }} badge={CLIENT_DATA.length || null} />
         </div>
 
         {/* Footer usuario */}
-        <div style={{ padding: "12px 16px", borderTop: "1px solid #1F2937", display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{ width: 30, height: 30, borderRadius: "50%", background: HS_COLORS.primary, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+        <div style={{ marginTop: "auto", padding: "12px 16px", borderTop: "1px solid #1F2937", display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ width: 32, height: 32, borderRadius: "50%", background: HS_COLORS.primary, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
             <span style={{ color: "white", fontSize: 11, fontWeight: 700 }}>
               {(userProfile?.full_name || authUser?.email || "?").split(" ").map(w => w[0]).slice(0, 2).join("").toUpperCase()}
             </span>
@@ -6335,27 +6324,38 @@ export default function HSConsultingTravelPlanner() {
             <div style={{ color: "#E5E7EB", fontSize: 12, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
               {userProfile?.full_name || authUser?.email}
             </div>
-            <div onClick={handleLogout} style={{ color: "#6B7280", fontSize: 11, cursor: "pointer", marginTop: 1 }}>
-              Cerrar sesión
+            <div onClick={handleLogout} style={{ color: "#6B7280", fontSize: 11, cursor: "pointer", marginTop: 1, display: "flex", alignItems: "center", gap: 4 }}>
+              🚪 Cerrar sesión
             </div>
           </div>
         </div>
       </div>
 
       {/* ── MAIN CONTENT ── */}
-      <div style={{ flex: 1, background: DK.bg, display: "flex", flexDirection: "column", minWidth: 0 }}>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, background: "#F1F5F9" }}>
 
-        {/* Top bar — blanca con sombra, como en BBDD Clientes */}
-        <div style={{ background: "white", padding: "0 24px", height: 56, display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: `1px solid ${HS_COLORS.border}`, flexShrink: 0 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ width: 3, height: 20, background: HS_COLORS.primary, borderRadius: 2, display: "inline-block" }} />
-            <span style={{ fontSize: 15, fontWeight: 700, color: HS_COLORS.text }}>Portal de Logística</span>
+        {/* Top bar */}
+        <div style={{ background: "white", padding: "0 28px", height: 58, display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #E2E8F0", flexShrink: 0, boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{ width: 32, height: 32, background: HS_COLORS.primary, borderRadius: "50% 50% 50% 0", transform: "rotate(-45deg)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <span style={{ transform: "rotate(45deg)", color: "white", fontSize: 10, fontWeight: 900 }}>HS</span>
+            </div>
+            <div>
+              <div style={{ fontSize: 16, fontWeight: 700, color: "#0F172A" }}>
+                {VIEW_META[view]?.label || "Travel Planner"}
+              </div>
+              <div style={{ fontSize: 11, color: "#94A3B8", fontWeight: 500, marginTop: -1 }}>HS Consulting · Portal de Logística</div>
+            </div>
           </div>
-          <div style={{ fontSize: 12, color: HS_COLORS.textMuted, fontWeight: 500 }}>Travel Planner · HS Consulting</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ background: "#EFF6FF", color: "#1D4ED8", fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 20, border: "1px solid #BFDBFE" }}>
+              {activities.length} actividades
+            </span>
+          </div>
         </div>
 
         {/* Content */}
-        <div style={{ flex: 1, overflow: "auto", padding: 24 }}>
+        <div style={{ flex: 1, overflow: "auto", padding: 28 }}>
           {children}
         </div>
       </div>
@@ -7006,34 +7006,37 @@ export default function HSConsultingTravelPlanner() {
 
                                   {/* Hotels Detail Table */}
                                   <div style={{ background: "white", borderRadius: 10, border: "1px solid #E2E8F0", overflow: "hidden", marginBottom: hasBookings ? 8 : 0 }}>
-                                    <div style={{ padding: "6px 12px", background: "#F8FAFC", borderBottom: "1px solid #E2E8F0", fontSize: 10, fontWeight: 700, color: "#64748B", display: "flex", alignItems: "center", gap: 5 }}>
+                                    <div style={{ padding: "8px 14px", background: "#F8FAFC", borderBottom: "1px solid #E2E8F0", fontSize: 11, fontWeight: 700, color: "#475569", display: "flex", alignItems: "center", gap: 6 }}>
                                       🏨 Hoteles Visitados
                                     </div>
-                                    <div style={{ padding: 0 }}>
-                                      {Object.entries(hotelDetails).map(([hotelName, detail], hIdx) => (
-                                        <div key={hIdx} style={{
-                                          display: "flex", alignItems: "center", padding: "6px 12px", gap: 10,
-                                          borderBottom: hIdx < Object.keys(hotelDetails).length - 1 ? "1px solid #F1F5F9" : "none"
-                                        }}>
-                                          <div style={{ width: 24, height: 24, borderRadius: 6, background: TRANSPORT_META[detail.tType]?.bg || "#F1F5F9", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, flexShrink: 0 }}>
-                                            {TRANSPORT_META[detail.tType]?.icon || "🏨"}
-                                          </div>
-                                          <div style={{ flex: 1, minWidth: 0 }}>
-                                            <div style={{ fontSize: 12, fontWeight: 700, color: "#1E293B", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{hotelName}</div>
-                                            <div style={{ fontSize: 9, color: "#94A3B8" }}>
-                                              {[...detail.munis].join(", ")}
-                                              {detail.activities[0]?.d && <span style={{ marginLeft: 6 }}>• {detail.activities[0].d}</span>}
+                                    <div style={{ padding: "4px 0" }}>
+                                      {Object.entries(hotelDetails).map(([hotelName, detail], hIdx) => {
+                                        const location = [...detail.munis].join(", ");
+                                        const audits = detail.activities.map(a => a.d).filter(Boolean).join(" · ");
+                                        const date = detail.dates[0];
+                                        const isLast = hIdx === Object.keys(hotelDetails).length - 1;
+                                        return (
+                                          <div key={hIdx} style={{
+                                            display: "flex", alignItems: "center", padding: "10px 14px", gap: 12,
+                                            borderBottom: !isLast ? "1px solid #F1F5F9" : "none"
+                                          }}>
+                                            <div style={{ width: 36, height: 36, borderRadius: 10, background: "#EFF6FF", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0 }}>
+                                              🏨
                                             </div>
+                                            <div style={{ flex: 1, minWidth: 0 }}>
+                                              <div style={{ fontSize: 13, fontWeight: 700, color: "#1E293B", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{hotelName}</div>
+                                              {location && <div style={{ fontSize: 11, color: "#64748B", marginTop: 1 }}>📍 {location}</div>}
+                                              {audits && <div style={{ fontSize: 10, color: "#6366F1", marginTop: 2, fontWeight: 500, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>🔍 {audits}</div>}
+                                            </div>
+                                            {date && date !== "01/01/1970" && (
+                                              <div style={{ flexShrink: 0, background: "#EFF6FF", border: "1px solid #BFDBFE", borderRadius: 8, padding: "4px 10px", textAlign: "center" }}>
+                                                <div style={{ fontSize: 9, color: "#3B82F6", fontWeight: 700, marginBottom: 1 }}>FECHA</div>
+                                                <div style={{ fontSize: 11, fontWeight: 800, color: "#1D4ED8" }}>{date}</div>
+                                              </div>
+                                            )}
                                           </div>
-                                          <div style={{ flexShrink: 0 }}>
-                                            <TransportBadge type={detail.tType} small />
-                                          </div>
-                                          <div style={{ textAlign: "right", flexShrink: 0 }}>
-                                            <div style={{ fontSize: 11, fontWeight: 800, color: "#6366F1" }}>{detail.dates.length}d</div>
-                                            <div style={{ fontSize: 9, color: "#CBD5E1" }}>{detail.dates[0]}</div>
-                                          </div>
-                                        </div>
-                                      ))}
+                                        );
+                                      })}
                                     </div>
                                   </div>
 
