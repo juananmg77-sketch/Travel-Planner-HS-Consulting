@@ -6229,10 +6229,9 @@ export default function HSConsultingTravelPlanner() {
             Herramientas
           </div>
           {[
-            { label: "Importar Agenda",     icon: "↑", action: () => planningInputRef.current?.click(), badge: null },
-            { label: "Alojamientos",        icon: "⌂", action: () => setShowHotelsManager(true), badge: Object.keys(accommodationHotels).length || null },
-            { label: "BBDD Hoteles",        icon: "◫", action: () => { setShowHotelDB(true); setSyncStats(null); }, badge: CLIENT_DATA.length || null },
-            { label: syncingLovable ? "Sincronizando…" : "Sincronizar BBDD HS", icon: "↻", action: () => handleSyncFromLovable(), badge: null },
+            { label: "Importar Agenda Consultores", icon: "↑", action: () => planningInputRef.current?.click(), badge: null },
+            { label: "Alojamientos",               icon: "⌂", action: () => setShowHotelsManager(true), badge: Object.keys(accommodationHotels).length || null },
+            { label: "BBDD Hoteles",               icon: "◫", action: () => { setShowHotelDB(true); setSyncStats(null); }, badge: CLIENT_DATA.length || null },
           ].map(item => (
             <div
               key={item.label}
