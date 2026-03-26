@@ -6297,8 +6297,8 @@ export default function HSConsultingTravelPlanner() {
             Planificación
           </div>
           <SidebarItem id="dashboard"   label="Dashboard"   icon="📊" active={view === "dashboard"} />
-          <SidebarItem id="proposals"   label="Propuestas"  icon="📋" active={view === "proposals"}  badge={proposals.filter(p => !finalizedIds.has(p.id)).length} />
-          <SidebarItem id="managed"     label="Gestionados" icon="✅" active={view === "managed"}    badge={finalizedIds.size || null} />
+          <SidebarItem id="proposals"   label="Propuestas"  icon="📋" active={view === "proposals"}  badge={proposals.filter(p => !finalizedIds.has(p.id)).length || null} />
+          <SidebarItem id="managed"     label="Gestionados" icon="✅" active={view === "managed"}    badge={(() => { const now = new Date(); return proposals.filter(p => { if (!finalizedIds.has(p.id) || !p.f || !p.f.includes("/")) return false; const [d,m,y] = p.f.split("/"); return parseInt(m)-1 === now.getMonth() && parseInt(y) === now.getFullYear(); }).length || null; })()} />
           <SidebarItem id="calendar"    label="Calendario"  icon="📅" active={view === "calendar"} />
           <SidebarItem id="consultants" label="Consultores" icon="👥" active={view === "consultants"} />
         </nav>
@@ -6309,8 +6309,8 @@ export default function HSConsultingTravelPlanner() {
             Herramientas
           </div>
           <SidebarItem id="import"   label="Importar Agenda" icon="📥" onClick={() => planningInputRef.current?.click()} />
-          <SidebarItem id="hotels"   label="Alojamientos"    icon="🛏️" onClick={() => setShowHotelsManager(true)} badge={Object.keys(accommodationHotels).length || null} />
-          <SidebarItem id="hoteldb"  label="BBDD Hoteles"    icon="🏨" onClick={() => { setShowHotelDB(true); setSyncStats(null); }} badge={CLIENT_DATA.length || null} />
+          <SidebarItem id="hotels"   label="Alojamientos"    icon="🛏️" onClick={() => setShowHotelsManager(true)} />
+          <SidebarItem id="hoteldb"  label="BBDD Hoteles"    icon="🏨" onClick={() => { setShowHotelDB(true); setSyncStats(null); }} />
         </div>
 
         {/* Footer usuario */}
