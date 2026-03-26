@@ -5382,7 +5382,9 @@ export default function HSConsultingTravelPlanner() {
   const summaryByAuditor = useMemo(() => {
     const m = {};
     proposals.forEach(p => {
-      if (!m[p.cName]) m[p.cName] = { vuelo: 0, tren: 0, vehiculo: 0, auto: 0, total: 0, managed: 0, pending: 0, jornadas: 0, base: p.consultant.base };
+      // Solo trayectos que requieren reserva (vuelo, tren, etc.) — excluir vehículo propio
+      if (p.tType === "vehiculo" || p.tType === "auto") return;
+      if (!m[p.cName]) m[p.cName] = { vuelo: 0, tren: 0, total: 0, managed: 0, pending: 0, jornadas: 0, base: p.consultant.base };
       m[p.cName].total++;
       if (finalizedIds.has(p.id)) {
         m[p.cName].managed++;
