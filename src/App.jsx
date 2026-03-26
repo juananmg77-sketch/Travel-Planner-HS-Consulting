@@ -7020,9 +7020,6 @@ export default function HSConsultingTravelPlanner() {
                                             display: "flex", alignItems: "center", padding: "10px 14px", gap: 12,
                                             borderBottom: !isLast ? "1px solid #F1F5F9" : "none"
                                           }}>
-                                            <div style={{ width: 36, height: 36, borderRadius: 10, background: "#EFF6FF", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0 }}>
-                                              🏨
-                                            </div>
                                             <div style={{ flex: 1, minWidth: 0 }}>
                                               <div style={{ fontSize: 13, fontWeight: 700, color: "#1E293B", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{hotelName}</div>
                                               {location && <div style={{ fontSize: 11, color: "#64748B", marginTop: 1 }}>📍 {location}</div>}
@@ -7077,7 +7074,7 @@ export default function HSConsultingTravelPlanner() {
                                                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
                                                   <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
                                                     <span style={{ fontSize: 12 }}>{icon}</span>
-                                                    <span style={{ fontWeight: 800, fontSize: 9, color: "#0369A1", textTransform: "uppercase" }}>{company}</span>
+                                                    <span style={{ fontWeight: 800, fontSize: 12, color: "#0369A1", textTransform: "uppercase" }}>{company}</span>
                                                   </div>
                                                 </div>
                                                 <div style={{ display: "grid", gridTemplateColumns: segments.length > 1 ? "1fr 1fr" : "1fr", gap: 4 }}>
