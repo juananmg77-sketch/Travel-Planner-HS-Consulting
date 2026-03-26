@@ -4461,11 +4461,13 @@ function ConsultantList({ consultants, onUpdate, onDelete }) {
 
   const startEdit = (name, data) => {
     setEditingId(name);
-    setEditForm({ ...data });
+    setEditForm({ ...data, _editName: name });
   };
 
   const saveEdit = () => {
-    onUpdate(editingId, editForm);
+    const { _editName, ...data } = editForm;
+    const newName = (_editName || "").trim();
+    onUpdate(editingId, data, newName !== editingId ? newName : null);
     setEditingId(null);
   };
 
@@ -4635,7 +4637,11 @@ function ConsultantList({ consultants, onUpdate, onDelete }) {
               return (
                 <tr key={name} style={{ borderBottom: "1px solid #f0f0f0", background: isEditing ? "#F0F9FF" : "white" }}>
                   {/* Nombre */}
-                  <td style={{ padding: "10px 12px", fontWeight: 700, color: "#111", fontSize: 13, whiteSpace: "nowrap" }}>{name}</td>
+                  <td style={{ padding: isEditing ? 6 : "10px 12px", fontWeight: 700, color: "#111", fontSize: 13, minWidth: 180 }}>
+                    {isEditing
+                      ? <input style={{ ...inp, fontWeight: 700 }} value={editForm._editName ?? name} onChange={e => setEditForm({ ...editForm, _editName: e.target.value })} placeholder="Nombre completo…" />
+                      : name}
+                  </td>
 
                   {/* Dirección */}
                   <td style={{ padding: isEditing ? 6 : "10px 12px", fontSize: 12, color: "#374151", minWidth: 160 }}>
@@ -5761,27 +5767,39 @@ export default function HSConsultingTravelPlanner() {
 
 
 
-  const updateConsultant = useCallback(async (name, updatedData) => {
-    // If we are using valid customConsultants, update it. 
+  const updateConsultant = useCallback(async (name, updatedData, newName = null) => {
+    // If we are using valid customConsultants, update it.
     // If we are using default CONSULTANTS, we need to clone it to custom first to avoid mutating constant.
     let nextState = (customConsultants && Object.keys(customConsultants).length > 0) ? { ...CONSULTANTS, ...customConsultants } : { ...CONSULTANTS };
 
-    // Ensure we preserve fields that might not be in editForm but exist in original
-    nextState[name] = { ...nextState[name], ...updatedData };
+    const isRename = newName && newName.trim() && newName.trim() !== name;
+    const effectiveName = isRename ? newName.trim() : name;
+
+    if (isRename) {
+      // Copy data to new key, mark old as deleted
+      nextState[effectiveName] = { ...nextState[name], ...updatedData };
+      nextState[name] = { _deleted: true };
+      // Also update activities that reference the old name
+      setActivities(prev => prev.map(a => (a.a || "").trim() === name ? { ...a, a: effectiveName } : a));
+    } else {
+      // Ensure we preserve fields that might not be in editForm but exist in original
+      nextState[name] = { ...nextState[name], ...updatedData };
+    }
 
     setCustomConsultants(nextState);
 
     // Persist to Supabase permanently
-    const ok = await upsertConsultant(name, nextState[name]);
+    const ok = await upsertConsultant(effectiveName, nextState[effectiveName]);
     if (ok) {
-      console.log(`✅ Supabase: Consultor "${name}" actualizado permanentemente`);
+      console.log(`✅ Supabase: Consultor "${effectiveName}" actualizado permanentemente`);
+      if (isRename) await deleteConsultantDB(name);
     } else {
-      console.warn(`⚠️ Supabase: No se pudo guardar "${name}" en la base de datos`);
+      console.warn(`⚠️ Supabase: No se pudo guardar "${effectiveName}" en la base de datos`);
     }
 
     // Automaticaly recalculate and persist transport for all affected activities
-    const c = nextState[name];
-    const affectedActivities = activities.filter(a => (a.a || "").trim() === name);
+    const c = nextState[effectiveName];
+    const affectedActivities = activities.filter(a => (a.a || "").trim() === name || (isRename && (a.a || "").trim() === effectiveName));
     let updateCount = 0;
 
     for (const act of affectedActivities) {
@@ -5807,8 +5825,12 @@ export default function HSConsultingTravelPlanner() {
     }
 
     if (updateCount > 0) {
-      console.log(`✅ Reprogramadas ${updateCount} rutas para el consultor ${name}`);
-      setUploadFlash(`🔄 Reprogramadas ${updateCount} rutas para ${name}`);
+      console.log(`✅ Reprogramadas ${updateCount} rutas para el consultor ${effectiveName}`);
+      setUploadFlash(`🔄 Reprogramadas ${updateCount} rutas para ${effectiveName}`);
+      setTimeout(() => setUploadFlash(null), 3000);
+    }
+    if (isRename) {
+      setUploadFlash(`✅ Consultor renombrado a "${effectiveName}"`);
       setTimeout(() => setUploadFlash(null), 3000);
     }
   }, [customConsultants, activities, customClientInfo, realDistances]);
@@ -7059,9 +7081,15 @@ export default function HSConsultingTravelPlanner() {
                                   {p.routeLabel}
                                   {p.km > 0 && <span style={{ fontWeight: 700, color: "#111", marginLeft: 8 }}>📍 {p.km} km</span>}
                                 </div>
-                                <div style={{ fontSize: 11, color: "#999", marginTop: 2 }}>
-                                  {p.d} • {p.f}
-                                  {p.isGenericAddress && <span style={{ marginLeft: 10, color: "#EAB308", fontWeight: 700, fontSize: 10 }}>⚠️ VALIDAR UBICACIÓN</span>}
+                                <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 4, flexWrap: "wrap" }}>
+                                  {(() => {
+                                    const validDate = p.f && p.f !== "01/01/1970" && p.f.includes("/");
+                                    return validDate
+                                      ? <span style={{ background: "#EFF6FF", color: "#1D4ED8", fontWeight: 700, fontSize: 12, padding: "2px 10px", borderRadius: 20, border: "1px solid #BFDBFE", whiteSpace: "nowrap" }}>📅 {p.f}</span>
+                                      : <span style={{ background: "#FEF2F2", color: "#B91C1C", fontWeight: 600, fontSize: 11, padding: "2px 8px", borderRadius: 20, border: "1px solid #FECACA" }}>⚠ Sin fecha</span>;
+                                  })()}
+                                  {p.d && <span style={{ fontSize: 11, color: "#666" }}>{p.d}</span>}
+                                  {p.isGenericAddress && <span style={{ color: "#EAB308", fontWeight: 700, fontSize: 10 }}>⚠️ VALIDAR UBICACIÓN</span>}
                                 </div>
                               </div>
                             </div>
