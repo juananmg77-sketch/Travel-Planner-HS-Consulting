@@ -60,6 +60,7 @@ const EXTRA_CLIENT_INFO = {
 };
 
 const REGION_MAP = {
+  // English / legacy names
   "Balearic Islands": "Islas Baleares",
   "Baleares- Mallorca": "Islas Baleares",
   "Canary Islands": "Islas Canarias",
@@ -67,6 +68,26 @@ const REGION_MAP = {
   "Comunidad Valenciana": "Valencia",
   "Murcia ": "Murcia",
   "Castilla y León ": "Castilla y León",
+  // Island names used directly as region in CSV → map to CCAA so ISLAND_REGIONS check works
+  "Mallorca": "Islas Baleares",
+  "Menorca": "Islas Baleares",
+  "Ibiza": "Islas Baleares",
+  "Eivissa": "Islas Baleares",
+  "Formentera": "Islas Baleares",
+  "Gran Canaria": "Islas Canarias",
+  "Tenerife": "Islas Canarias",
+  "Lanzarote": "Islas Canarias",
+  "Fuerteventura": "Islas Canarias",
+  "La Palma": "Islas Canarias",
+  "La Gomera": "Islas Canarias",
+  "El Hierro": "Islas Canarias",
+};
+
+// When the raw dRegion CSV field is just an island name, remember which island it is
+const ISLAND_FROM_REGION_NAME = {
+  "Mallorca": "Mallorca", "Menorca": "Menorca", "Ibiza": "Ibiza", "Eivissa": "Ibiza", "Formentera": "Formentera",
+  "Gran Canaria": "Gran Canaria", "Tenerife": "Tenerife", "Lanzarote": "Lanzarote",
+  "Fuerteventura": "Fuerteventura", "La Palma": "La Palma", "La Gomera": "La Gomera", "El Hierro": "El Hierro",
 };
 
 function normalizeRegion(r) {
@@ -311,6 +332,15 @@ const MUNI_ISLAND_MAP = {
   "cales de mallorca": "Mallorca", "costa de la calma": "Mallorca",
   "cala vinyes": "Mallorca", "maria de la salut": "Mallorca",
   "santa margalida": "Mallorca", "sa coma": "Mallorca",
+  // Mallorca — municipios extra (puertos, pueblos, resorts)
+  "puerto de soller": "Mallorca", "puerto de sóller": "Mallorca", "port de sóller": "Mallorca", "port de soller": "Mallorca",
+  "sineu": "Mallorca", "muro": "Mallorca", "sa pobla": "Mallorca", "artà": "Mallorca", "arta": "Mallorca",
+  "peguera": "Mallorca", "camp de mar": "Mallorca", "capdepera": "Mallorca",
+  "cala d'or": "Mallorca", "cala dor": "Mallorca", "s'arenal": "Mallorca", "arenal": "Mallorca",
+  "magaluf": "Mallorca", "illetes": "Mallorca", "bendinat": "Mallorca",
+  "porto cristo": "Mallorca", "cala mesquida": "Mallorca", "cala agulla": "Mallorca",
+  "cala pi": "Mallorca", "ses salines": "Mallorca", "colonia de sant jordi": "Mallorca",
+  "son servera": "Mallorca", "sant joan": "Mallorca",
   // Ibiza
   "ibiza": "Ibiza", "eivissa": "Ibiza", "santa eulalia": "Ibiza", "sant antoni": "Ibiza",
   "santa eulària des riu": "Ibiza", "sant jordi de ses salines": "Ibiza",
@@ -388,7 +418,13 @@ function getTransportType(cRegion, dRegion, establishment, pref, cIsland, dIslan
     if (client.municipality) destinationMuni = client.municipality;
   }
 
-  // 1b. Infer region and island from municipality name (crucial for address corrections)
+  // 1b. Si el campo región del CSV es directamente un nombre de isla (p.ej. "Mallorca"),
+  //     capturamos el nombre de isla antes de normalizar
+  if (!destinationIslandName && ISLAND_FROM_REGION_NAME[dRegion]) {
+    destinationIslandName = ISLAND_FROM_REGION_NAME[dRegion];
+  }
+
+  // 1c. Infer region and island from municipality name (crucial for address corrections)
   const inferredRegion = inferRegionFromMuni(destinationMuni);
   if (inferredRegion) destinationRegion = normalizeRegion(inferredRegion);
 
@@ -405,9 +441,9 @@ function getTransportType(cRegion, dRegion, establishment, pref, cIsland, dIslan
   }
   const effectiveCIsland = cIsland || inferIsland(cBase);
 
-  // 2. Priority: Same Island -> Vehiculo (Overrides weak region matching)
+  // 2. Priority: Same Island -> Vehiculo/Auto (Overrides weak region matching)
   if (effectiveCIsland && destinationIslandName && effectiveCIsland === destinationIslandName) {
-    return "vehiculo";
+    return pref === "auto" ? "auto" : "vehiculo";
   }
 
   // 3. Same Region Peninsula -> Vehiculo
@@ -416,16 +452,30 @@ function getTransportType(cRegion, dRegion, establishment, pref, cIsland, dIslan
   // 4. Any travel involving an island
   if (cIsIsland || destinationIsIsland) {
     if (cIsIsland && destinationIsIsland) {
-      // Both are islands
-      if (normCRegion !== destinationRegion) return "vuelo"; // Different archipelagos
+      // Ambos en islas
+      if (normCRegion !== destinationRegion) return "vuelo"; // Archipiélagos distintos (Baleares ↔ Canarias)
 
-      // Same archipelago. If DIFFERENT islands -> Vuelo.
+      // Mismo archipiélago — islas distintas = vuelo inter-isla
       if (effectiveCIsland && destinationIslandName && effectiveCIsland !== destinationIslandName) {
         return "vuelo";
       }
-      return "vehiculo";
+      // Misma isla o isla destino desconocida → vehículo en la isla
+      return pref === "auto" ? "auto" : "vehiculo";
     }
-    return "vuelo"; // One island, one peninsula
+
+    // Un lado es isla pero el destino no se reconoció como isla region.
+    // Puede ocurrir si el CSV trae "Mallorca" como región (ya capturado en destinationIslandName).
+    if (cIsIsland && !destinationIsIsland && destinationIslandName) {
+      const destInBaleares = ["Mallorca","Menorca","Ibiza","Formentera"].includes(destinationIslandName);
+      const destInCanarias = ["Gran Canaria","Tenerife","Lanzarote","Fuerteventura","La Palma","La Gomera","El Hierro"].includes(destinationIslandName);
+      const cInBaleares = normCRegion === "Islas Baleares";
+      const cInCanarias = normCRegion === "Islas Canarias";
+      if ((cInBaleares && destInBaleares) || (cInCanarias && destInCanarias)) {
+        if (effectiveCIsland && effectiveCIsland !== destinationIslandName) return "vuelo";
+        return pref === "auto" ? "auto" : "vehiculo";
+      }
+    }
+    return "vuelo"; // Isla → Península genuino o archipiélagos distintos
   }
 
   // 5. Madrid Consultant -> Peninsula -> Tren
