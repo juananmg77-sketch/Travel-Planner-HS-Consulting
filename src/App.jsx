@@ -4679,6 +4679,159 @@ function ConsultantList({ consultants, onUpdate, onDelete }) {
 }
 
 // ============================================================
+// COST SUMMARY PANEL
+// ============================================================
+function CostSummaryPanel({ proposals, finalizedIds, bookedLinks, onClose }) {
+  const [selectedMonth, setSelectedMonth] = useState(null);
+
+  const getProposalCost = (pid) => {
+    const links = bookedLinks[pid] || {};
+    return Object.values(links).reduce((sum, d) => sum + (d?.price || 0), 0);
+  };
+
+  // Build month groups from finalized proposals
+  const monthGroups = {};
+  proposals.forEach(p => {
+    if (!finalizedIds.has(p.id)) return;
+    if (!p.f || !p.f.includes("/")) return;
+    const [dd, mm, yyyy] = p.f.split("/");
+    if (!mm || !yyyy) return;
+    const key = `${yyyy}-${mm}`;
+    const label = new Date(parseInt(yyyy), parseInt(mm) - 1, 1).toLocaleString("es-ES", { month: "long", year: "numeric" });
+    if (!monthGroups[key]) monthGroups[key] = { label, trips: [], totalCost: 0, totalKm: 0, byConsultant: {} };
+    const cost = getProposalCost(p.id);
+    monthGroups[key].trips.push(p);
+    monthGroups[key].totalCost += cost;
+    monthGroups[key].totalKm += (p.tType === "vehiculo" || p.tType === "auto") ? ((p.km || 0) * 2) : 0;
+    const name = p.a || "Sin consultor";
+    if (!monthGroups[key].byConsultant[name]) monthGroups[key].byConsultant[name] = { trips: 0, cost: 0, km: 0 };
+    monthGroups[key].byConsultant[name].trips++;
+    monthGroups[key].byConsultant[name].cost += cost;
+    monthGroups[key].byConsultant[name].km += (p.tType === "vehiculo" || p.tType === "auto") ? ((p.km || 0) * 2) : 0;
+  });
+
+  const sortedMonths = Object.entries(monthGroups).sort(([a], [b]) => a.localeCompare(b));
+  const totalTrips = proposals.filter(p => finalizedIds.has(p.id)).length;
+  const totalCost = sortedMonths.reduce((s, [, g]) => s + g.totalCost, 0);
+  const totalKm = sortedMonths.reduce((s, [, g]) => s + g.totalKm, 0);
+
+  const activeGroup = selectedMonth ? monthGroups[selectedMonth] : null;
+
+  // Global consultant summary
+  const globalByConsultant = {};
+  sortedMonths.forEach(([, g]) => {
+    Object.entries(g.byConsultant).forEach(([name, d]) => {
+      if (!globalByConsultant[name]) globalByConsultant[name] = { trips: 0, cost: 0, km: 0 };
+      globalByConsultant[name].trips += d.trips;
+      globalByConsultant[name].cost += d.cost;
+      globalByConsultant[name].km += d.km;
+    });
+  });
+  const sortedConsultants = Object.entries(activeGroup ? activeGroup.byConsultant : globalByConsultant)
+    .sort(([, a], [, b]) => b.cost - a.cost);
+
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 9999, display: "flex", alignItems: "flex-start", justifyContent: "center", padding: "24px 16px", overflowY: "auto" }}>
+      <div style={{ background: "white", borderRadius: 16, width: "100%", maxWidth: 860, boxShadow: "0 20px 60px rgba(0,0,0,0.25)" }}>
+        {/* Header */}
+        <div style={{ padding: "18px 24px", borderBottom: "1px solid #E2E8F0", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div>
+            <div style={{ fontSize: 18, fontWeight: 800, color: "#1E293B" }}>📊 Resumen de Costes Logísticos</div>
+            <div style={{ fontSize: 12, color: "#64748B", marginTop: 2 }}>Trayectos gestionados · HS Consulting</div>
+          </div>
+          <button onClick={onClose} style={{ background: "none", border: "none", fontSize: 22, cursor: "pointer", color: "#94A3B8" }}>✕</button>
+        </div>
+
+        <div style={{ padding: 24 }}>
+          {/* KPI cards */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginBottom: 24 }}>
+            {[
+              { label: "Trayectos gestionados", value: totalTrips, color: "#6366F1", bg: "#EEF2FF" },
+              { label: "Km totales (vehículo)", value: totalKm > 0 ? `${totalKm.toFixed(0)} km` : "—", color: "#059669", bg: "#ECFDF5" },
+              { label: "Coste total registrado", value: totalCost > 0 ? `${totalCost.toFixed(2)} €` : "Sin datos", color: "#D97706", bg: "#FFFBEB" },
+            ].map(({ label, value, color, bg }) => (
+              <div key={label} style={{ background: bg, borderRadius: 12, padding: "14px 18px" }}>
+                <div style={{ fontSize: 11, color: "#64748B", fontWeight: 600, marginBottom: 4 }}>{label}</div>
+                <div style={{ fontSize: 22, fontWeight: 800, color }}>{value}</div>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+            {/* Monthly table */}
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "#374151", marginBottom: 10 }}>Por mes</div>
+              <div style={{ border: "1px solid #E2E8F0", borderRadius: 10, overflow: "hidden" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
+                  <thead>
+                    <tr style={{ background: "#F8FAFC" }}>
+                      <th style={{ padding: "8px 12px", textAlign: "left", fontWeight: 700, color: "#64748B", fontSize: 11 }}>Mes</th>
+                      <th style={{ padding: "8px 12px", textAlign: "center", fontWeight: 700, color: "#64748B", fontSize: 11 }}>Viajes</th>
+                      <th style={{ padding: "8px 12px", textAlign: "right", fontWeight: 700, color: "#64748B", fontSize: 11 }}>Coste</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sortedMonths.length === 0 && (
+                      <tr><td colSpan={3} style={{ padding: 16, textAlign: "center", color: "#94A3B8", fontSize: 12 }}>Sin trayectos gestionados</td></tr>
+                    )}
+                    {sortedMonths.map(([key, g]) => (
+                      <tr key={key}
+                        onClick={() => setSelectedMonth(selectedMonth === key ? null : key)}
+                        style={{ cursor: "pointer", background: selectedMonth === key ? "#EFF6FF" : "white", borderTop: "1px solid #F1F5F9" }}
+                      >
+                        <td style={{ padding: "9px 12px", fontWeight: 600, color: "#1E293B", textTransform: "capitalize" }}>{g.label}</td>
+                        <td style={{ padding: "9px 12px", textAlign: "center", color: "#6366F1", fontWeight: 700 }}>{g.trips.length}</td>
+                        <td style={{ padding: "9px 12px", textAlign: "right", color: g.totalCost > 0 ? "#D97706" : "#94A3B8", fontWeight: g.totalCost > 0 ? 700 : 400 }}>
+                          {g.totalCost > 0 ? `${g.totalCost.toFixed(2)} €` : "—"}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              {selectedMonth && <div style={{ marginTop: 6, fontSize: 11, color: "#6366F1", textAlign: "center" }}>Mostrando detalle de {monthGroups[selectedMonth]?.label} · click para deseleccionar</div>}
+            </div>
+
+            {/* Consultant table */}
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "#374151", marginBottom: 10 }}>
+                Por consultor {selectedMonth ? <span style={{ fontWeight: 400, color: "#94A3B8" }}>({monthGroups[selectedMonth]?.label})</span> : <span style={{ fontWeight: 400, color: "#94A3B8" }}>(acumulado)</span>}
+              </div>
+              <div style={{ border: "1px solid #E2E8F0", borderRadius: 10, overflow: "hidden" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
+                  <thead>
+                    <tr style={{ background: "#F8FAFC" }}>
+                      <th style={{ padding: "8px 12px", textAlign: "left", fontWeight: 700, color: "#64748B", fontSize: 11 }}>Consultor</th>
+                      <th style={{ padding: "8px 12px", textAlign: "center", fontWeight: 700, color: "#64748B", fontSize: 11 }}>Viajes</th>
+                      <th style={{ padding: "8px 12px", textAlign: "right", fontWeight: 700, color: "#64748B", fontSize: 11 }}>Coste</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sortedConsultants.length === 0 && (
+                      <tr><td colSpan={3} style={{ padding: 16, textAlign: "center", color: "#94A3B8", fontSize: 12 }}>Sin datos</td></tr>
+                    )}
+                    {sortedConsultants.map(([name, d]) => (
+                      <tr key={name} style={{ borderTop: "1px solid #F1F5F9" }}>
+                        <td style={{ padding: "9px 12px", fontWeight: 600, color: "#1E293B" }}>{name}</td>
+                        <td style={{ padding: "9px 12px", textAlign: "center", color: "#6366F1", fontWeight: 700 }}>{d.trips}</td>
+                        <td style={{ padding: "9px 12px", textAlign: "right", color: d.cost > 0 ? "#D97706" : "#94A3B8", fontWeight: d.cost > 0 ? 700 : 400 }}>
+                          {d.cost > 0 ? `${d.cost.toFixed(2)} €` : "—"}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div style={{ marginTop: 8, fontSize: 10, color: "#94A3B8" }}>* Solo se suman los trayectos donde se ha registrado precio en la reserva</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
 // MAIN APP
 // ============================================================
 export default function HSConsultingTravelPlanner() {
@@ -4877,6 +5030,7 @@ export default function HSConsultingTravelPlanner() {
   const [showBulkGeocode, setShowBulkGeocode] = useState(false);
   const [showHotelsManager, setShowHotelsManager] = useState(false);
   const [showHotelDB, setShowHotelDB] = useState(false);
+  const [showCostSummary, setShowCostSummary] = useState(false);
   const [syncingLovable, setSyncingLovable] = useState(false);
   const [syncStats, setSyncStats] = useState(null);
   const [pendingNewEstablishments, setPendingNewEstablishments] = useState(null); // { names: [...], regionMap: {...} }
@@ -6311,6 +6465,7 @@ export default function HSConsultingTravelPlanner() {
           <SidebarItem id="import"   label="Importar Agenda" icon="📥" onClick={() => planningInputRef.current?.click()} />
           <SidebarItem id="hotels"   label="Alojamientos"    icon="🛏️" onClick={() => setShowHotelsManager(true)} />
           <SidebarItem id="hoteldb"  label="BBDD Hoteles"    icon="🏨" onClick={() => { setShowHotelDB(true); setSyncStats(null); }} />
+          <SidebarItem id="costs"    label="Resumen Costes"  icon="💶" onClick={() => setShowCostSummary(true)} />
         </div>
 
         {/* Footer usuario */}
@@ -6407,6 +6562,14 @@ export default function HSConsultingTravelPlanner() {
             onClose={() => setShowHotelsManager(false)}
             onUpdate={handleUpdateAccommodationHotels}
             onImportCSV={handleHotelsCSV}
+          />
+        )}
+        {showCostSummary && (
+          <CostSummaryPanel
+            proposals={proposals}
+            finalizedIds={finalizedIds}
+            bookedLinks={bookedLinks}
+            onClose={() => setShowCostSummary(false)}
           />
         )}
         {showHotelDB && (
@@ -6635,6 +6798,9 @@ export default function HSConsultingTravelPlanner() {
                     const expMap = {};
 
                     filtered.forEach(p => {
+                      // Solo trayectos que requieren reserva (vuelo, tren, etc.) — excluir vehículo propio
+                      if (p.tType === "vehiculo" || p.tType === "auto") return;
+
                       const pDate = new Date(p.f.split('/').reverse().join('-'));
 
                       // 1. Calculate transport fingerprints (locators) for this activity
