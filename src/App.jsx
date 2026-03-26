@@ -6959,10 +6959,11 @@ export default function HSConsultingTravelPlanner() {
                               // Group proposals by hotel for detail display
                               const hotelDetails = {};
                               ex.proposals.forEach(p => {
-                                if (!hotelDetails[p.e]) hotelDetails[p.e] = { dates: [], activities: [], munis: new Set(), tType: p.tType };
+                                if (!hotelDetails[p.e]) hotelDetails[p.e] = { dates: [], activities: [], munis: new Set(), addresses: new Set(), tType: p.tType };
                                 hotelDetails[p.e].dates.push(p.f);
                                 hotelDetails[p.e].activities.push(p);
                                 if (p.destMuni) hotelDetails[p.e].munis.add(p.destMuni);
+                                if (p.destAddress) hotelDetails[p.e].addresses.add(p.destAddress);
                               });
 
                               const hasBookings = Object.keys(uniqueBookings).length > 0 || accomBooking;
@@ -7011,7 +7012,7 @@ export default function HSConsultingTravelPlanner() {
                                     </div>
                                     <div style={{ padding: "4px 0" }}>
                                       {Object.entries(hotelDetails).map(([hotelName, detail], hIdx) => {
-                                        const location = [...detail.munis].join(", ");
+                                        const location = [...detail.addresses].join(", ") || [...detail.munis].join(", ");
                                         const audits = detail.activities.map(a => a.d).filter(Boolean).join(" · ");
                                         const date = detail.dates[0];
                                         const isLast = hIdx === Object.keys(hotelDetails).length - 1;
