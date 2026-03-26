@@ -5105,11 +5105,14 @@ export default function HSConsultingTravelPlanner() {
         return `${addr}, ${base}`;
       };
       const originGeo = buildOriginGeo(c.address, c.base);
+      // effectiveOrigin: misma clave que usa calculateDistances (p.originAddress)
+      // Si originGeo está vacío, usa c.base para que la clave coincida siempre
+      const effectiveOrigin = originGeo || c.base || "";
 
-      // distKey usa destGeoAddress (con isla) para mayor precisión en geocoding
-      const distKey = `${originGeo}|${destGeoAddress}`;
+      // distKey debe ser idéntico al key que genera calculateDistances
+      const distKey = `${effectiveOrigin}|${destGeoAddress}`;
       const km = (tType === "vehiculo" || tType === "auto" || tType === "local")
-        ? (realDistances[distKey] || estimateDistance(originGeo, destGeoAddress))
+        ? (realDistances[distKey] || estimateDistance(effectiveOrigin, destGeoAddress))
         : 0;
 
       // Fallbacks para geocoding: si la dirección completa falla, usar solo ciudad
@@ -5124,7 +5127,7 @@ export default function HSConsultingTravelPlanner() {
         cName: auditorName,
         tType,
         needsTravel: tType !== "local",
-        originAddress: originGeo || c.base,
+        originAddress: effectiveOrigin,
         originFallback,
         originMuni,
         originDisplay,
@@ -6491,6 +6494,25 @@ export default function HSConsultingTravelPlanner() {
 
   return (
     <>
+      {showHotelDB && (
+        <ClientHotelDBPanel
+          onClose={() => setShowHotelDB(false)}
+          allClients={CLIENT_DATA}
+          customClientInfo={customClientInfo}
+          onSave={(name, data) => {
+            if (data === null) {
+              setCustomClientInfo(prev => { const next = { ...prev }; delete next[name]; return next; });
+            } else {
+              setCustomClientInfo(prev => ({ ...prev, [name]: { ...(prev[name] || {}), ...data } }));
+            }
+          }}
+          onPersist={updateEstablishmentAddress}
+          onSync={handleSyncFromLovable}
+          onClearStats={() => setSyncStats(null)}
+          syncing={syncingLovable}
+          syncStats={syncStats}
+        />
+      )}
       {/* BookingPanel MUST be outside AppLayout so position:fixed works correctly */}
       {bookingTarget && (
         <BookingPanel
