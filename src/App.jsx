@@ -5106,6 +5106,12 @@ export default function HSConsultingTravelPlanner() {
         ? (realDistances[distKey] || estimateDistance(originGeo, destGeoAddress))
         : 0;
 
+      // Fallbacks para geocoding: si la dirección completa falla, usar solo ciudad
+      const originFallback = c.base ? `${c.base}, España` : null;
+      const destFallback = client.municipality
+        ? [client.municipality, destIslandForGeo, "España"].filter(Boolean).join(", ")
+        : null;
+
       return {
         ...activity,
         consultant: c,
@@ -5113,10 +5119,12 @@ export default function HSConsultingTravelPlanner() {
         tType,
         needsTravel: tType !== "local",
         originAddress: originGeo || c.base,
+        originFallback,
         originMuni,
         originDisplay,
         destAddress: destFullAddress,       // para mostrar en UI
         destGeoAddress,                      // para geocoding (con isla/región añadida)
+        destFallback,
         destMuni,
         destDisplay,
         isGenericAddress,
@@ -5985,7 +5993,25 @@ export default function HSConsultingTravelPlanner() {
   const calculateDistances = async () => {
     setCalculatingDistances(true);
 
-    // Solo rutas en vehículo propio
+    // Normaliza prefijos de calle españoles para que Nominatim los entienda
+    const normAddr = (addr) => {
+      if (!addr) return addr;
+      return addr
+        .replace(/^c\.\s*/i, "Calle ")
+        .replace(/^c\/\s*/i, "Calle ")
+        .replace(/^avda?\.\s*/i, "Avenida ")
+        .replace(/^av\.\s*/i, "Avenida ")
+        .replace(/^pza?\.\s*/i, "Plaza ")
+        .replace(/^pg\.\s*/i, "Passeig ")
+        .replace(/^crta?\.\s*/i, "Carretera ")
+        .replace(/^urb\.\s*/i, "Urbanización ")
+        .trim();
+    };
+
+    const ensureEspana = (addr) =>
+      addr.toLowerCase().includes("españa") ? addr : `${addr}, España`;
+
+    // Recolecta rutas vehiculo sin distancia calculada
     const routesToCalc = [];
     const seen = new Set();
     filtered.forEach(p => {
@@ -5995,7 +6021,15 @@ export default function HSConsultingTravelPlanner() {
       const key = `${p.originAddress}|${dest}`;
       if (!seen.has(key)) {
         seen.add(key);
-        routesToCalc.push({ key, origin: p.originAddress, dest, consultant: p.cName, hotel: p.e });
+        routesToCalc.push({
+          key,
+          originPrimary: ensureEspana(normAddr(p.originAddress)),
+          originFallback: p.originFallback ? ensureEspana(p.originFallback) : null,
+          destPrimary: ensureEspana(normAddr(dest)),
+          destFallback: p.destFallback ? ensureEspana(p.destFallback) : null,
+          consultant: p.cName,
+          hotel: p.e,
+        });
       }
     });
 
@@ -6006,43 +6040,57 @@ export default function HSConsultingTravelPlanner() {
       return;
     }
 
-    // Geocodificación: Nominatim (más fiable para España) con fallback a Photon
+    // Cache de coordenadas en memoria para esta sesión de cálculo
     const COORD_CACHE = {};
-    const geocode = async (address) => {
-      const cacheKey = address.trim().toLowerCase();
-      if (COORD_CACHE[cacheKey]) return COORD_CACHE[cacheKey];
 
-      const withCountry = address.toLowerCase().includes("españa") ? address : `${address}, España`;
-
-      // Intento 1: Nominatim
+    // Nominatim: máx 1 req/s — devuelve coords o null
+    const nominatim = async (query) => {
+      const key = query.trim().toLowerCase();
+      if (COORD_CACHE[key]) return COORD_CACHE[key];
+      await new Promise(r => setTimeout(r, 1150));
       try {
-        await new Promise(r => setTimeout(r, 1100)); // Nominatim: 1 req/s
         const res = await fetch(
-          `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(withCountry)}&format=json&limit=1&countrycodes=es`,
+          `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1&countrycodes=es`,
           { headers: { "Accept-Language": "es-ES,es", "User-Agent": "HSConsultingTravelPlanner/1.0" } }
         );
         const data = await res.json();
         if (data[0]) {
-          const coords = { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) };
-          COORD_CACHE[cacheKey] = coords;
-          return coords;
+          const c = { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) };
+          COORD_CACHE[key] = c;
+          return c;
         }
-      } catch (e) { /* fallback */ }
+      } catch { /* continuar */ }
+      return null;
+    };
 
-      // Intento 2: Photon
+    // Photon (sin rate limit estricto) — fallback de último recurso
+    const photon = async (query) => {
+      const key = `ph:${query.trim().toLowerCase()}`;
+      if (COORD_CACHE[key]) return COORD_CACHE[key];
+      await new Promise(r => setTimeout(r, 400));
       try {
-        await new Promise(r => setTimeout(r, 400));
-        const res = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(address)}&limit=1`);
+        const res = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=1`);
         const data = await res.json();
         if (data?.features?.[0]) {
           const [lon, lat] = data.features[0].geometry.coordinates;
-          const coords = { lat, lon };
-          COORD_CACHE[cacheKey] = coords;
-          return coords;
+          const c = { lat, lon };
+          COORD_CACHE[key] = c;
+          return c;
         }
-      } catch (e) { /* sin resultado */ }
-
+      } catch { /* continuar */ }
       return null;
+    };
+
+    // Geocodifica con hasta 3 intentos: Nominatim full → Nominatim fallback → Photon full
+    const geocode = async (primary, fallback) => {
+      let c = await nominatim(primary);
+      if (c) return c;
+      if (fallback && fallback !== primary) {
+        c = await nominatim(fallback);
+        if (c) return c;
+      }
+      c = await photon(primary);
+      return c || null;
     };
 
     let success = 0;
@@ -6053,11 +6101,11 @@ export default function HSConsultingTravelPlanner() {
       setUploadFlash(`⏳ Ruta ${i + 1}/${routesToCalc.length}: ${route.consultant} → ${route.hotel}`);
 
       try {
-        const co = await geocode(route.origin);
-        if (!co) { failed.push(`${route.consultant} (origen no encontrado)`); continue; }
+        const co = await geocode(route.originPrimary, route.originFallback);
+        if (!co) { failed.push(`${route.consultant} (origen)`); continue; }
 
-        const cd = await geocode(route.dest);
-        if (!cd) { failed.push(`${route.hotel} (destino no encontrado)`); continue; }
+        const cd = await geocode(route.destPrimary, route.destFallback);
+        if (!cd) { failed.push(`${route.hotel} (destino)`); continue; }
 
         const routeRes = await fetch(
           `https://router.project-osrm.org/route/v1/driving/${co.lon},${co.lat};${cd.lon},${cd.lat}?overview=false`
@@ -6065,7 +6113,6 @@ export default function HSConsultingTravelPlanner() {
         const routeData = await routeRes.json();
 
         if (routeData.routes?.[0]) {
-          // Guardamos distancia ida (×2 se calcula al mostrar)
           const oneWayKm = parseFloat((routeData.routes[0].distance / 1000).toFixed(1));
           setRealDistances(prev => ({ ...prev, [route.key]: oneWayKm }));
           upsertDistance(route.key, oneWayKm);
@@ -6081,7 +6128,7 @@ export default function HSConsultingTravelPlanner() {
 
     setCalculatingDistances(false);
     if (failed.length > 0) {
-      setUploadFlash(`✅ ${success} rutas calculadas. ⚠ Sin datos: ${failed.slice(0, 3).join(", ")}${failed.length > 3 ? ` (+${failed.length - 3} más)` : ""}`);
+      setUploadFlash(`✅ ${success} calculadas. ⚠ Sin datos: ${failed.slice(0, 3).join(", ")}${failed.length > 3 ? ` (+${failed.length - 3} más)` : ""}`);
     } else {
       setUploadFlash(`✅ ${success} rutas calculadas (ida y vuelta).`);
     }
