@@ -208,7 +208,7 @@ const CONSULTANTS = {
   "Rocío Gálvez Mata": { base: "Las Palmas de Gran Canaria", email: "rgalvez@hsconsulting.es", region: "Islas Canarias", pref: "auto", island: "Gran Canaria", airport: "LPA", station: null, address: "La Carlota, Córdoba" },
   "Rodrigo Sosa": { base: "", email: "rsosa@hsconsulting.es", region: null, pref: "auto", island: null, airport: null, station: null, address: "" },
   "Rosa Fortunato": { base: "", email: "rfortunato@hsconsulting.es", region: null, pref: "auto", island: null, airport: null, station: null, address: "" },
-  "Sergi Garcia Villaraco": { base: "Mallorca", email: "sgarcia@hsconsulting.es", region: "Islas Baleares", pref: "auto", island: "Mallorca", airport: "PMI", station: null },
+  "Sergi Garcia Villaraco": { base: "Sineu", email: "sgarcia@hsconsulting.es", region: "Islas Baleares", pref: "vehiculo", island: "Mallorca", airport: "PMI", station: null, address: "" },
   "Sergio Alberto Monegro Mejía": { base: "", email: "smonegro@hsconsulting.es", region: null, pref: "auto", island: null, airport: null, station: null, address: "" },
   "Shanice Ebanks": { base: "Jamaica", email: "sebanks@hsconsulting.es", region: null, pref: "auto", island: null, airport: null, station: null, address: "" },
   "VALPE 21": { base: "", email: "info@valpe21.com", region: null, pref: "auto", island: null, airport: null, station: null, address: "" },
@@ -441,9 +441,9 @@ function getTransportType(cRegion, dRegion, establishment, pref, cIsland, dIslan
   }
   const effectiveCIsland = cIsland || inferIsland(cBase);
 
-  // 2. Priority: Same Island -> Vehiculo/Auto (Overrides weak region matching)
+  // 2. Priority: Same Island -> Vehiculo (Overrides weak region matching)
   if (effectiveCIsland && destinationIslandName && effectiveCIsland === destinationIslandName) {
-    return pref === "auto" ? "auto" : "vehiculo";
+    return "vehiculo";
   }
 
   // 3. Same Region Peninsula -> Vehiculo
@@ -459,12 +459,11 @@ function getTransportType(cRegion, dRegion, establishment, pref, cIsland, dIslan
       if (effectiveCIsland && destinationIslandName && effectiveCIsland !== destinationIslandName) {
         return "vuelo";
       }
-      // Misma isla o isla destino desconocida → vehículo en la isla
-      return pref === "auto" ? "auto" : "vehiculo";
+      // Misma isla o isla destino desconocida → vehículo propio en la isla
+      return "vehiculo";
     }
 
     // Un lado es isla pero el destino no se reconoció como isla region.
-    // Puede ocurrir si el CSV trae "Mallorca" como región (ya capturado en destinationIslandName).
     if (cIsIsland && !destinationIsIsland && destinationIslandName) {
       const destInBaleares = ["Mallorca","Menorca","Ibiza","Formentera"].includes(destinationIslandName);
       const destInCanarias = ["Gran Canaria","Tenerife","Lanzarote","Fuerteventura","La Palma","La Gomera","El Hierro"].includes(destinationIslandName);
@@ -472,7 +471,7 @@ function getTransportType(cRegion, dRegion, establishment, pref, cIsland, dIslan
       const cInCanarias = normCRegion === "Islas Canarias";
       if ((cInBaleares && destInBaleares) || (cInCanarias && destInCanarias)) {
         if (effectiveCIsland && effectiveCIsland !== destinationIslandName) return "vuelo";
-        return pref === "auto" ? "auto" : "vehiculo";
+        return "vehiculo";
       }
     }
     return "vuelo"; // Isla → Península genuino o archipiélagos distintos
@@ -481,12 +480,8 @@ function getTransportType(cRegion, dRegion, establishment, pref, cIsland, dIslan
   // 5. Madrid Consultant -> Peninsula -> Tren
   if (normCRegion === "Madrid") return "tren";
 
-  // 6. Andalucía / Cataluña -> Coche (Own vehicle usually, unless pref is auto)
-  if (normCRegion === "Andalucía" || normCRegion === "Cataluña") return pref === "auto" ? "auto" : "vehiculo";
-
-  // 7. Default
+  // 6. Default
   if (pref === "tren") return "tren";
-  if (pref === "auto") return "auto";
   return "vehiculo";
 }
 
@@ -494,7 +489,7 @@ const TRANSPORT_META = {
   vuelo: { icon: "✈️", label: "Vuelo", color: "#0D4BD9", bg: "#EEF2FF" },
   tren: { icon: "🚄", label: "Tren AVE", color: "#7C3AED", bg: "#F3EEFF" },
   vehiculo: { icon: "🚗", label: "Vehículo Propio", color: "#059669", bg: "#ECFDF5" },
-  auto: { icon: "🚙", label: "Coche Alquiler", color: "#0891B2", bg: "#ECFEFF" },
+  auto: { icon: "🚗", label: "Vehículo Propio", color: "#059669", bg: "#ECFDF5" }, // legacy alias
   local: { icon: "📍", label: "Local", color: "#6B7280", bg: "#F3F4F6" },
 };
 
@@ -5072,6 +5067,14 @@ export default function HSConsultingTravelPlanner() {
       const destFullAddress = client.address || EXTRA_CLIENT_INFO[activity.e]?.address || client.municipality || activity.r;
       const isGenericAddress = !client.address && !EXTRA_CLIENT_INFO[activity.e]?.address;
 
+      // Dirección enriquecida para geocoding: añade isla/región cuando solo hay municipio
+      // Ej: "Montuïri" → "Montuïri, Mallorca, España" para que Photon/OSRM no confundan el municipio
+      const destIslandForGeo = client.island || inferIslandFromMuni(client.municipality);
+      const destGeoAddress = client.address || EXTRA_CLIENT_INFO[activity.e]?.address
+        || (client.municipality
+            ? [client.municipality, destIslandForGeo || null, "España"].filter(Boolean).join(", ")
+            : activity.r);
+
       if (!c) {
         return {
           ...activity,
@@ -5125,9 +5128,10 @@ export default function HSConsultingTravelPlanner() {
       };
       const originGeo = buildOriginGeo(c.address, c.base);
 
-      const distKey = `${originGeo}|${destFullAddress}`;
+      // distKey usa destGeoAddress (con isla) para mayor precisión en geocoding
+      const distKey = `${originGeo}|${destGeoAddress}`;
       const km = (tType === "vehiculo" || tType === "auto" || tType === "local")
-        ? (realDistances[distKey] || estimateDistance(originGeo, destFullAddress))
+        ? (realDistances[distKey] || estimateDistance(originGeo, destGeoAddress))
         : 0;
 
       return {
@@ -5139,7 +5143,8 @@ export default function HSConsultingTravelPlanner() {
         originAddress: originGeo || c.base,
         originMuni,
         originDisplay,
-        destAddress: destFullAddress,
+        destAddress: destFullAddress,       // para mostrar en UI
+        destGeoAddress,                      // para geocoding (con isla/región añadida)
         destMuni,
         destDisplay,
         isGenericAddress,
@@ -5994,11 +5999,12 @@ export default function HSConsultingTravelPlanner() {
     const seen = new Set();
 
     filtered.forEach(p => {
-      const key = `${p.originAddress}|${p.destAddress}`;
+      const destForGeo = p.destGeoAddress || p.destAddress;
+      const key = `${p.originAddress}|${destForGeo}`;
       if ((p.tType === "vehiculo" || p.tType === "auto" || p.tType === "local") && !realDistances[key]) {
         if (!seen.has(key)) {
           seen.add(key);
-          routesToCalc.push({ key, origin: p.originAddress, dest: p.destAddress });
+          routesToCalc.push({ key, origin: p.originAddress, dest: destForGeo });
         }
       }
     });
