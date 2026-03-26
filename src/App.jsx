@@ -4639,10 +4639,12 @@ function ConsultantList({ consultants, onUpdate, onDelete }) {
                 {editingId === name ? (
                   <>
                     <td style={{ padding: 8 }}>
-                      <input style={{ width: "100%", padding: 6, borderRadius: 4, border: "1px solid #ddd" }} value={editForm.address || ""} onChange={e => setEditForm({ ...editForm, address: e.target.value })} placeholder="Dirección completa..." />
+                      <input style={{ width: "100%", padding: 6, borderRadius: 4, border: "1px solid #ddd", marginBottom: 4, boxSizing: "border-box" }} value={editForm.address || ""} onChange={e => setEditForm({ ...editForm, address: e.target.value })} placeholder="Dirección completa (calle, nº, CP, ciudad)..." />
+                      <input style={{ width: "100%", padding: 6, borderRadius: 4, border: "1px solid #ddd", boxSizing: "border-box", fontSize: 11, color: "#6B7280" }} value={editForm.base || ""} onChange={e => setEditForm({ ...editForm, base: e.target.value })} placeholder="Ciudad / municipio base..." />
                     </td>
                     <td style={{ padding: 8 }}>
-                      <select style={{ padding: 6, borderRadius: 4, border: "1px solid #ddd" }} value={editForm.region || ""} onChange={e => setEditForm({ ...editForm, region: e.target.value })}>
+                      <select style={{ width: "100%", padding: 6, borderRadius: 4, border: "1px solid #ddd", marginBottom: 4, boxSizing: "border-box" }} value={editForm.region || ""} onChange={e => setEditForm({ ...editForm, region: e.target.value })}>
+                        <option value="">— Región —</option>
                         <option value="Madrid">Madrid</option>
                         <option value="Islas Canarias">Islas Canarias</option>
                         <option value="Islas Baleares">Islas Baleares</option>
@@ -4656,17 +4658,14 @@ function ConsultantList({ consultants, onUpdate, onDelete }) {
                         <option value="Castilla y León">Castilla y León</option>
                         <option value="Desconocido">Otro</option>
                       </select>
-                    </td>
-                    <td style={{ padding: 8 }}>
                       <input
-                        style={{ width: "100%", padding: 6, borderRadius: 4, border: "1px solid #ddd" }}
-                        placeholder="Isla (si aplica)"
+                        style={{ width: "100%", padding: 6, borderRadius: 4, border: "1px solid #ddd", boxSizing: "border-box", fontSize: 11 }}
+                        placeholder="Isla (si aplica: Mallorca, Tenerife…)"
                         value={editForm.island || ""}
                         onChange={e => setEditForm({ ...editForm, island: e.target.value })}
                       />
                     </td>
-
-                    <td style={{ padding: 8 }}><input style={{ width: "100%", padding: 6, borderRadius: 4, border: "1px solid #ddd" }} value={editForm.email || ""} onChange={e => setEditForm({ ...editForm, email: e.target.value })} /></td>
+                    <td style={{ padding: 8 }}><input style={{ width: "100%", padding: 6, borderRadius: 4, border: "1px solid #ddd", boxSizing: "border-box" }} value={editForm.email || ""} onChange={e => setEditForm({ ...editForm, email: e.target.value })} placeholder="email@hsconsulting.es" /></td>
                     <td style={{ padding: 8, textAlign: "center" }}>
                       <div style={{ display: "flex", gap: 5, justifyContent: "center" }}>
                         <button onClick={saveEdit} style={{ background: "#10B981", color: "white", border: "none", padding: "6px 8px", borderRadius: 4, cursor: "pointer" }}>💾</button>
@@ -4676,7 +4675,13 @@ function ConsultantList({ consultants, onUpdate, onDelete }) {
                   </>
                 ) : (
                   <>
-                    <td style={{ padding: "12px 16px", fontSize: 12, color: "#374151" }}>{data.address || "-"}</td>
+                    <td style={{ padding: "12px 16px", fontSize: 12, color: "#374151" }}>
+                      {data.address
+                        ? <span>{data.address}</span>
+                        : data.base
+                          ? <span style={{ color: "#6B7280" }}>📍 {data.base}</span>
+                          : <span style={{ color: "#D1D5DB" }}>-</span>}
+                    </td>
                     <td style={{ padding: "12px 16px" }}>
                       <div style={{ padding: "2px 8px", borderRadius: 12, background: "#f3f4f6", fontSize: 11, fontWeight: 500, display: "inline-block" }}>{data.region || "-"}</div>
                       {data.island && <div style={{ fontSize: 10, color: "#6B7280", marginTop: 4 }}>🏝️ {data.island}</div>}
