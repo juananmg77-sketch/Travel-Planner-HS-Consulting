@@ -5093,9 +5093,21 @@ export default function HSConsultingTravelPlanner() {
       const startDate = range ? range.startStr : activity.f;
       const endDate = range ? range.endStr : activity.f;
 
-      const distKey = `${c.address || c.base}|${destFullAddress}`;
+      // Combina dirección + ciudad para un geocoding más preciso
+      // Ej: "C/ Sementera, 21" + "Palma de Mallorca" → "C/ Sementera, 21, Palma de Mallorca"
+      const buildOriginGeo = (addr, base) => {
+        if (!addr && !base) return "";
+        if (!addr) return base;
+        if (!base) return addr;
+        // Evitar duplicar si la dirección ya contiene la ciudad
+        if (addr.toLowerCase().includes(base.toLowerCase())) return addr;
+        return `${addr}, ${base}`;
+      };
+      const originGeo = buildOriginGeo(c.address, c.base);
+
+      const distKey = `${originGeo}|${destFullAddress}`;
       const km = (tType === "vehiculo" || tType === "auto" || tType === "local")
-        ? (realDistances[distKey] || estimateDistance(c.address || c.base, destFullAddress))
+        ? (realDistances[distKey] || estimateDistance(originGeo, destFullAddress))
         : 0;
 
       return {
@@ -5104,7 +5116,7 @@ export default function HSConsultingTravelPlanner() {
         cName: auditorName,
         tType,
         needsTravel: tType !== "local",
-        originAddress: c.address || c.base,
+        originAddress: originGeo || c.base,
         originMuni,
         originDisplay,
         destAddress: destFullAddress,
