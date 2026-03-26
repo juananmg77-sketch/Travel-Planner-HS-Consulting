@@ -643,8 +643,8 @@ function GeocodingValidationPanel({ proposal, geocodeState, onSearch, onSelectRe
   const p = proposal;
   const gs = geocodeState || {};
 
-  // REMOVED: Always allow editing, not just for generic addresses
-  // if (!p.isGenericAddress) return null;
+  // Si el hotel ya tiene dirección guardada y no hay sesión de geocoding activa → no mostrar el aviso
+  if (!p.isGenericAddress && !geocodeState) return null;
 
   // Manual editing mode
   if (gs.editing) {
@@ -5035,7 +5035,9 @@ export default function HSConsultingTravelPlanner() {
   const proposals = useMemo(() => {
     return activities.map(activity => {
       const auditorName = (activity.a || "").trim();
-      const c = activeConsultants[auditorName];
+      // Exact match first, then case-insensitive fallback (handles trailing spaces / capitalización)
+      const c = activeConsultants[auditorName]
+        || Object.entries(activeConsultants).find(([k]) => k.trim().toLowerCase() === auditorName.toLowerCase())?.[1];
 
       const clientName = activity.e;
       const baseClient = CLIENT_LOOKUP[clientName] || {};
