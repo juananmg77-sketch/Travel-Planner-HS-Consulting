@@ -3,7 +3,7 @@ import Papa from "papaparse";
 import CLIENT_DATA from './clientData.json';
 import CLIENT_DATA_raw from './clientData.json';
 import { signIn, signOut, getCurrentSession, getUserProfile, onAuthStateChange } from './supabaseAuth';
-import { uploadActivities, upsertEstablishment, deleteEstablishment, updateActivityAddress, updateActivityTransport, logAction, getAllDistances, upsertDistance, getValidatedEstablishments, getAllAccommodationHotels, syncAccommodationHotels, setActivityManagedStatus, bulkSetManagedStatus, getManagedActivityIds, getAllActivities as getAllActivitiesFromDB, saveBookingConfirmation, getAllBookingConfirmations, upsertConsultant, deleteConsultant as deleteConsultantDB, getAllConsultants } from './supabaseService';
+import { uploadActivities, deletePendingActivitiesNotIn, upsertEstablishment, deleteEstablishment, updateActivityAddress, updateActivityTransport, logAction, getAllDistances, upsertDistance, getValidatedEstablishments, getAllAccommodationHotels, syncAccommodationHotels, setActivityManagedStatus, bulkSetManagedStatus, getManagedActivityIds, getAllActivities as getAllActivitiesFromDB, saveBookingConfirmation, getAllBookingConfirmations, upsertConsultant, deleteConsultant as deleteConsultantDB, getAllConsultants } from './supabaseService';
 import { fetchLovableHoteles, updateLovableHotel } from './lovableService';
 
 const CLIENT_LOOKUP = CLIENT_DATA.reduce((acc, client) => {
@@ -5424,18 +5424,30 @@ export default function HSConsultingTravelPlanner() {
 
     parseCSV(file, (results) => {
       // Tag import with current month for historical tracking
+      // Deterministic ID: same consultant+hotel+date always produces the same ID
+      const deterministicId = (a, e, f) => {
+        const key = `${(a||'').trim().toLowerCase()}|${(e||'').trim().toLowerCase()}|${(f||'').trim()}`;
+        let h = 0;
+        for (let i = 0; i < key.length; i++) { h = Math.imul(31, h) + key.charCodeAt(i) | 0; }
+        return (h >>> 0).toString(36).padStart(7, '0');
+      };
       const importMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
-      const mapped = results.data.map((row) => ({
-        id: Math.random().toString(36).substr(2, 9),
-        a: (row["Auditor"] || row["auditor"] || row["Consultor"] || row["Nombre"] || "").trim(),
-        r: (row["Region"] || row["region"] || row["Región"] || "").trim(),
-        e: resolveClientName((row["Establecimiento"] || row["establecimiento"] || row["Hotel"] || "").trim()),
-        d: (row["Disciplina"] || row["disciplina"] || row["Actividad"] || row["actividad"] || row["Tarea"] || row["Tareas"] || "").trim(),
-        f: (row["Fecha"] || row["fecha"] || row["Date"] || "").trim(),
-        j: parseFloat((row["Jornada"] || row["jornada"] || row["Jornadas"] || row["jornadas"] || row["Duración"] || "0").replace(",", ".")),
-        g: (row["Grupo"] || row["grupo"] || row["Cadena"] || "").trim(),
-        _importMonth: importMonth
-      })).filter(item => item.a && item.f);
+      const mapped = results.data.map((row) => {
+        const a = (row["Auditor"] || row["auditor"] || row["Consultor"] || row["Nombre"] || "").trim();
+        const e = resolveClientName((row["Establecimiento"] || row["establecimiento"] || row["Hotel"] || "").trim());
+        const f = (row["Fecha"] || row["fecha"] || row["Date"] || "").trim();
+        return ({
+          id: deterministicId(a, e, f),
+          a,
+          r: (row["Region"] || row["region"] || row["Región"] || "").trim(),
+          e,
+          d: (row["Disciplina"] || row["disciplina"] || row["Actividad"] || row["actividad"] || row["Tarea"] || row["Tareas"] || "").trim(),
+          f,
+          j: parseFloat((row["Jornada"] || row["jornada"] || row["Jornadas"] || row["jornadas"] || row["Duración"] || "0").replace(",", ".")),
+          g: (row["Grupo"] || row["grupo"] || row["Cadena"] || "").trim(),
+          _importMonth: importMonth
+        });
+      }).filter(item => item.a && item.f);
 
       // 1. Agrupación y Deduplicación interna (si el archivo fuente tiene duplicados)
       const internalMap = new Map();
@@ -5455,17 +5467,32 @@ export default function HSConsultingTravelPlanner() {
 
       const internalDeduplicated = Array.from(internalMap.values());
 
-      // 2. Deduplicación contra existentes
-      const existingSeen = new Set(activities.map(a => `${a.e}|${a.f}|${a.a}`.toLowerCase()));
-      const newItems = internalDeduplicated.filter(item => {
-        const key = `${item.e}|${item.f}|${item.a}`.toLowerCase();
-        return !existingSeen.has(key);
-      });
+      // 2. Reemplazar pendientes con la nueva agenda; conservar gestionados intactos
+      const managedActivities = activities.filter(a => finalizedIds.has(a.id));
+      const newIds = new Set(internalDeduplicated.map(i => i.id));
+      const removedCount = activities.filter(a => !finalizedIds.has(a.id) && !newIds.has(a.id)).length;
+      const addedCount = internalDeduplicated.filter(i => !activities.find(a => a.id === i.id)).length;
 
-      if (newItems.length > 0) {
-        setActivities(prev => [...prev, ...newItems]);
-        setUploadFlash(`✅ Se han añadido ${newItems.length} registros de agenda.`);
-        setTimeout(() => setUploadFlash(null), 4000);
+      // Merge: managed activities + new agenda (pending)
+      const newItems = internalDeduplicated;
+      const mergedActivities = [
+        ...managedActivities,
+        ...internalDeduplicated.filter(i => !finalizedIds.has(i.id))
+      ];
+
+      setActivities(mergedActivities);
+      const msg = removedCount > 0
+        ? `✅ Agenda actualizada: +${addedCount} nuevos, ${removedCount} eliminados, ${managedActivities.length} gestionados conservados.`
+        : `✅ Se han cargado ${internalDeduplicated.length} registros de agenda.`;
+      setUploadFlash(msg);
+      setTimeout(() => setUploadFlash(null), 5000);
+
+      // Sync pending removal to Supabase (delete pending not in new agenda)
+      if (removedCount > 0) {
+        deletePendingActivitiesNotIn(Array.from(newIds));
+      }
+
+      if (true) { // always process establishments check
 
         // 3. Detect establishments NOT in the database
         // Normalize names (strip trailing spaces & diacritics) before lookup
@@ -5493,8 +5520,6 @@ export default function HSConsultingTravelPlanner() {
         if (unmatchedNames.length > 0) {
           setPendingNewEstablishments({ names: unmatchedNames, regionMap, consultantMap });
         }
-      } else {
-        alert("No se han encontrado registros nuevos o ya existen en el sistema.");
       }
     });
     e.target.value = ""; // reset

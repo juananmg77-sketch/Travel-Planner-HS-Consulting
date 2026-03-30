@@ -707,6 +707,25 @@ export async function bulkSetManagedStatus(updates) {
 
 
 /**
+ * Delete all pending activities whose app_id is NOT in the given set.
+ * Called after a full agenda import to remove stale pending trips.
+ * Managed activities are never deleted.
+ */
+export async function deletePendingActivitiesNotIn(keepAppIds) {
+    if (!isSupabaseConfigured()) return false;
+    if (!keepAppIds || keepAppIds.length === 0) return false;
+
+    const { error } = await supabase
+        .from('activities')
+        .delete()
+        .eq('status', 'pending')
+        .not('app_id', 'in', `(${keepAppIds.map(id => `"${id}"`).join(',')})`);
+
+    if (error) console.error('Error deleting stale pending activities:', error);
+    return !error;
+}
+
+/**
  * Get all activity IDs that have status='managed'.
  * Used on app mount to rebuild the finalizedIds Set.
  */
