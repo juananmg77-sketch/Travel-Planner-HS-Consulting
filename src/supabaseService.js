@@ -186,12 +186,15 @@ export async function uploadActivities(activities, periodId, defaultStatus = 'pe
     const rows = activities.map(act => {
         // Parse DD/MM/YYYY to proper Date
         let visitDate = null;
-        if (act.f) {
+        if (act.f && act.f.includes('/')) {
             const [d, m, y] = act.f.split('/');
-            visitDate = `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+            const parsed = `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+            // Skip epoch/invalid dates
+            if (parsed !== '1970-01-01') visitDate = parsed;
         }
 
         return {
+            app_id: act.id || null,
             planning_period_id: periodId,
             consultant_id: consultantMap[(act.a || '').trim()] || null,
             consultant_name: (act.a || '').trim(),
@@ -206,12 +209,14 @@ export async function uploadActivities(activities, periodId, defaultStatus = 'pe
         };
     });
 
-    // Insert in batches of 100
+    // Upsert in batches of 100 — app_id is the conflict key so re-imports don't duplicate
     for (let i = 0; i < rows.length; i += 100) {
         const batch = rows.slice(i, i + 100);
-        const { error } = await supabase.from('activities').insert(batch);
+        const { error } = await supabase
+            .from('activities')
+            .upsert(batch, { onConflict: 'app_id', ignoreDuplicates: false });
         if (error) {
-            console.error('Error inserting activities batch:', error);
+            console.error('Error upserting activities batch:', error);
             return false;
         }
     }
@@ -280,7 +285,7 @@ export async function getLatestPeriodActivities() {
 // Transform Supabase row -> App activity object
 function toAppActivity(row) {
     return {
-        id: row.id,
+        id: row.app_id || row.id,   // prefer app_id so local keys stay consistent
         a: row.consultant_name,
         r: row.region,
         e: row.establishment,
@@ -667,10 +672,11 @@ export async function setActivityManagedStatus(activityId, isManaged) {
     };
     if (isManaged) update.managed_at = new Date().toISOString();
 
+    // Match by app_id (local key) first, fall back to uuid
     const { error } = await supabase
         .from('activities')
         .update(update)
-        .eq('id', activityId);
+        .eq('app_id', activityId);
 
     if (error) console.error('Error updating activity managed status:', error);
     return !error;
@@ -694,7 +700,7 @@ export async function bulkSetManagedStatus(updates) {
         await supabase
             .from('activities')
             .update(payload)
-            .eq('id', u.id);
+            .eq('app_id', u.id);
     }
     return true;
 }
@@ -709,14 +715,15 @@ export async function getManagedActivityIds() {
 
     const { data, error } = await supabase
         .from('activities')
-        .select('id')
+        .select('id, app_id')
         .eq('status', 'managed');
 
     if (error) {
         console.error('Error fetching managed activity IDs:', error);
         return [];
     }
-    return (data || []).map(row => row.id);
+    // Return app_id when available (matches local state keys), else fall back to UUID
+    return (data || []).map(row => row.app_id || row.id);
 }
 
 // ============================================================

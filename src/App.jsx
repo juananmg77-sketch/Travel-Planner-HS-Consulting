@@ -4969,14 +4969,12 @@ export default function HSConsultingTravelPlanner() {
   // Load managed activity IDs and activities from Supabase on mount
   useEffect(() => {
     async function loadManagedFromSupabase() {
-      // 1. Load activities from Supabase if local is empty
-      const localActs = JSON.parse(localStorage.getItem("hs_travel_activities") || "[]");
-      if (localActs.length === 0) {
-        const remoteActs = await getAllActivitiesFromDB();
-        if (remoteActs && remoteActs.length > 0) {
-          setActivities(remoteActs);
-          console.log(`✅ Supabase: ${remoteActs.length} actividades cargadas desde la base de datos`);
-        }
+      // 1. Always load activities from Supabase (source of truth shared across all users)
+      const remoteActs = await getAllActivitiesFromDB();
+      if (remoteActs && remoteActs.length > 0) {
+        setActivities(remoteActs);
+        localStorage.setItem("hs_travel_activities", JSON.stringify(remoteActs));
+        console.log(`✅ Supabase: ${remoteActs.length} actividades cargadas desde la base de datos`);
       }
 
       // 2. Load managed IDs from Supabase (always sync, Supabase is source of truth)
