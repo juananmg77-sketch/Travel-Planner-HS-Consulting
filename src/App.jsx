@@ -5656,6 +5656,42 @@ export default function HSConsultingTravelPlanner() {
     setTimeout(() => setUploadFlash(null), 3000);
   };
 
+  const [syncing, setSyncing] = useState(false);
+  const handleSyncToCloud = async () => {
+    if (activities.length === 0) {
+      alert("No hay actividades locales para sincronizar.");
+      return;
+    }
+    setSyncing(true);
+    setUploadFlash("☁️ Sincronizando con la nube...");
+    try {
+      // 1. Upload all activities (upsert by app_id)
+      await uploadActivities(activities, null, 'pending');
+
+      // 2. Mark managed ones as managed in Supabase
+      const managedUpdates = [...finalizedIds].map(id => ({ id, isManaged: true }));
+      if (managedUpdates.length > 0) {
+        await bulkSetManagedStatus(managedUpdates);
+      }
+
+      // 3. Upload booking confirmations
+      for (const [actId, data] of Object.entries(bookingConfirmations)) {
+        if (data && Object.keys(data).length > 0) {
+          await saveBookingConfirmation(actId, data);
+        }
+      }
+
+      setUploadFlash(`✅ Sincronización completa: ${activities.length} actividades, ${managedUpdates.length} gestionadas, ${Object.keys(bookingConfirmations).length} reservas subidas a la nube.`);
+      setTimeout(() => setUploadFlash(null), 6000);
+    } catch (err) {
+      console.error("Error en sincronización:", err);
+      setUploadFlash("❌ Error durante la sincronización. Revisa la consola.");
+      setTimeout(() => setUploadFlash(null), 5000);
+    } finally {
+      setSyncing(false);
+    }
+  };
+
   // Persist accommodation hotels
   useEffect(() => {
     localStorage.setItem("hs_travel_accom_hotels", JSON.stringify(accommodationHotels));
@@ -6491,6 +6527,7 @@ export default function HSConsultingTravelPlanner() {
           <SidebarItem id="hotels"   label="Alojamientos"    icon="🛏️" onClick={() => setShowHotelsManager(true)} />
           <SidebarItem id="hoteldb"  label="BBDD Hoteles"    icon="🏨" onClick={() => { setShowHotelDB(true); setSyncStats(null); }} />
           <SidebarItem id="costs"    label="Resumen Costes"  icon="💶" onClick={() => setShowCostSummary(true)} />
+          <SidebarItem id="sync"     label={syncing ? "Sincronizando…" : "Subir a la nube"} icon={syncing ? "⏳" : "☁️"} onClick={handleSyncToCloud} />
         </div>
 
         {/* Footer usuario */}
