@@ -111,3 +111,28 @@ export function onAuthStateChange(callback) {
     );
     return subscription;
 }
+
+// ============================================================
+// PASSWORD RECOVERY
+// ============================================================
+
+/**
+ * Send a password reset email. The link will redirect to the
+ * production app URL so it works from any device.
+ */
+export async function resetPasswordForEmail(email) {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: 'https://hsconsultingtravelapp.netlify.app'
+    });
+    if (error) return { error: error.message };
+    return { error: null };
+}
+
+/**
+ * Update the authenticated user's password (called after recovery redirect).
+ */
+export async function updatePassword(newPassword) {
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    if (error) return { error: error.message };
+    return { error: null };
+}

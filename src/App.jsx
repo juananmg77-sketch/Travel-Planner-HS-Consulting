@@ -2,7 +2,7 @@ import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import Papa from "papaparse";
 import CLIENT_DATA from './clientData.json';
 import CLIENT_DATA_raw from './clientData.json';
-import { signIn, signOut, getCurrentSession, getUserProfile, onAuthStateChange } from './supabaseAuth';
+import { signIn, signOut, getCurrentSession, getUserProfile, onAuthStateChange, resetPasswordForEmail, updatePassword } from './supabaseAuth';
 import { uploadActivities, deletePendingActivitiesNotIn, upsertEstablishment, deleteEstablishment, updateActivityAddress, updateActivityTransport, logAction, getAllDistances, upsertDistance, getValidatedEstablishments, getAllAccommodationHotels, syncAccommodationHotels, setActivityManagedStatus, bulkSetManagedStatus, getManagedActivityIds, getAllActivities as getAllActivitiesFromDB, saveBookingConfirmation, getAllBookingConfirmations, upsertConsultant, deleteConsultant as deleteConsultantDB, getAllConsultants } from './supabaseService';
 import { fetchLovableHoteles, updateLovableHotel } from './lovableService';
 
@@ -4880,6 +4880,21 @@ export default function HSConsultingTravelPlanner() {
   const [loginError, setLoginError] = useState("");
   const [loginLoading, setLoginLoading] = useState(false);
 
+  // Forgot password flow
+  const [showForgot, setShowForgot] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotSent, setForgotSent] = useState(false);
+  const [forgotLoading, setForgotLoading] = useState(false);
+  const [forgotError, setForgotError] = useState("");
+
+  // Reset password flow (after clicking email link)
+  const [showResetPassword, setShowResetPassword] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [resetLoading, setResetLoading] = useState(false);
+  const [resetError, setResetError] = useState("");
+  const [resetSuccess, setResetSuccess] = useState(false);
+
   // Check existing session on mount
   useEffect(() => {
     const initAuth = async () => {
@@ -4894,7 +4909,11 @@ export default function HSConsultingTravelPlanner() {
     initAuth();
 
     const subscription = onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_IN' && session?.user) {
+      if (event === 'PASSWORD_RECOVERY') {
+        // User arrived via the reset-password email link
+        setShowResetPassword(true);
+        setAuthLoading(false);
+      } else if (event === 'SIGNED_IN' && session?.user) {
         setAuthUser(session.user);
         const profile = await getUserProfile(session.user.id);
         setUserProfile(profile);
@@ -4919,6 +4938,46 @@ export default function HSConsultingTravelPlanner() {
       setAuthUser(user);
       const profile = await getUserProfile(user.id);
       setUserProfile(profile);
+    }
+  };
+
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
+    setForgotError("");
+    setForgotLoading(true);
+    const { error } = await resetPasswordForEmail(forgotEmail);
+    setForgotLoading(false);
+    if (error) {
+      setForgotError(error);
+    } else {
+      setForgotSent(true);
+    }
+  };
+
+  const handleUpdatePassword = async (e) => {
+    e.preventDefault();
+    setResetError("");
+    if (newPassword !== confirmPassword) {
+      setResetError("Las contraseñas no coinciden.");
+      return;
+    }
+    if (newPassword.length < 6) {
+      setResetError("La contraseña debe tener al menos 6 caracteres.");
+      return;
+    }
+    setResetLoading(true);
+    const { error } = await updatePassword(newPassword);
+    setResetLoading(false);
+    if (error) {
+      setResetError(error);
+    } else {
+      setResetSuccess(true);
+      setTimeout(() => {
+        setShowResetPassword(false);
+        setNewPassword("");
+        setConfirmPassword("");
+        setResetSuccess(false);
+      }, 2500);
     }
   };
 
@@ -6373,6 +6432,60 @@ export default function HSConsultingTravelPlanner() {
     );
   }
 
+  // RESET PASSWORD SCREEN (after clicking email recovery link)
+  if (showResetPassword) {
+    return (
+      <div style={{ fontFamily: "Arial, sans-serif", background: "#f0f2f5", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", backgroundImage: "radial-gradient(#cfd8dc 1px, transparent 1px)", backgroundSize: "20px 20px" }}>
+        <div style={{ background: "white", padding: 40, borderRadius: 6, width: "100%", maxWidth: 400, boxShadow: "0 2px 10px rgba(0,0,0,0.05)", border: "1px solid #ddd" }}>
+          <h2 style={{ fontSize: 22, fontWeight: "bold", marginBottom: 20, color: "#222" }}>🔒 Nueva contraseña</h2>
+
+          {resetSuccess ? (
+            <div style={{ background: "#D1FAE5", color: "#065F46", padding: 16, borderRadius: 6, textAlign: "center", fontWeight: "bold" }}>
+              ✅ Contraseña actualizada correctamente. Redirigiendo...
+            </div>
+          ) : (
+            <form onSubmit={handleUpdatePassword}>
+              <div style={{ marginBottom: 15 }}>
+                <label style={{ display: "block", fontSize: 13, fontWeight: "bold", marginBottom: 5, color: "#333" }}>Nueva contraseña</label>
+                <input
+                  type="password"
+                  value={newPassword}
+                  onChange={e => setNewPassword(e.target.value)}
+                  placeholder="mínimo 6 caracteres"
+                  required
+                  style={{ width: "100%", padding: "12px", borderRadius: 4, border: "1px solid #ccc", fontSize: 14, boxSizing: "border-box" }}
+                />
+              </div>
+              <div style={{ marginBottom: 20 }}>
+                <label style={{ display: "block", fontSize: 13, fontWeight: "bold", marginBottom: 5, color: "#333" }}>Confirmar contraseña</label>
+                <input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={e => setConfirmPassword(e.target.value)}
+                  placeholder="repite la contraseña"
+                  required
+                  style={{ width: "100%", padding: "12px", borderRadius: 4, border: "1px solid #ccc", fontSize: 14, boxSizing: "border-box" }}
+                />
+              </div>
+              {resetError && (
+                <div style={{ background: "#FEE2E2", color: "#991B1B", padding: 10, borderRadius: 4, marginBottom: 15, fontSize: 13 }}>
+                  ⚠️ {resetError}
+                </div>
+              )}
+              <button
+                type="submit"
+                disabled={resetLoading}
+                style={{ width: "100%", padding: "12px", borderRadius: 4, border: "none", background: HS_COLORS.primary, color: "white", fontSize: 16, fontWeight: "bold", cursor: resetLoading ? "wait" : "pointer" }}
+              >
+                {resetLoading ? "Guardando..." : "Guardar contraseña"}
+              </button>
+            </form>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   // LOGIN SCREEN
   if (!authUser) {
     return (
@@ -6394,8 +6507,62 @@ export default function HSConsultingTravelPlanner() {
 
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20, borderBottom: "1px solid #eee", paddingBottom: 15 }}>
             <svg viewBox="0 0 24 24" width="30" height="30" fill="#333"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" /></svg>
-            <h2 style={{ fontSize: 24, fontWeight: "bold", margin: 0, color: "#222" }}>Inicio de sesión</h2>
+            <h2 style={{ fontSize: 24, fontWeight: "bold", margin: 0, color: "#222" }}>
+              {showForgot ? "Recuperar contraseña" : "Inicio de sesión"}
+            </h2>
           </div>
+
+          {/* FORGOT PASSWORD FORM */}
+          {showForgot ? (
+            forgotSent ? (
+              <div>
+                <div style={{ background: "#D1FAE5", color: "#065F46", padding: 16, borderRadius: 6, marginBottom: 20, fontWeight: "bold", textAlign: "center" }}>
+                  ✅ Email enviado. Revisa tu bandeja de entrada y sigue el enlace para restablecer tu contraseña.
+                </div>
+                <button
+                  onClick={() => { setShowForgot(false); setForgotSent(false); setForgotEmail(""); }}
+                  style={{ width: "100%", padding: "10px", borderRadius: 4, border: "1px solid #ccc", background: "white", fontSize: 14, cursor: "pointer", color: "#555" }}
+                >
+                  ← Volver al inicio de sesión
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={handleForgotPassword}>
+                <p style={{ fontSize: 13, color: "#555", marginBottom: 15 }}>
+                  Introduce tu correo y te enviaremos un enlace para restablecer tu contraseña.
+                </p>
+                <div style={{ marginBottom: 15 }}>
+                  <input
+                    type="email"
+                    value={forgotEmail}
+                    onChange={e => setForgotEmail(e.target.value)}
+                    placeholder="su correo electrónico"
+                    required
+                    style={{ width: "100%", padding: "12px", borderRadius: 4, border: "1px solid #ccc", fontSize: 14, boxSizing: "border-box" }}
+                  />
+                </div>
+                {forgotError && (
+                  <div style={{ background: "#FEE2E2", color: "#991B1B", padding: 10, borderRadius: 4, marginBottom: 15, fontSize: 13 }}>
+                    ⚠️ {forgotError}
+                  </div>
+                )}
+                <button
+                  type="submit"
+                  disabled={forgotLoading}
+                  style={{ width: "100%", padding: "12px", borderRadius: 4, border: "none", background: HS_COLORS.primary, color: "white", fontSize: 16, fontWeight: "bold", cursor: forgotLoading ? "wait" : "pointer", marginBottom: 10 }}
+                >
+                  {forgotLoading ? "Enviando..." : "Enviar enlace"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setShowForgot(false); setForgotError(""); }}
+                  style={{ width: "100%", padding: "10px", borderRadius: 4, border: "1px solid #ccc", background: "white", fontSize: 14, cursor: "pointer", color: "#555" }}
+                >
+                  ← Volver
+                </button>
+              </form>
+            )
+          ) : (
 
           <form onSubmit={handleLogin}>
             <div style={{ marginBottom: 15 }}>
@@ -6438,9 +6605,16 @@ export default function HSConsultingTravelPlanner() {
               <label style={{ display: "flex", alignItems: "center", gap: 6, color: "#333", cursor: "pointer" }}>
                 <input type="checkbox" /> Recordarme
               </label>
-              <a href="#" style={{ color: HS_COLORS.primary, textDecoration: "none" }}>¿No recuerda su contraseña?</a>
+              <a
+                href="#"
+                onClick={e => { e.preventDefault(); setShowForgot(true); setLoginError(""); }}
+                style={{ color: HS_COLORS.primary, textDecoration: "none" }}
+              >
+                ¿No recuerda su contraseña?
+              </a>
             </div>
           </form>
+          )} {/* end showForgot conditional */}
         </div>
 
         <div style={{ textAlign: "center", marginTop: 30, color: "#999", fontSize: 12 }}>
