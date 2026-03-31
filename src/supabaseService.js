@@ -209,12 +209,13 @@ export async function uploadActivities(activities, periodId, defaultStatus = 'pe
         };
     });
 
-    // Upsert in batches of 100 — app_id is the conflict key so re-imports don't duplicate
+    // Upsert in batches of 100 — app_id is the conflict key so re-imports don't duplicate.
+    // ignoreDuplicates: true ensures existing records (already managed) are NOT overwritten.
     for (let i = 0; i < rows.length; i += 100) {
         const batch = rows.slice(i, i + 100);
         const { error } = await supabase
             .from('activities')
-            .upsert(batch, { onConflict: 'app_id', ignoreDuplicates: false });
+            .upsert(batch, { onConflict: 'app_id', ignoreDuplicates: true });
         if (error) {
             console.error('Error upserting activities batch:', error);
             return false;
@@ -672,14 +673,31 @@ export async function setActivityManagedStatus(activityId, isManaged) {
     };
     if (isManaged) update.managed_at = new Date().toISOString();
 
-    // Match by app_id (local key) first, fall back to uuid
-    const { error } = await supabase
+    // Try by app_id first (local deterministic key)
+    const { data, error } = await supabase
         .from('activities')
         .update(update)
-        .eq('app_id', activityId);
+        .eq('app_id', activityId)
+        .select('id');
 
-    if (error) console.error('Error updating activity managed status:', error);
-    return !error;
+    if (error) {
+        console.error('Error updating activity managed status by app_id:', error);
+        return false;
+    }
+
+    // If no rows were updated, try by UUID as fallback
+    if (!data || data.length === 0) {
+        const { error: error2 } = await supabase
+            .from('activities')
+            .update(update)
+            .eq('id', activityId);
+        if (error2) {
+            console.error('Error updating activity managed status by id:', error2);
+            return false;
+        }
+    }
+
+    return true;
 }
 
 /**
@@ -694,13 +712,26 @@ export async function bulkSetManagedStatus(updates) {
             status: u.isManaged ? 'managed' : 'pending',
             managed_at: u.isManaged ? new Date().toISOString() : null
         };
-        // Update expedition_id if a group ID was specified in the update
-        if (u.g) payload.expedition_id = u.g;
 
-        await supabase
+        // Try by app_id first
+        const { data, error } = await supabase
             .from('activities')
             .update(payload)
-            .eq('app_id', u.id);
+            .eq('app_id', u.id)
+            .select('id');
+
+        if (error) {
+            console.error('Error in bulkSetManagedStatus by app_id:', u.id, error);
+        }
+
+        // Fallback to UUID if no rows matched
+        if (!error && (!data || data.length === 0)) {
+            const { error: error2 } = await supabase
+                .from('activities')
+                .update(payload)
+                .eq('id', u.id);
+            if (error2) console.error('Error in bulkSetManagedStatus by id:', u.id, error2);
+        }
     }
     return true;
 }
